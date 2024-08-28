@@ -22,8 +22,7 @@ namespace cs2_rockthevote
     {
         public override string ModuleName => "RockTheVote";
         public override string ModuleVersion => "1.8.5";
-        public override string ModuleAuthor => "abnerfs";
-        public override string ModuleDescription => "https://github.com/abnerfs/cs2-rockthevote";
+        public override string ModuleAuthor => "abnerfs (Updated by Marchand)";
 
 
         private readonly DependencyManager<Plugin, Config> _dependencyManager;
@@ -49,9 +48,11 @@ namespace cs2_rockthevote
             _rtvManager = rtvManager;
             _timeLeft = timeLeft;
             _nextMap = nextMap;
+
+            Config = new Config();
         }
 
-        public Config? Config { get; set; }
+        public Config Config { get; set; }
 
         public string Localize(string prefix, string key, params object[] values)
         {

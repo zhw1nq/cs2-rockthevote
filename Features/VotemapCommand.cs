@@ -22,7 +22,10 @@ namespace cs2_rockthevote
         public HookResult EventPlayerDisconnectVotemap(EventPlayerDisconnect @event, GameEventInfo @eventInfo)
         {
             var player = @event.Userid;
-            _votemapManager.PlayerDisconnected(player);
+            if (player != null)
+            {
+                _votemapManager.PlayerDisconnected(player);
+            }
             return HookResult.Continue;
         }
     }

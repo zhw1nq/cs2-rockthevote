@@ -1,5 +1,5 @@
 {
-  "rtv.prefix": "{red}[RockTheVote]{default}",
+  "rtv.prefix": "{red}[RTV]{default}",
   "votemap.prefix": "{red}[Votemap]{default}",
   "timeleft.prefix": "{red}[Timeleft]{default}",
   "timeleft.remaining-rounds": "{0} 剩余对局",
