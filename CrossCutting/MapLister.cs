@@ -1,4 +1,6 @@
-﻿using cs2_rockthevote.Core;
+﻿using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Entities;
+using cs2_rockthevote.Core;
 
 namespace cs2_rockthevote
 {
@@ -57,6 +59,30 @@ namespace cs2_rockthevote
         {
             _plugin = plugin;
             LoadMaps();
+        }
+
+        public string GetSingleMatchingMapName(string map, CCSPlayerController player, StringLocalizer _localizer)
+        {
+            if (Maps!.Select(x => x.Name).FirstOrDefault(x => x.ToLower() == map) is not null)
+                return map;
+
+            var matchingMaps = Maps!
+                .Select(x => x.Name)
+                .Where(x => x.ToLower().Contains(map.ToLower()))
+                .ToList();
+
+            if (matchingMaps.Count == 0)
+            {
+                player!.PrintToChat(_localizer.LocalizeWithPrefix("general.invalid-map"));
+                return "";
+            }
+            else if (matchingMaps.Count > 1)
+            {
+                player!.PrintToChat(_localizer.LocalizeWithPrefix("nominate.multiple-maps-containing-name"));
+                return "";
+            }
+            
+            return matchingMaps[0];
         }
     }
 }

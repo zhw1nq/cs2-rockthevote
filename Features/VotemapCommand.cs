@@ -1,7 +1,6 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
-using CounterStrikeSharp.API.Core.Logging;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Menu;
 using cs2_rockthevote.Core;
@@ -19,17 +18,20 @@ namespace cs2_rockthevote
         }
 
         [GameEventHandler(HookMode.Pre)]
-        public HookResult EventPlayerDisconnectVotemap(EventPlayerDisconnect @event, GameEventInfo @eventInfo)
+        public HookResult EventPlayerDisconnectVotemap(EventPlayerDisconnect @event)
         {
             var player = @event.Userid;
-            _votemapManager.PlayerDisconnected(player);
+            if (player != null)
+            {
+                _votemapManager.PlayerDisconnected(player);
+            }
             return HookResult.Continue;
         }
     }
 
     public class VotemapCommand : IPluginDependency<Plugin, Config>
     {
-        Dictionary<string, AsyncVoteManager> VotedMaps = new();
+        Dictionary<string, AsyncVoteManager> VotedMaps = [];
         ChatMenu? votemapMenu = null;
         CenterHtmlMenu? votemapMenuHud = null;
         private VotemapConfig _config = new();
@@ -66,7 +68,7 @@ namespace cs2_rockthevote
         public void OnMapsLoaded(object? sender, Map[] maps)
         {
             votemapMenu = new("Votemap");
-            votemapMenuHud = new("VoteMap");
+            votemapMenuHud = new CenterHtmlMenu("VoteMap", _plugin!);
             foreach (var map in _mapLister.Maps!.Where(x => x.Name != Server.MapName))
             {
                 votemapMenu.AddMenuOption(map.Name, (CCSPlayerController player, ChatMenuOption option) =>
@@ -126,7 +128,7 @@ namespace cs2_rockthevote
         public void OpenVotemapMenu(CCSPlayerController player)
         {
             if (_config.HudMenu)
-                MenuManager.OpenCenterHtmlMenu(_plugin, player, votemapMenuHud!);
+                MenuManager.OpenCenterHtmlMenu(_plugin!, player, votemapMenuHud!);
             else
                 MenuManager.OpenChatMenu(player, votemapMenu!);
         }
@@ -145,7 +147,7 @@ namespace cs2_rockthevote
                 return;
             }
 
-            if (_mapLister.Maps!.FirstOrDefault(x => x.Name.ToLower() == map) is null)
+            if (!_mapLister.Maps!.Any(x => x.Name.Equals(map, StringComparison.OrdinalIgnoreCase)))
             {
                 player!.PrintToChat(_localizer.LocalizeWithPrefix("general.invalid-map"));
                 return;
