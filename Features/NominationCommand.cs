@@ -43,6 +43,7 @@ namespace cs2_rockthevote
         public NominationCommand(MapLister mapLister, GameRules gamerules, StringLocalizer localizer, PluginState pluginState, MapCooldown mapCooldown)
         {
             _mapLister = mapLister;
+            _mapLister.EventMapsLoaded += OnMapsLoaded;
             _gamerules = gamerules;
             _localizer = localizer;
             _pluginState = pluginState;
@@ -128,34 +129,35 @@ namespace cs2_rockthevote
                 return;
             }
 
-            if (_mapCooldown.IsMapInCooldown(map))
-            {
-                player!.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.map-played-recently"));
-                return;
-            }
+            string matchingMap = _mapLister.GetSingleMatchingMapName(map, player, _localizer);
 
-            if (_mapLister.Maps!.Select(x => x.Name).FirstOrDefault(x => x.ToLower() == map) is null)
+            if (matchingMap == "")
             {
                 player!.PrintToChat(_localizer.LocalizeWithPrefix("general.invalid-map"));
                 return;
+            }
 
+            if (_mapCooldown.IsMapInCooldown(matchingMap))
+            {
+                player!.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.map-played-recently"));
+                return;
             }
 
             var userId = player.UserId!.Value;
             if (!Nominations.ContainsKey(userId))
                 Nominations[userId] = new();
 
-            bool alreadyVoted = Nominations[userId].IndexOf(map) != -1;
+            bool alreadyVoted = Nominations[userId].IndexOf(matchingMap) != -1;
             if (!alreadyVoted)
-                Nominations[userId].Add(map);
+                Nominations[userId].Add(matchingMap);
 
-            var totalVotes = Nominations.Select(x => x.Value.Where(y => y == map).Count())
+            var totalVotes = Nominations.Select(x => x.Value.Where(y => y == matchingMap).Count())
                 .Sum();
 
             if (!alreadyVoted)
-                Server.PrintToChatAll(_localizer.LocalizeWithPrefix("nominate.nominated", player.PlayerName, map, totalVotes));
+                Server.PrintToChatAll(_localizer.LocalizeWithPrefix("nominate.nominated", player.PlayerName, matchingMap, totalVotes));
             else
-                player.PrintToChat(_localizer.LocalizeWithPrefix("nominate.already-nominated", map, totalVotes));
+                player.PrintToChat(_localizer.LocalizeWithPrefix("nominate.already-nominated", matchingMap, totalVotes));
         }
 
         public List<string> NominationWinners()
