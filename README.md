@@ -1,26 +1,15 @@
-# CS2 Rock The Vote
-![Downloads](https://img.shields.io/github/downloads/abnerfs/cs2-rockthevote/total) ![Last commit](https://img.shields.io/github/last-commit/abnerfs/cs2-rockthevote "Last commit") ![Open issues](https://img.shields.io/github/issues/abnerfs/cs2-rockthevote "Open Issues") ![Closed issues](https://img.shields.io/github/issues-closed/abnerfs/cs2-rockthevote "Closed Issues") ![Size](https://img.shields.io/github/repo-size/abnerfs/dontpad-api "Size")
+# CS2 RockTheVote (RTV)
+General purpose map voting plugin.
 
 ![image](https://github.com/abnerfs/cs2-rockthevote/assets/14078661/a603d1b6-ba35-4d5a-b887-1b14058a8050)
-
-General purpose map voting plugin, started as a simple RTV and now has more features
-
-# Enjoying the plugin?
-Please drop a ⭐ star in the repository 
-![image](https://github.com/abnerfs/cs2-rockthevote/assets/14078661/bf4bb677-3c83-4cb6-ac8a-393435c91105)
-
-Feeling like paying me a ☕? Go ahead and donate:
-
-[![](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/donate/?hosted_button_id=XDAQUYUGT5PTJ)
-
   
 ## Requirements
-[Latest release of Counter Strike Sharp](https://github.com/roflmuffin/CounterStrikeSharp)
+Latest release of [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp/releases)
 
 # Instalation
-- Download the latest release from https://github.com/abnerfs/cs2-rockthevote/releases
+- Download the latest release from https://github.com/M-archand/cs2-rockthevote/releases
 - Extract the .zip file into `addons/counterstrikesharp/plugins`
-- Enjoy
+- Update the maplist.example.txt to inlcude your desired maps and then rename it to maplist.txt
 
 # Features
 - Reads from a custom maplist
@@ -32,6 +21,9 @@ Feeling like paying me a ☕? Go ahead and donate:
 - Nextmap command
 - Fully configurable
 - Translated by the community
+
+# Roadmap
+- [ ] Add time extension feature
 
 # Translations
 | Language             | Contributor          |
@@ -49,7 +41,7 @@ Feeling like paying me a ☕? Go ahead and donate:
 
 # Configs
 - A config file will be created in `addons/counterstrikesharp/configs/plugins/RockTheVote` the first time you load the plugin.
-- Changes in the config file will require you to reload the plugin or restart the server (change the map won't work).
+- Changes in the config file will require you to reload the plugin or restart the server (changing the map won't work).
 - Maps that will be used in RTV/nominate/votemap/end of map vote are located in addons/counterstrikesharp/configs/plugins/RockTheVote/maplist.txt
 
 ## General config
@@ -100,7 +92,7 @@ Players can vote to change to an specific map by using the votemap <mapname> com
 | ChangeMapImmediatly | Whether to change the map immediatly when vote ends or not               | true          | false | true |
 | EnabledInWarmup     | Enable/Disable votemap during warmup                                     | true          | false | true |
 | MinRounds           | Minimum rounds to enable votemap                                         | 0             |       |      |
-| MinPlayers          | Minimum amount of players to enable votemap                              |               |       |      |
+| MinPlayers          | Minimum amount of players to enable votemap                              | 0             |       |      |
 
 
 ## Timeleft
@@ -120,14 +112,10 @@ Players can type `nextmap` to see which map is going to be played next
 
   
 # Adding workshop maps
-- If you are not hosting a collection in order to add workshop maps you need to know it's id and add as following in the maplist.txt file: `<mapname>:<workshop-id>`.
-- If you are already hosting a collection and can change to workshop maps using the command `ds_workshop_changelevel <map-name>` you don't need the id, just put the actual map name and it will work.
+- If you are not hosting a workshop map collection you need to know the maps ID and put in the maplist.txt file in the following format: `<mapname>:<workshop-id>`.
+- If you are already hosting a collection and can change to workshop maps using the command `ds_workshop_changelevel <map-name>` you don't need the ID, just put the actual map name and it will work.
 
 ```
-de_thera:3121217565
+surf_beginner:3070321829
 de_dust2
 ```
-
-# Limitations
- - Plugins is still under development and a lot of functionality is still going to be added in the future.
- - I usually test the new versions in an empty server with bots so it is hard to tell if everything is actually working, feel free to post any issues here or in the discord thread so I can fix them https://discord.com/channels/1160907911501991946/1176224458751627514
