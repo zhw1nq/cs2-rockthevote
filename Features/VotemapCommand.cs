@@ -148,7 +148,7 @@ namespace cs2_rockthevote
                 return;
             }
 
-            if (_mapLister.Maps!.FirstOrDefault(x => x.Name.ToLower() == map) is null)
+            if (!_mapLister.Maps!.Any(x => x.Name.Equals(map, StringComparison.OrdinalIgnoreCase)))
             {
                 player!.PrintToChat(_localizer.LocalizeWithPrefix("general.invalid-map"));
                 return;
