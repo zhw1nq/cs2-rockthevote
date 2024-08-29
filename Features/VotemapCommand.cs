@@ -19,7 +19,7 @@ namespace cs2_rockthevote
         }
 
         [GameEventHandler(HookMode.Pre)]
-        public HookResult EventPlayerDisconnectVotemap(EventPlayerDisconnect @event, GameEventInfo @eventInfo)
+        public HookResult EventPlayerDisconnectVotemap(EventPlayerDisconnect @event)
         {
             var player = @event.Userid;
             if (player != null)
@@ -32,7 +32,7 @@ namespace cs2_rockthevote
 
     public class VotemapCommand : IPluginDependency<Plugin, Config>
     {
-        Dictionary<string, AsyncVoteManager> VotedMaps = new();
+        Dictionary<string, AsyncVoteManager> VotedMaps = [];
         ChatMenu? votemapMenu = null;
         CenterHtmlMenu? votemapMenuHud = null;
         private VotemapConfig _config = new();
