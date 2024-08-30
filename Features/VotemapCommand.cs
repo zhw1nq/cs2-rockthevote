@@ -18,7 +18,7 @@ namespace cs2_rockthevote
         }
 
         [GameEventHandler(HookMode.Pre)]
-        public HookResult EventPlayerDisconnectVotemap(EventPlayerDisconnect @event)
+        public HookResult EventPlayerDisconnectVotemap(EventPlayerDisconnect @event, GameEventInfo @eventInfo)
         {
             var player = @event.Userid;
             if (player != null)
