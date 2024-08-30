@@ -1,7 +1,11 @@
 # CS2 RockTheVote (RTV)
 General purpose map voting plugin.
+Features added since fork:
+- Better !nomiate (partial name matching). Credits: [exd02](https://github.com/abnerfs/cs2-rockthevote/pull/31)
+- "VotePercentage" logic now works properly with 2 players on the server.
 
-![image](https://github.com/abnerfs/cs2-rockthevote/assets/14078661/a603d1b6-ba35-4d5a-b887-1b14058a8050)
+![image](https://github.com/user-attachments/assets/87d34a7c-3333-4272-aba1-2dae6f9d5d3a)
+
   
 ## Requirements
 Latest release of [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp/releases)
