@@ -39,7 +39,12 @@ namespace cs2_rockthevote
                 .Select(mapLine =>
                 {
                     string[] args = mapLine.Split(":");
-                    return new Map(args[0], args.Length == 2 ? args[1] : null);
+
+                    string mapName = args[0];
+
+                    string? mapValue = args.Length == 2 ? args[1] : null;
+
+                    return new Map(mapName, mapValue);
                 })
                 .ToArray();
 
@@ -63,12 +68,12 @@ namespace cs2_rockthevote
 
         public string GetSingleMatchingMapName(string map, CCSPlayerController player, StringLocalizer _localizer)
         {
-            if (Maps!.Select(x => x.Name).FirstOrDefault(x => x.ToLower() == map) is not null)
+            if (Maps!.Select(x => x.Name).FirstOrDefault(x => string.Equals(x, map, StringComparison.OrdinalIgnoreCase)) is not null)
                 return map;
 
             var matchingMaps = Maps!
                 .Select(x => x.Name)
-                .Where(x => x.ToLower().Contains(map.ToLower()))
+                .Where(x => x.IndexOf(map, StringComparison.OrdinalIgnoreCase) >= 0)
                 .ToList();
 
             if (matchingMaps.Count == 0)
@@ -81,7 +86,7 @@ namespace cs2_rockthevote
                 player!.PrintToChat(_localizer.LocalizeWithPrefix("nominate.multiple-maps-containing-name"));
                 return "";
             }
-            
+
             return matchingMaps[0];
         }
     }
