@@ -59,7 +59,7 @@ namespace cs2_rockthevote
         public void OnLoad(Plugin plugin)
         {
             _plugin = plugin;
-            plugin.RegisterListener<OnTick>(VoteDisplayTick);
+            //plugin.RegisterListener<OnTick>(VoteDisplayTick);
         }
 
         public void OnMapStart(string map)
@@ -93,6 +93,7 @@ namespace cs2_rockthevote
             }
         }
 
+        /*
         void PrintCenterTextAll(string text)
         {
             foreach (var player in Utilities.GetPlayers())
@@ -104,6 +105,7 @@ namespace cs2_rockthevote
             }
         }
 
+        
         public void VoteDisplayTick()
         {
             if (timeLeft < 0)
@@ -128,6 +130,7 @@ namespace cs2_rockthevote
                 player.PrintToCenterHtml(stringBuilder.ToString());
             }
         }
+        */
 
         void EndVote()
         {
@@ -150,7 +153,7 @@ namespace cs2_rockthevote
                 Server.PrintToChatAll(_localizer.LocalizeWithPrefix("emv.vote-ended-no-votes", winner.Key));
             }
 
-            PrintCenterTextAll(_localizer.Localize("emv.hud.finished", winner.Key));
+            //PrintCenterTextAll(_localizer.Localize("emv.hud.finished", winner.Key));
             _changeMapManager.ScheduleMapChange(winner.Key, mapEnd: mapEnd);
             if (_config!.ChangeMapImmediatly)
                 _changeMapManager.ChangeNextMap(mapEnd);
