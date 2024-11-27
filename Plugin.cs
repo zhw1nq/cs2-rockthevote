@@ -1,9 +1,10 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using static CounterStrikeSharp.API.Core.Listeners;
+using CounterStrikeSharp.API.Modules.Extensions;
 using cs2_rockthevote.Features;
 using Microsoft.Extensions.DependencyInjection;
-using static CounterStrikeSharp.API.Core.Listeners;
 
 namespace cs2_rockthevote
 {
@@ -21,7 +22,7 @@ namespace cs2_rockthevote
     public partial class Plugin : BasePlugin, IPluginConfig<Config>
     {
         public override string ModuleName => "RockTheVote";
-        public override string ModuleVersion => "2.0.0";
+        public override string ModuleVersion => "2.0.1";
         public override string ModuleAuthor => "abnerfs (Updated by Marchand)";
 
         private readonly DependencyManager<Plugin, Config> _dependencyManager;
