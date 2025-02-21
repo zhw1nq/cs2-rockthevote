@@ -58,42 +58,34 @@ namespace cs2_rockthevote
         public HookResult OnChat(EventPlayerChat @event, GameEventInfo info)
         {
             var player = Utilities.GetPlayerFromUserid(@event.Userid);
-            if (player is not null)
+            if (player is null)
+                return HookResult.Continue;
+
+            var text = @event.Text.Trim().ToLower();
+
+            if (text == "rtv")
             {
-                var text = @event.Text.Trim().ToLower();
-                if (text == "rtv")
-                {
-                    _rtvManager.CommandHandler(player);
-                }
-                else if (text.StartsWith("nominate"))
-                {
-                    var split = text.Split("nominate");
-                    var map = split.Length > 1 ? split[1].Trim() : "";
-                    _nominationManager.CommandHandler(player, map);
-                }
-                else if (text.StartsWith("votemap"))
-                {
-                    var split = text.Split("votemap");
-                    var map = split.Length > 1 ? split[1].Trim() : "";
-                    _votemapManager.CommandHandler(player, map);
-                }
-                else if (text.StartsWith("timeleft"))
-                {
-                    _timeLeft.CommandHandler(player);
-                }
-                else if (text.StartsWith("nextmap"))
-                {
-                    _nextMap.CommandHandler(player);
-                }
-                else if (text.StartsWith("extendroundtime"))
-                {
-                    _extendRoundTime.CommandHandler(player);
-                }
-                else if (text.StartsWith("voteextendroundtime"))
-                {
-                    _voteExtendRoundTime.CommandHandler(player);
-                }
+                _rtvManager.CommandHandler(player);
+                return HookResult.Continue;
             }
+
+            var tokens = text.Split(' ', 2);
+            var command = tokens[0];
+            var arg = tokens.Length > 1 ? tokens[1].Trim() : "";
+
+            var commandActions = new Dictionary<string, Action>
+            {
+                { "nominate", () => _nominationManager.CommandHandler(player, arg) },
+                { "votemap", () => _votemapManager.CommandHandler(player, arg) },
+                { "timeleft", () => _timeLeft.CommandHandler(player) },
+                { "nextmap", () => _nextMap.CommandHandler(player) },
+                { "extendroundtime", () => _extendRoundTime.CommandHandler(player) },
+                { "voteextendroundtime", () => _voteExtendRoundTime.CommandHandler(player) }
+            };
+
+            if (commandActions.TryGetValue(command, out var action))
+                action();
+
             return HookResult.Continue;
         }
 
