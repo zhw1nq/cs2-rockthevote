@@ -1,8 +1,6 @@
-﻿using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Utils;
-using System.Security.Cryptography.X509Certificates;
 
 namespace cs2_rockthevote
 {
@@ -76,9 +74,7 @@ namespace cs2_rockthevote
 
         void SwapScores()
         {
-            var oldCtWins = CTWins;
-            CTWins = TWins;
-            TWins = oldCtWins;
+            (TWins, CTWins) = (CTWins, TWins);
         }
 
         public void RoundWin(CsTeam team)
@@ -92,7 +88,6 @@ namespace cs2_rockthevote
             {
                 TWins++;
             }
-            //Server.PrintToChatAll($"T Wins {TWins}, CTWins {CTWins}");
         }
 
         public void OnMapStart(string map)

@@ -2,17 +2,11 @@
 {
     public record VoteResult(VoteResultEnum Result, int VoteCount, int RequiredVotes);
 
-    public class AsyncVoteManager
+    public class AsyncVoteManager(IVoteConfig config)
     {
         private List<int> votes = new();
-        private readonly IVoteConfig _config;
-        private readonly AsyncVoteValidator _voteValidator;
-
-        public AsyncVoteManager(IVoteConfig config)
-        {
-            _config = config;
-            _voteValidator = new AsyncVoteValidator(config);
-        }
+        private readonly IVoteConfig _config = config;
+        private readonly AsyncVoteValidator _voteValidator = new AsyncVoteValidator(config);
 
         public int VoteCount => votes.Count;
         public int RequiredVotes => _voteValidator.RequiredVotes(ServerManager.ValidPlayerCount());

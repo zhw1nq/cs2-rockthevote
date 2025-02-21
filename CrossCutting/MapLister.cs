@@ -1,6 +1,4 @@
 ﻿using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Entities;
-using cs2_rockthevote.Core;
 
 namespace cs2_rockthevote
 {
@@ -8,9 +6,7 @@ namespace cs2_rockthevote
     {
         public Map[]? Maps { get; private set; } = null;
         public bool MapsLoaded { get; private set; } = false;
-
         public event EventHandler<Map[]>? EventMapsLoaded;
-
         private Plugin? _plugin;
 
         public MapLister()
@@ -31,7 +27,7 @@ namespace cs2_rockthevote
             if (!File.Exists(mapsFile))
                 throw new FileNotFoundException(mapsFile);
 
-            Maps = File.ReadAllText(mapsFile)
+            Maps = [.. File.ReadAllText(mapsFile)
                 .Replace("\r\n", "\n")
                 .Split("\n")
                 .Select(x => x.Trim())
@@ -45,12 +41,10 @@ namespace cs2_rockthevote
                     string? mapValue = args.Length == 2 ? args[1] : null;
 
                     return new Map(mapName, mapValue);
-                })
-                .ToArray();
+                })];
 
             MapsLoaded = true;
-            if (EventMapsLoaded is not null)
-                EventMapsLoaded.Invoke(this, Maps!);
+            EventMapsLoaded?.Invoke(this, Maps!);
         }
 
         public void OnMapStart(string _map)
@@ -73,7 +67,7 @@ namespace cs2_rockthevote
 
             var matchingMaps = Maps!
                 .Select(x => x.Name)
-                .Where(x => x.IndexOf(map, StringComparison.OrdinalIgnoreCase) >= 0)
+                .Where(x => x.Contains(map, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             if (matchingMaps.Count == 0)

@@ -169,12 +169,11 @@ namespace cs2_rockthevote
                 .Select(x => x.Value)
                 .Aggregate((acc, x) => acc.Concat(x).ToList());
 
-            return rawNominations
+            return [.. rawNominations
                 .Distinct()
                 .Select(map => new KeyValuePair<string, int>(map, rawNominations.Count(x => x == map)))
                 .OrderByDescending(x => x.Value)
-                .Select(x => x.Key)
-                .ToList();
+                .Select(x => x.Key)];
         }
 
         public void PlayerDisconnected(CCSPlayerController player)

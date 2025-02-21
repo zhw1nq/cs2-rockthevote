@@ -3,17 +3,11 @@ using CounterStrikeSharp.API.Core;
 
 namespace cs2_rockthevote.Features
 {
-    public class NextMapCommand : IPluginDependency<Plugin, Config>
+    public class NextMapCommand(ChangeMapManager changeMapManager, StringLocalizer stringLocalizer) : IPluginDependency<Plugin, Config>
     {
-        private ChangeMapManager _changeMapManager;
-        private StringLocalizer _stringLocalizer;
+        private ChangeMapManager _changeMapManager = changeMapManager;
+        private StringLocalizer _stringLocalizer = stringLocalizer;
         private NextmapConfig _config = new();
-
-        public NextMapCommand(ChangeMapManager changeMapManager, StringLocalizer stringLocalizer)
-        {
-            _changeMapManager = changeMapManager;
-            _stringLocalizer = stringLocalizer;
-        }
 
         public void CommandHandler(CCSPlayerController? player)
         {

@@ -1,5 +1,4 @@
-﻿using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Timers;
 using cs2_rockthevote.Core;
@@ -7,27 +6,18 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace cs2_rockthevote
 {
-    public class EndOfMapVote : IPluginDependency<Plugin, Config>
+    public class EndOfMapVote(TimeLimitManager timeLimit, MaxRoundsManager maxRounds, PluginState pluginState, GameRules gameRules, EndMapVoteManager voteManager) : IPluginDependency<Plugin, Config>
     {
-        private TimeLimitManager _timeLimit;
-        private MaxRoundsManager _maxRounds;
-        private PluginState _pluginState;
-        private GameRules _gameRules;
-        private EndMapVoteManager _voteManager;
+        private TimeLimitManager _timeLimit = timeLimit;
+        private MaxRoundsManager _maxRounds = maxRounds;
+        private PluginState _pluginState = pluginState;
+        private GameRules _gameRules = gameRules;
+        private EndMapVoteManager _voteManager = voteManager;
         private EndOfMapConfig _config = new();
         private Timer? _timer;
-        private bool deathMatch => _gameMode?.GetPrimitiveValue<int>() == 2 && _gameType?.GetPrimitiveValue<int>() == 1;
+        private bool DeathMatch => _gameMode?.GetPrimitiveValue<int>() == 2 && _gameType?.GetPrimitiveValue<int>() == 1;
         private ConVar? _gameType;
         private ConVar? _gameMode;
-
-        public EndOfMapVote(TimeLimitManager timeLimit, MaxRoundsManager maxRounds, PluginState pluginState, GameRules gameRules, EndMapVoteManager voteManager)
-        {
-            _timeLimit = timeLimit;
-            _maxRounds = maxRounds;
-            _pluginState = pluginState;
-            _gameRules = gameRules;
-            _voteManager = voteManager;
-        }
 
         bool CheckMaxRounds()
         {
@@ -65,8 +55,6 @@ namespace cs2_rockthevote
             _timer = null;
         }
 
-
-
         public void OnLoad(Plugin plugin)
         {
             _gameMode = ConVar.Find("game_mode");
@@ -93,7 +81,7 @@ namespace cs2_rockthevote
 
                 if (!_pluginState.DisableCommands && !_gameRules.WarmupRunning && CheckMaxRounds() && _config.Enabled)
                     StartVote();
-                else if (deathMatch)
+                else if (DeathMatch)
                 {
                     MaybeStartTimer();
                 }

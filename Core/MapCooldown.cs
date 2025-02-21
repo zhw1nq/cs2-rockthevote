@@ -11,11 +11,10 @@ namespace cs2_rockthevote.Core
 
         public MapCooldown(MapLister mapLister)
         {
-            //this is called on map start
             mapLister.EventMapsLoaded += (e, maps) =>
             {
                 var map = Server.MapName;
-                if(map is not null)
+                if (map is not null)
                 {
                     if (InCoolDown == 0)
                     {

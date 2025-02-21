@@ -1,5 +1,6 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Timers;
 using cs2_rockthevote.Core;
@@ -10,20 +11,6 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace cs2_rockthevote
 {
-    //public partial class Plugin
-    //{
-
-    //    [ConsoleCommand("votebot", "Votes to rock the vote")]
-    //    public void VoteBot(CCSPlayerController? player, CommandInfo? command)
-    //    {
-    //        var bot = ServerManager.ValidPlayers().FirstOrDefault(x => x.IsBot);
-    //        if (bot is not null)
-    //        {
-    //            _endmapVoteManager.MapVoted(bot, "de_dust2");
-    //        }
-    //    }
-    //}
-
     public class EndMapVoteManager : IPluginDependency<Plugin, Config>
     {
         const int MAX_OPTIONS_HUD_MENU = 6;
@@ -59,7 +46,7 @@ namespace cs2_rockthevote
         public void OnLoad(Plugin plugin)
         {
             _plugin = plugin;
-            //plugin.RegisterListener<OnTick>(VoteDisplayTick);
+            plugin.RegisterListener<OnTick>(VoteDisplayTick);
         }
 
         public void OnMapStart(string map)
@@ -83,6 +70,11 @@ namespace cs2_rockthevote
             }
         }
 
+        public void PlaySound(CCSPlayerController player)
+        {
+            player.ExecuteClientCommand("play sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c");
+        }
+
         void KillTimer()
         {
             timeLeft = -1;
@@ -92,8 +84,7 @@ namespace cs2_rockthevote
                 Timer = null;
             }
         }
-
-        /*
+        
         void PrintCenterTextAll(string text)
         {
             foreach (var player in Utilities.GetPlayers())
@@ -104,7 +95,6 @@ namespace cs2_rockthevote
                 }
             }
         }
-
         
         public void VoteDisplayTick()
         {
@@ -124,13 +114,11 @@ namespace cs2_rockthevote
                 {
                     stringBuilder.AppendFormat($"<br><font color='yellow'>!{index++}</font> {kv.Key} <font color='green'>({kv.Value})</font>");
                 }
-
-            foreach (CCSPlayerController player in ServerManager.ValidPlayers().Where(x => !_voted.Contains(x.UserId!.Value)))
+            foreach (CCSPlayerController player in ServerManager.ValidPlayers())
             {
                 player.PrintToCenterHtml(stringBuilder.ToString());
             }
         }
-        */
 
         void EndVote()
         {
@@ -170,9 +158,7 @@ namespace cs2_rockthevote
             while (n > 1)
             {
                 int k = rng.Next(n--);
-                T temp = array[n];
-                array[n] = array[k];
-                array[k] = temp;
+                (array[k], array[n]) = (array[n], array[k]);
             }
             return array;
         }
@@ -180,7 +166,6 @@ namespace cs2_rockthevote
         public void StartVote(IEndOfMapConfig config)
         {
             Votes.Clear();
-            _voted.Clear();
 
             _pluginState.EofVoteHappening = true;
             _config = config;
@@ -188,7 +173,8 @@ namespace cs2_rockthevote
             if (config.HudMenu && mapsToShow > MAX_OPTIONS_HUD_MENU)
                 mapsToShow = MAX_OPTIONS_HUD_MENU;
 
-            var mapsScrambled = Shuffle(new Random(), _mapLister.Maps!.Select(x => x.Name).Where(x => x != Server.MapName && !_mapCooldown.IsMapInCooldown(x)).ToList());
+            var mapsScrambled = Shuffle(new Random(), _mapLister.Maps!.Select(x => x.Name)
+                .Where(x => x != Server.MapName && !_mapCooldown.IsMapInCooldown(x)).ToList());
             mapsEllected = _nominationManager.NominationWinners().Concat(mapsScrambled).Distinct().ToList();
 
             _canVote = ServerManager.ValidPlayerCount();
@@ -204,15 +190,19 @@ namespace cs2_rockthevote
             }
 
             foreach (var player in ServerManager.ValidPlayers())
+            {
                 MenuManager.OpenChatMenu(player, menu);
+                if (_config?.SoundsEnabled == true)
+        {
+            PlaySound(player);
+        }
+            }
 
-            timeLeft = _config.VoteDuration;
+            timeLeft = _config!.VoteDuration;
             Timer = _plugin!.AddTimer(1.0F, () =>
             {
                 if (timeLeft <= 0)
-                {
                     EndVote();
-                }
                 else
                     timeLeft--;
             }, TimerFlags.REPEAT);

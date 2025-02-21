@@ -3,14 +3,11 @@ using CounterStrikeSharp.API.Modules.Cvars;
 
 namespace cs2_rockthevote.Core
 {
-    public class TimeLimitManager : IPluginDependency<Plugin, Config>
+    public class TimeLimitManager(GameRules gameRules) : IPluginDependency<Plugin, Config>
     {
-        private GameRules _gameRules;
-
+        private GameRules _gameRules = gameRules;
         private ConVar? _timeLimit;
-
         private decimal TimeLimitValue => (decimal)(_timeLimit?.GetPrimitiveValue<float>() ?? 0F) * 60M;
-
         public bool UnlimitedTime => TimeLimitValue <= 0;
 
         public decimal TimePlayed
@@ -33,11 +30,8 @@ namespace cs2_rockthevote.Core
 
                 return TimeLimitValue - TimePlayed;
             }
-        }
 
-        public TimeLimitManager(GameRules gameRules)
-        {
-            _gameRules = gameRules;
+            set => _timeLimit!.SetValue((float)value);
         }
 
         void LoadCvar()

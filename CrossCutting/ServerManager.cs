@@ -7,12 +7,10 @@ namespace cs2_rockthevote
     {
         public static CCSPlayerController[] ValidPlayers(bool considerBots = false)
         {
-            //considerBots = true;
-            return Utilities.GetPlayers()
+            return [.. Utilities.GetPlayers()
                 .Where(x => x.ReallyValid(considerBots))
                 .Where(x => !x.IsHLTV)
-                .Where(x => considerBots || !x.IsBot)
-                .ToArray();
+                .Where(x => considerBots || !x.IsBot)];
         }
 
         public static int ValidPlayerCount(bool considerBots = false)

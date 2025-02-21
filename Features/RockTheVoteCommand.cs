@@ -1,5 +1,4 @@
-﻿
-using CounterStrikeSharp.API;
+﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
@@ -23,23 +22,15 @@ namespace cs2_rockthevote
         }
     }
 
-    public class RockTheVoteCommand : IPluginDependency<Plugin, Config>
+    public class RockTheVoteCommand(GameRules gameRules, EndMapVoteManager endmapVoteManager, StringLocalizer localizer, PluginState pluginState) : IPluginDependency<Plugin, Config>
     {
-        private readonly StringLocalizer _localizer;
-        private readonly GameRules _gameRules;
-        private EndMapVoteManager _endmapVoteManager;
-        private PluginState _pluginState;
+        private readonly StringLocalizer _localizer = localizer;
+        private readonly GameRules _gameRules = gameRules;
+        private EndMapVoteManager _endmapVoteManager = endmapVoteManager;
+        private PluginState _pluginState = pluginState;
         private RtvConfig _config = new();
         private AsyncVoteManager? _voteManager;
         public bool VotesAlreadyReached => _voteManager!.VotesAlreadyReached;
-
-        public RockTheVoteCommand(GameRules gameRules, EndMapVoteManager endmapVoteManager, StringLocalizer localizer, PluginState pluginState)
-        {
-            _localizer = localizer;
-            _gameRules = gameRules;
-            _endmapVoteManager = endmapVoteManager;
-            _pluginState = pluginState;
-        }
 
         public void OnMapStart(string map)
         {

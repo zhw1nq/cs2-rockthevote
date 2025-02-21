@@ -1,6 +1,4 @@
-﻿using CounterStrikeSharp.API.Core;
-
-namespace cs2_rockthevote
+﻿namespace cs2_rockthevote
 {
     public interface IPluginDependency<TPlugin, TConfig>
     {
