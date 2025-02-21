@@ -25,6 +25,7 @@ namespace cs2_rockthevote
         public bool HudMenu { get; set; }
         public bool HideHudAfterVote { get; set; }
         public bool SoundsEnabled { get; set; }
+        public int RoundTimeExtension { get; set; }
     }
 
     public class EndOfMapConfig : IEndOfMapConfig
@@ -36,6 +37,7 @@ namespace cs2_rockthevote
         public int VoteDuration { get; set; } = 30;
         public bool HideHudAfterVote { get; set; } = false;
         public bool SoundsEnabled { get; set; } = true;
+        public int RoundTimeExtension { get; set; } = 15;
         public int TriggerSecondsBeforeEnd { get; set; } = 120;
         public int TriggerRoundsBeforEnd { get; set; } = 2;
         public float DelayToChangeInTheEnd { get; set; } = 6F;
@@ -51,6 +53,7 @@ namespace cs2_rockthevote
         public bool ChangeMapImmediatly { get; set; } = true;
         public bool HideHudAfterVote { get; set; } = false;
         public bool SoundsEnabled { get; set; } = true;
+        public int RoundTimeExtension { get; set; } = 15;
         public int MapsToShow { get; set; } = 6;
         public int VoteDuration { get; set; } = 30;
         public int VotePercentage { get; set; } = 60;
