@@ -13,8 +13,9 @@ namespace cs2_rockthevote
 {
     public class EndMapVoteManager : IPluginDependency<Plugin, Config>
     {
+        private readonly ExtendRoundTimeManager _extendRoundTimeManager;
         const int MAX_OPTIONS_HUD_MENU = 6;
-        public EndMapVoteManager(MapLister mapLister, ChangeMapManager changeMapManager, NominationCommand nominationManager, StringLocalizer localizer, PluginState pluginState, MapCooldown mapCooldown)
+        public EndMapVoteManager(MapLister mapLister, ChangeMapManager changeMapManager, NominationCommand nominationManager, StringLocalizer localizer, PluginState pluginState, MapCooldown mapCooldown,ExtendRoundTimeManager extendRoundTimeManager)
         {
             _mapLister = mapLister;
             _changeMapManager = changeMapManager;
@@ -22,6 +23,7 @@ namespace cs2_rockthevote
             _localizer = localizer;
             _pluginState = pluginState;
             _mapCooldown = mapCooldown;
+            _extendRoundTimeManager = extendRoundTimeManager;
         }
 
         private readonly MapLister _mapLister;
@@ -132,27 +134,34 @@ namespace cs2_rockthevote
             decimal totalVotes = Votes.Select(x => x.Value).Sum();
             decimal percent = totalVotes > 0 ? winner.Value / totalVotes * 100M : 0;
 
-            if (maxVotes > 0)
-            {
-                Server.PrintToChatAll(_localizer.LocalizeWithPrefix("emv.vote-ended", winner.Key, percent, totalVotes));
-            }
-            else
-            {
-                Server.PrintToChatAll(_localizer.LocalizeWithPrefix("emv.vote-ended-no-votes", winner.Key));
-            }
+            Server.PrintToChatAll(_localizer.LocalizeWithPrefix("emv.vote-ended", winner.Key, percent, totalVotes));
 
-            //PrintCenterTextAll(_localizer.Localize("emv.hud.finished", winner.Key));
-            _changeMapManager.ScheduleMapChange(winner.Key, mapEnd: mapEnd);
-            if (_config!.ChangeMapImmediatly)
-                _changeMapManager.ChangeNextMap(mapEnd);
+            if (winner.Key == "Extend Current Map")
+            {
+                bool success = _extendRoundTimeManager.ExtendRoundTime(_config!.RoundTimeExtension);
+                if (success)
+                {
+                    Server.PrintToChatAll(_localizer.LocalizeWithPrefix("extendtime.vote-ended.passed", _config.RoundTimeExtension, percent, totalVotes));
+                }
+                else
+                {
+                    Server.PrintToChatAll(_localizer.LocalizeWithPrefix("extendtime.vote-ended.failed", percent, totalVotes));
+                }
+            }
             else
             {
-                if (!mapEnd)
-                    Server.PrintToChatAll(_localizer.LocalizeWithPrefix("general.changing-map-next-round", winner.Key));
+                _changeMapManager.ScheduleMapChange(winner.Key, mapEnd: mapEnd);
+                if (_config!.ChangeMapImmediatly)
+                    _changeMapManager.ChangeNextMap(mapEnd);
+                else
+                {
+                    if (!mapEnd)
+                        Server.PrintToChatAll(_localizer.LocalizeWithPrefix("general.changing-map-next-round", winner.Key));
+                }
             }
         }
 
-        IList<T> Shuffle<T>(Random rng, IList<T> array)
+        static IList<T> Shuffle<T>(Random rng, IList<T> array)
         {
             int n = array.Count;
             while (n > 1)
@@ -166,7 +175,6 @@ namespace cs2_rockthevote
         public void StartVote(IEndOfMapConfig config)
         {
             Votes.Clear();
-
             _pluginState.EofVoteHappening = true;
             _config = config;
             int mapsToShow = _config!.MapsToShow == 0 ? MAX_OPTIONS_HUD_MENU : _config!.MapsToShow;
@@ -189,13 +197,21 @@ namespace cs2_rockthevote
                 });
             }
 
+            string extendOption = "Extend Current Map";
+            Votes[extendOption] = 0;
+            menu.AddMenuOption(extendOption, (player, option) =>
+            {
+                MapVoted(player, extendOption);
+                MenuManager.CloseActiveMenu(player);
+            });
+
             foreach (var player in ServerManager.ValidPlayers())
             {
                 MenuManager.OpenChatMenu(player, menu);
                 if (_config?.SoundsEnabled == true)
-        {
-            PlaySound(player);
-        }
+                {
+                    PlaySound(player);
+                }
             }
 
             timeLeft = _config!.VoteDuration;

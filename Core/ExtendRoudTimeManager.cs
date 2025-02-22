@@ -179,6 +179,10 @@ namespace cs2_rockthevote
                     timeLeft--;
             }, TimerFlags.REPEAT);
         }
+        public bool ExtendRoundTime(int minutesToExtendBy)
+        {
+            return ExtendRoundTime(minutesToExtendBy, _timeLimitManager, _gameRules);
+        }
 
         public bool ExtendRoundTime(int minutesToExtendBy, TimeLimitManager timeLimitManager, GameRules gameRules)
         {
