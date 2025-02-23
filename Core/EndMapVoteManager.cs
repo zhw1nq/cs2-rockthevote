@@ -1,6 +1,5 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Timers;
 using cs2_rockthevote.Core;
@@ -48,7 +47,10 @@ namespace cs2_rockthevote
         public void OnLoad(Plugin plugin)
         {
             _plugin = plugin;
-            plugin.RegisterListener<OnTick>(VoteDisplayTick);
+            if (_config?.HudMenu == true)
+            {
+                plugin.RegisterListener<OnTick>(VoteDisplayTick);
+            }
         }
 
         public void OnMapStart(string map)
@@ -74,7 +76,8 @@ namespace cs2_rockthevote
 
         public void PlaySound(CCSPlayerController player)
         {
-            player.ExecuteClientCommand("play sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c");
+            string soundPath = _config != null ? _config.SoundPath : "sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c";
+            player.ExecuteClientCommand($"play {soundPath}");
         }
 
         void KillTimer()
@@ -147,6 +150,13 @@ namespace cs2_rockthevote
                 {
                     Server.PrintToChatAll(_localizer.LocalizeWithPrefix("extendtime.vote-ended.failed", percent, totalVotes));
                 }
+
+                _plugin?.AddTimer(_config.RoundTimeExtension * 60, () =>
+                {
+                    _pluginState.EofVoteHappening = false;
+                    _changeMapManager.OnMapStart(Server.MapName);
+                    StartVote(_config);
+                }, TimerFlags.STOP_ON_MAPCHANGE);
             }
             else
             {
@@ -160,6 +170,7 @@ namespace cs2_rockthevote
                 }
             }
         }
+
 
         static IList<T> Shuffle<T>(Random rng, IList<T> array)
         {
@@ -183,7 +194,7 @@ namespace cs2_rockthevote
 
             var mapsScrambled = Shuffle(new Random(), _mapLister.Maps!.Select(x => x.Name)
                 .Where(x => x != Server.MapName && !_mapCooldown.IsMapInCooldown(x)).ToList());
-            mapsEllected = _nominationManager.NominationWinners().Concat(mapsScrambled).Distinct().ToList();
+            mapsEllected = [.. _nominationManager.NominationWinners().Concat(mapsScrambled).Distinct()];
 
             _canVote = ServerManager.ValidPlayerCount();
             ChatMenu menu = new(_localizer.Localize("emv.hud.menu-title"));
@@ -197,18 +208,21 @@ namespace cs2_rockthevote
                 });
             }
 
-            string extendOption = "Extend Current Map";
-            Votes[extendOption] = 0;
-            menu.AddMenuOption(extendOption, (player, option) =>
+            if (_config.IncludeExtendCurrentMap)
             {
-                MapVoted(player, extendOption);
-                MenuManager.CloseActiveMenu(player);
-            });
+                string extendOption = "Extend Current Map";
+                Votes[extendOption] = 0;
+                menu.AddMenuOption(extendOption, (player, option) =>
+                {
+                    MapVoted(player, extendOption);
+                    MenuManager.CloseActiveMenu(player);
+                });
+            }
 
             foreach (var player in ServerManager.ValidPlayers())
             {
                 MenuManager.OpenChatMenu(player, menu);
-                if (_config?.SoundsEnabled == true)
+                if (_config?.SoundEnabled == true)
                 {
                     PlaySound(player);
                 }
@@ -223,5 +237,6 @@ namespace cs2_rockthevote
                     timeLeft--;
             }, TimerFlags.REPEAT);
         }
+
     }
 }
