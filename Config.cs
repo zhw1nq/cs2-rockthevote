@@ -24,7 +24,9 @@ namespace cs2_rockthevote
         public int VoteDuration { get; set; }
         public bool HudMenu { get; set; }
         public bool HideHudAfterVote { get; set; }
-        public bool SoundsEnabled { get; set; }
+        public bool SoundEnabled { get; set; }
+        public string SoundPath { get; set; }
+        public bool IncludeExtendCurrentMap { get; set; }
         public int RoundTimeExtension { get; set; }
     }
 
@@ -36,11 +38,14 @@ namespace cs2_rockthevote
         public bool ChangeMapImmediatly { get; set; } = false;
         public int VoteDuration { get; set; } = 30;
         public bool HideHudAfterVote { get; set; } = false;
-        public bool SoundsEnabled { get; set; } = true;
-        public int RoundTimeExtension { get; set; } = 15;
+        public bool SoundEnabled { get; set; } = true;
+        public string SoundPath { get; set; } = "sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c";
         public int TriggerSecondsBeforeEnd { get; set; } = 120;
         public int TriggerRoundsBeforEnd { get; set; } = 2;
         public float DelayToChangeInTheEnd { get; set; } = 6F;
+        public bool IncludeExtendCurrentMap { get; set; } = true;
+        public int RoundTimeExtension { get; set; } = 15;
+
     }
 
     public class RtvConfig : ICommandConfig, IVoteConfig, IEndOfMapConfig
@@ -52,12 +57,14 @@ namespace cs2_rockthevote
         public int MinRounds { get; set; } = 0;
         public bool ChangeMapImmediatly { get; set; } = true;
         public bool HideHudAfterVote { get; set; } = false;
-        public bool SoundsEnabled { get; set; } = true;
-        public int RoundTimeExtension { get; set; } = 15;
+        public bool SoundEnabled { get; set; } = true;
+        public string SoundPath { get; set; } = "sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c";
         public int MapsToShow { get; set; } = 6;
         public int VoteDuration { get; set; } = 30;
         public int VotePercentage { get; set; } = 60;
         public bool HudMenu { get; set; } = true;
+        public bool IncludeExtendCurrentMap { get; set; } = true;
+        public int RoundTimeExtension { get; set; } = 15;
     }
 
     public class VotemapConfig : ICommandConfig, IVoteConfig
@@ -84,7 +91,7 @@ namespace cs2_rockthevote
 
     public class Config : IBasePluginConfig
     {
-        public int Version { get; set; } = 9;
+        public int Version { get; set; } = 10;
         public RtvConfig Rtv { get; set; } = new();
         public VotemapConfig Votemap { get; set; } = new();
         public EndOfMapConfig EndOfMapVote { get; set; } = new();
