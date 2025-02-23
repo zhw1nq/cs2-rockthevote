@@ -139,7 +139,8 @@ namespace cs2_rockthevote
 
             Server.PrintToChatAll(_localizer.LocalizeWithPrefix("emv.vote-ended", winner.Key, percent, totalVotes));
 
-            if (winner.Key == "Extend Current Map")
+            string extendOption = _localizer.Localize("extendtime.list-name");
+            if (winner.Key == extendOption)
             {
                 bool success = _extendRoundTimeManager.ExtendRoundTime(_config!.RoundTimeExtension);
                 if (success)
@@ -170,7 +171,6 @@ namespace cs2_rockthevote
                 }
             }
         }
-
 
         static IList<T> Shuffle<T>(Random rng, IList<T> array)
         {
@@ -210,7 +210,7 @@ namespace cs2_rockthevote
 
             if (_config.IncludeExtendCurrentMap)
             {
-                string extendOption = "Extend Current Map";
+                string extendOption = _localizer.Localize("extendtime.list-name");
                 Votes[extendOption] = 0;
                 menu.AddMenuOption(extendOption, (player, option) =>
                 {

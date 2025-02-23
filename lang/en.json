@@ -18,6 +18,7 @@
   "extendtime.vote-ended.passed": "Vote ended, the map will be extended for {green}{0}{default} minutes ({1:N2}% of {2} vote(s))",
   "extendtime.vote-ended-no-votes": "No votes, will not be extended",
   "extendtime.you-voted": "You voted {0}",
+  "extendtime.list-name": "Extend Current Map",
   "votemap.player-voted": "Player {green}{0}{default} voted in {green}{1}{default}",
   "votemap.already-voted": "You already vote in {green}{0}{default}",
   "votemap.in-the-map": "in the map {0}",
