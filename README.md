@@ -5,6 +5,9 @@ Features added since fork:
 - "VotePercentage" logic now works properly with 2 players on the server.
 - Ability to add map info after name w/ capitalization.
 - Removed any HUD alerts (avoid issues with timer plugins)
+- Add optional Extend Map feature for rtv/end of map votes
+- Add optional sound when map vote starts (configurable sound)
+- Add vote extend
 
 ![image](https://github.com/user-attachments/assets/87d34a7c-3333-4272-aba1-2dae6f9d5d3a)
 ![image](https://github.com/user-attachments/assets/4f536075-2b9d-4be1-9572-7c728d79ef4c)
