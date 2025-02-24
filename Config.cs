@@ -28,6 +28,7 @@ namespace cs2_rockthevote
         public string SoundPath { get; set; }
         public bool IncludeExtendCurrentMap { get; set; }
         public int RoundTimeExtension { get; set; }
+        int MaxMapExtensions { get; set; }
     }
 
     public class EndOfMapConfig : IEndOfMapConfig
@@ -45,6 +46,7 @@ namespace cs2_rockthevote
         public float DelayToChangeInTheEnd { get; set; } = 6F;
         public bool IncludeExtendCurrentMap { get; set; } = true;
         public int RoundTimeExtension { get; set; } = 15;
+        public int MaxMapExtensions { get; set; } = 2;
 
     }
 
@@ -65,6 +67,7 @@ namespace cs2_rockthevote
         public bool HudMenu { get; set; } = true;
         public bool IncludeExtendCurrentMap { get; set; } = true;
         public int RoundTimeExtension { get; set; } = 15;
+        public int MaxMapExtensions { get; set; } = 2;
     }
 
     public class VotemapConfig : ICommandConfig, IVoteConfig

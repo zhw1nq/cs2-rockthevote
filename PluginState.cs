@@ -5,6 +5,7 @@
         public bool MapChangeScheduled { get; set; }
         public bool EofVoteHappening { get; set; }
         public bool ExtendTimeVoteHappening { get; set; }
+        public int MapExtensionCount { get; set; } = 0;
 
         public PluginState()
         {
@@ -18,6 +19,7 @@
             MapChangeScheduled = false;
             EofVoteHappening = false;
             ExtendTimeVoteHappening = false;
+            MapExtensionCount = 0;
         }
     }
 }
