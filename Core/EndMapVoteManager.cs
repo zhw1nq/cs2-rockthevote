@@ -188,23 +188,29 @@ namespace cs2_rockthevote
             }
             return array;
         }
-
         public void StartVote(IEndOfMapConfig config)
         {
             Votes.Clear();
             _pluginState.EofVoteHappening = true;
             _config = config;
+            
             int mapsToShow = _config!.MapsToShow == 0 ? MAX_OPTIONS_HUD_MENU : _config!.MapsToShow;
-            if (config.HudMenu && mapsToShow > MAX_OPTIONS_HUD_MENU)
+            
+            if (_config.HudMenu && mapsToShow > MAX_OPTIONS_HUD_MENU)
                 mapsToShow = MAX_OPTIONS_HUD_MENU;
-
+            
+            bool canShowExtendOption = _config.IncludeExtendCurrentMap && _pluginState.MapExtensionCount < _config.MaxMapExtensions;
+            int mapOptionsCount = canShowExtendOption ? mapsToShow - 1 : mapsToShow;
+            
             var mapsScrambled = Shuffle(new Random(), _mapLister.Maps!.Select(x => x.Name)
                 .Where(x => x != Server.MapName && !_mapCooldown.IsMapInCooldown(x)).ToList());
+            
             mapsEllected = _nominationManager.NominationWinners().Concat(mapsScrambled).Distinct().ToList();
-
+            
             _canVote = ServerManager.ValidPlayerCount();
             ChatMenu menu = new(_localizer.Localize("emv.hud.menu-title"));
-            foreach (var map in mapsEllected.Take(mapsToShow))
+            
+            foreach (var map in mapsEllected.Take(mapOptionsCount))
             {
                 Votes[map] = 0;
                 menu.AddMenuOption(map, (player, option) =>
@@ -213,8 +219,8 @@ namespace cs2_rockthevote
                     MenuManager.CloseActiveMenu(player);
                 });
             }
-
-            if (_config.IncludeExtendCurrentMap && _pluginState.MapExtensionCount < _config.MaxMapExtensions)
+            
+            if (canShowExtendOption)
             {
                 string extendOption = _localizer.Localize("extendtime.list-name");
                 Votes[extendOption] = 0;
@@ -224,7 +230,7 @@ namespace cs2_rockthevote
                     MenuManager.CloseActiveMenu(player);
                 });
             }
-
+            
             foreach (var player in ServerManager.ValidPlayers())
             {
                 MenuManager.OpenChatMenu(player, menu);
@@ -233,7 +239,7 @@ namespace cs2_rockthevote
                     PlaySound(player);
                 }
             }
-
+            
             timeLeft = _config!.VoteDuration;
             Timer = _plugin!.AddTimer(1.0F, () =>
             {
