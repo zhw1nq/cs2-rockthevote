@@ -1,5 +1,6 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Timers;
 using cs2_rockthevote.Core;
@@ -177,12 +178,30 @@ namespace cs2_rockthevote
             else
             {
                 _changeMapManager.ScheduleMapChange(winner.Key, mapEnd: mapEnd);
+                
                 if (_config!.ChangeMapImmediatly)
+                {
                     _changeMapManager.ChangeNextMap(mapEnd);
+                }
                 else
                 {
                     if (!mapEnd)
                         Server.PrintToChatAll(_localizer.LocalizeWithPrefix("general.changing-map-next-round", winner.Key));
+                    
+                    var ignoreRoundWinConditions = ConVar.Find("mp_ignore_round_win_conditions");
+                    if (ignoreRoundWinConditions != null && ignoreRoundWinConditions.GetPrimitiveValue<bool>())
+                    {
+                        Timer? checkTimer = null;
+                        checkTimer = _plugin!.AddTimer(1.0F, () =>
+                        {
+                                int remainingSeconds = (int)(_gameRules.RoundTime - (Server.CurrentTime - _gameRules.GameStartTime));
+                                if (remainingSeconds <= 1)
+                                {
+                                    _changeMapManager.ChangeNextMap(mapEnd);
+                                    checkTimer?.Kill();
+                                }
+                        }, TimerFlags.REPEAT);
+                    }
                 }
             }
         }
