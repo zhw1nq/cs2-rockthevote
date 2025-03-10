@@ -129,27 +129,33 @@ namespace cs2_rockthevote
         {
             bool mapEnd = _config is EndOfMapConfig;
             KillTimer();
+            
             decimal maxVotes = Votes.Select(x => x.Value).Max();
             IEnumerable<KeyValuePair<string, int>> potentialWinners = Votes.Where(x => x.Value == maxVotes);
             Random rnd = new();
             KeyValuePair<string, int> winner = potentialWinners.ElementAt(rnd.Next(0, potentialWinners.Count()));
-
+            
             decimal totalVotes = Votes.Select(x => x.Value).Sum();
             decimal percent = totalVotes > 0 ? winner.Value / totalVotes * 100M : 0;
-
+            
             Server.PrintToChatAll(_localizer.LocalizeWithPrefix("emv.vote-ended", winner.Key, percent, totalVotes));
 
             string extendOption = _localizer.Localize("extendtime.list-name");
+            
             if (winner.Key == extendOption)
             {
-                bool success = _extendRoundTimeManager.ExtendRoundTime(_config!.RoundTimeExtension);
-                if (success)
+                if (_pluginState.MapExtensionCount < _config!.MaxMapExtensions)
                 {
-                    Server.PrintToChatAll(_localizer.LocalizeWithPrefix("extendtime.vote-ended.passed", _config.RoundTimeExtension, percent, totalVotes));
-                }
-                else
-                {
-                    Server.PrintToChatAll(_localizer.LocalizeWithPrefix("extendtime.vote-ended.failed", percent, totalVotes));
+                    bool success = _extendRoundTimeManager.ExtendRoundTime(_config.RoundTimeExtension);
+                    if (success)
+                    {
+                        Server.PrintToChatAll(_localizer.LocalizeWithPrefix("extendtime.vote-ended.passed", _config.RoundTimeExtension, percent, totalVotes));
+                        _pluginState.MapExtensionCount++;
+                    }
+                    else
+                    {
+                        Server.PrintToChatAll(_localizer.LocalizeWithPrefix("extendtime.vote-ended.failed", percent, totalVotes));
+                    }
                 }
 
                 _plugin?.AddTimer(_config.RoundTimeExtension * 60, () =>
@@ -194,7 +200,7 @@ namespace cs2_rockthevote
 
             var mapsScrambled = Shuffle(new Random(), _mapLister.Maps!.Select(x => x.Name)
                 .Where(x => x != Server.MapName && !_mapCooldown.IsMapInCooldown(x)).ToList());
-            mapsEllected = [.. _nominationManager.NominationWinners().Concat(mapsScrambled).Distinct()];
+            mapsEllected = _nominationManager.NominationWinners().Concat(mapsScrambled).Distinct().ToList();
 
             _canVote = ServerManager.ValidPlayerCount();
             ChatMenu menu = new(_localizer.Localize("emv.hud.menu-title"));
@@ -208,7 +214,7 @@ namespace cs2_rockthevote
                 });
             }
 
-            if (_config.IncludeExtendCurrentMap)
+            if (_config.IncludeExtendCurrentMap && _pluginState.MapExtensionCount < _config.MaxMapExtensions)
             {
                 string extendOption = _localizer.Localize("extendtime.list-name");
                 Votes[extendOption] = 0;
@@ -235,8 +241,7 @@ namespace cs2_rockthevote
                     EndVote();
                 else
                     timeLeft--;
-            }, TimerFlags.REPEAT);
+            }, TimerFlags.STOP_ON_MAPCHANGE);
         }
-
     }
 }
