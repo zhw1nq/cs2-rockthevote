@@ -188,22 +188,24 @@ namespace cs2_rockthevote
         {
             try
             {
-                // RoundTime is in seconds, so multiply by 60 to convert to minutes
-                gameRules.RoundTime += (minutesToExtendBy * 60);
-
+                int timePlayed = (int)(Server.CurrentTime - gameRules.GameStartTime);
+                
+                gameRules.RoundTime += minutesToExtendBy * 60;
+                
                 var gameRulesProxy = Utilities.FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules").First();
                 Utilities.SetStateChanged(gameRulesProxy, "CCSGameRulesProxy", "m_pGameRules");
-
-                _timeLimitManager.TimeRemaining = _gameRules.RoundTime / 60;
-
+                
+                int newRemainingSeconds = gameRules.RoundTime - timePlayed;
+                
+                _timeLimitManager.TimeRemaining = newRemainingSeconds / 60M;
                 _pluginState.MapChangeScheduled = false;
                 _pluginState.EofVoteHappening = false;
-
+                
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("Something went wrong when updating the round time {message}", ex.Message);
+                _logger.LogWarning("Something went wrong when updating the round time: {message}", ex.Message);
                 return false;
             }
         }

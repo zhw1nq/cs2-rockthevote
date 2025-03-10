@@ -14,7 +14,10 @@ namespace cs2_rockthevote
     {
         private readonly ExtendRoundTimeManager _extendRoundTimeManager;
         const int MAX_OPTIONS_HUD_MENU = 6;
-        public EndMapVoteManager(MapLister mapLister, ChangeMapManager changeMapManager, NominationCommand nominationManager, StringLocalizer localizer, PluginState pluginState, MapCooldown mapCooldown,ExtendRoundTimeManager extendRoundTimeManager)
+        private readonly TimeLimitManager _timeLimitManager;
+        private readonly GameRules _gameRules;
+        
+        public EndMapVoteManager(MapLister mapLister, ChangeMapManager changeMapManager, NominationCommand nominationManager, StringLocalizer localizer, PluginState pluginState, MapCooldown mapCooldown,ExtendRoundTimeManager extendRoundTimeManager, TimeLimitManager timeLimitManager, GameRules gameRules)
         {
             _mapLister = mapLister;
             _changeMapManager = changeMapManager;
@@ -23,6 +26,8 @@ namespace cs2_rockthevote
             _pluginState = pluginState;
             _mapCooldown = mapCooldown;
             _extendRoundTimeManager = extendRoundTimeManager;
+            _timeLimitManager = timeLimitManager;
+            _gameRules = gameRules;
         }
 
         private readonly MapLister _mapLister;
@@ -157,8 +162,12 @@ namespace cs2_rockthevote
                         Server.PrintToChatAll(_localizer.LocalizeWithPrefix("extendtime.vote-ended.failed", percent, totalVotes));
                     }
                 }
+                
+                int newRemainingSeconds = (int)(_gameRules.RoundTime - (Server.CurrentTime - _gameRules.GameStartTime));
+                int triggerSeconds = ((EndOfMapConfig)_config).TriggerSecondsBeforeEnd;
+                int delay = Math.Max(newRemainingSeconds - triggerSeconds, 0);
 
-                _plugin?.AddTimer(_config.RoundTimeExtension * 60, () =>
+                _plugin?.AddTimer(delay, () =>
                 {
                     _pluginState.EofVoteHappening = false;
                     _changeMapManager.OnMapStart(Server.MapName);
