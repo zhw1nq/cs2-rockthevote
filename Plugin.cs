@@ -4,6 +4,10 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using static CounterStrikeSharp.API.Core.Listeners;
 using cs2_rockthevote.Features;
 using Microsoft.Extensions.DependencyInjection;
+using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Utils;
+using CounterStrikeSharp.API.Modules.Admin;
+using CounterStrikeSharp.API.Modules.Extensions;
 
 namespace cs2_rockthevote
 {
@@ -100,6 +104,30 @@ namespace cs2_rockthevote
                 throw new Exception("[RockTheVote] Your config file is too old, please delete it from addons/counterstrikesharp/configs/plugins/RockTheVote and let the plugin recreate it on load.");
 
             _dependencyManager.OnConfigParsed(config);
+        }
+        
+        [ConsoleCommand("css_reloadrtv", "Reloads the RTV config.")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+        public void ReloadCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            string permission = "@css/root";
+
+            if (player != null && !AdminManager.PlayerHasPermissions(player, permission))
+            {
+                command?.ReplyToCommand($"[RTV] {ChatColors.Red}You do not have the correct permission to execute this command.");
+                return;
+            }
+            
+            try
+            {
+                Config.Reload();
+                command.ReplyToCommand($"[RTV] {ChatColors.Lime}Configuration reloaded successfully!");
+            }
+
+            catch (Exception ex)
+            {
+                command.ReplyToCommand($"Failed to reload configuration: {ex.Message}");
+            }
         }
     }
 }

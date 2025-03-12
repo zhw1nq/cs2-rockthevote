@@ -1,5 +1,4 @@
 ﻿using CounterStrikeSharp.API.Core;
-using System.Text.Json.Serialization;
 
 namespace cs2_rockthevote
 {
@@ -92,7 +91,7 @@ namespace cs2_rockthevote
     }
 
 
-    public class Config : IBasePluginConfig
+    public class Config : BasePluginConfig, IBasePluginConfig
     {
         public int Version { get; set; } = 10;
         public RtvConfig Rtv { get; set; } = new();
