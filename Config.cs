@@ -22,6 +22,8 @@ namespace cs2_rockthevote
         public bool ChangeMapImmediatly { get; set; }
         public int VoteDuration { get; set; }
         public bool HudMenu { get; set; }
+        public bool ScreenMenu { get; set; }
+        public bool ChatMenu { get; set; }
         public bool HideHudAfterVote { get; set; }
         public bool SoundEnabled { get; set; }
         public string SoundPath { get; set; }
@@ -34,10 +36,12 @@ namespace cs2_rockthevote
     {
         public bool Enabled { get; set; } = true;
         public int MapsToShow { get; set; } = 6;
-        public bool HudMenu { get; set; } = true;
+        public bool HudMenu { get; set; } = false;
+        public bool ScreenMenu { get; set; } = true;
+        public bool ChatMenu { get; set; } = false;
         public bool ChangeMapImmediatly { get; set; } = false;
         public int VoteDuration { get; set; } = 30;
-        public bool HideHudAfterVote { get; set; } = false;
+        public bool HideHudAfterVote { get; set; } = true;
         public bool SoundEnabled { get; set; } = true;
         public string SoundPath { get; set; } = "sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c";
         public int TriggerSecondsBeforeEnd { get; set; } = 120;
@@ -63,7 +67,9 @@ namespace cs2_rockthevote
         public int MapsToShow { get; set; } = 6;
         public int VoteDuration { get; set; } = 30;
         public int VotePercentage { get; set; } = 60;
-        public bool HudMenu { get; set; } = true;
+        public bool HudMenu { get; set; } = false;
+        public bool ScreenMenu { get; set; } = true;
+        public bool ChatMenu { get; set; } = false;
         public bool IncludeExtendCurrentMap { get; set; } = true;
         public int RoundTimeExtension { get; set; } = 15;
         public int MaxMapExtensions { get; set; } = 2;
@@ -78,6 +84,8 @@ namespace cs2_rockthevote
         public int MinPlayers { get; set; } = 0;
         public int MinRounds { get; set; } = 0;
         public bool HudMenu { get; set; } = false;
+        public bool ScreenMenu { get; set; } = true;
+        public bool ChatMenu { get; set; } = false;
     }
 
     public class TimeleftConfig
@@ -93,7 +101,7 @@ namespace cs2_rockthevote
 
     public class Config : BasePluginConfig, IBasePluginConfig
     {
-        public int Version { get; set; } = 10;
+        public override int Version { get; set; } = 10;
         public RtvConfig Rtv { get; set; } = new();
         public VotemapConfig Votemap { get; set; } = new();
         public EndOfMapConfig EndOfMapVote { get; set; } = new();

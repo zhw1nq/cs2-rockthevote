@@ -95,6 +95,17 @@ namespace cs2_rockthevote
                 Timer = null;
             }
         }
+
+        static IList<T> Shuffle<T>(Random rng, IList<T> array)
+        {
+            int n = array.Count;
+            while (n > 1)
+            {
+                int k = rng.Next(n--);
+                (array[k], array[n]) = (array[n], array[k]);
+            }
+            return array;
+        }
         
         void PrintCenterTextAll(string text)
         {
@@ -131,22 +142,113 @@ namespace cs2_rockthevote
             }
         }
 
+        public void StartVote(IEndOfMapConfig config)
+        {
+            Votes.Clear();
+            _pluginState.EofVoteHappening = true;
+            _config = config;
+            
+            int mapsToShow = _config.MapsToShow == 0 ? MAX_OPTIONS_HUD_MENU : _config.MapsToShow;
+            if (_config.HudMenu && mapsToShow > MAX_OPTIONS_HUD_MENU)
+                mapsToShow = MAX_OPTIONS_HUD_MENU;
+            
+            bool canShowExtendOption = _config.IncludeExtendCurrentMap && _pluginState.MapExtensionCount < _config.MaxMapExtensions;
+            int mapOptionsCount = canShowExtendOption ? mapsToShow - 1 : mapsToShow;
+            
+            // Get map list
+            var mapsScrambled = Shuffle(new Random(), _mapLister.Maps!.Select(x => x.Name)
+                .Where(x => x != Server.MapName && !_mapCooldown.IsMapInCooldown(x)).ToList());
+            
+            mapsEllected = _nominationManager.NominationWinners().Concat(mapsScrambled).Distinct().ToList();
+            
+            // Create vote list
+            List<string> voteOptions = new();
+            foreach (var map in mapsEllected.Take(mapOptionsCount))
+            {
+                Votes[map] = 0;
+                voteOptions.Add(map);
+            }
+            
+            if (canShowExtendOption)
+            {
+                string extendOption = _localizer.Localize("extendtime.list-name");
+                Votes[extendOption] = 0;
+                voteOptions.Add(extendOption);
+            }
+            
+            // Open Chat or Screen Menu (config dependant)
+            foreach (var player in ServerManager.ValidPlayers())
+            {
+                if (_config.ScreenMenu)
+                {
+                    MapVoteScreenMenu.Open(_plugin!, player, voteOptions, (p, selectedOption) =>
+                    {
+                        MapVoted(p, selectedOption);
+                    });
+                }
+                if (_config.ChatMenu)
+                {
+                    ChatMenu chatMenu = new ChatMenu(_localizer.Localize("emv.hud.menu-title"));
+                    foreach (var option in voteOptions)
+                    {
+                        chatMenu.AddMenuOption(option, (p, selectedOption) =>
+                        {
+                            MapVoted(p, option);
+                            MenuManager.CloseActiveMenu(p);
+                        });
+                    }
+                    MenuManager.OpenChatMenu(player, chatMenu);
+                }
+                if (_config.SoundEnabled)
+                {
+                    PlaySound(player);
+                }
+            }
+            
+            timeLeft = _config.VoteDuration;
+            Timer = _plugin!.AddTimer(1.0F, () =>
+            {
+                if (timeLeft <= 0)
+                {
+                    EndVote();
+                }
+                else
+                {
+                    timeLeft--;
+                }
+            }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
+        }
+
         void EndVote()
         {
-            bool mapEnd = _config is EndOfMapConfig;
             KillTimer();
             
-            decimal maxVotes = Votes.Select(x => x.Value).Max();
-            IEnumerable<KeyValuePair<string, int>> potentialWinners = Votes.Where(x => x.Value == maxVotes);
-            Random rnd = new();
-            KeyValuePair<string, int> winner = potentialWinners.ElementAt(rnd.Next(0, potentialWinners.Count()));
+            bool mapEnd = _config is EndOfMapConfig;
+            string extendOption = _localizer.Localize("extendtime.list-name");
             
             decimal totalVotes = Votes.Select(x => x.Value).Sum();
+            KeyValuePair<string, int> winner;
+            Random rnd = new();
+            
+            if (totalVotes == 0)
+            {
+                // No votes cast, pick a random map(not the extend).
+                var candidateMaps = Votes.Keys.Where(x => x != extendOption).ToList();
+                if (candidateMaps.Count == 0)
+                    candidateMaps = Votes.Keys.ToList();
+                string chosen = candidateMaps[rnd.Next(candidateMaps.Count)];
+                winner = new KeyValuePair<string, int>(chosen, 0);
+            }
+            else
+            {
+                decimal maxVotes = Votes.Select(x => x.Value).Max();
+                var potentialWinners = Votes.Where(x => x.Value == maxVotes);
+                winner = potentialWinners.ElementAt(rnd.Next(0, potentialWinners.Count()));
+            }
+            
             decimal percent = totalVotes > 0 ? winner.Value / totalVotes * 100M : 0;
             
             Server.PrintToChatAll(_localizer.LocalizeWithPrefix("emv.vote-ended", winner.Key, percent, totalVotes));
-
-            string extendOption = _localizer.Localize("extendtime.list-name");
             
             if (winner.Key == extendOption)
             {
@@ -167,7 +269,7 @@ namespace cs2_rockthevote
                 int newRemainingSeconds = (int)(_gameRules.RoundTime - (Server.CurrentTime - _gameRules.GameStartTime));
                 int triggerSeconds = ((EndOfMapConfig)_config).TriggerSecondsBeforeEnd;
                 int delay = Math.Max(newRemainingSeconds - triggerSeconds, 0);
-
+                
                 _plugin?.AddTimer(delay, () =>
                 {
                     _pluginState.EofVoteHappening = false;
@@ -194,88 +296,17 @@ namespace cs2_rockthevote
                         Timer? checkTimer = null;
                         checkTimer = _plugin!.AddTimer(1.0F, () =>
                         {
-                                int remainingSeconds = (int)(_gameRules.RoundTime - (Server.CurrentTime - _gameRules.GameStartTime));
-                                if (remainingSeconds <= 1)
-                                {
-                                    _changeMapManager.ChangeNextMap(mapEnd);
-                                    checkTimer?.Kill();
-                                }
+                            int remainingSeconds = (int)(_gameRules.RoundTime - (Server.CurrentTime - _gameRules.GameStartTime));
+                            if (remainingSeconds <= 1)
+                            {
+                                _changeMapManager.ChangeNextMap(mapEnd);
+                                checkTimer?.Kill();
+                            }
                         }, TimerFlags.REPEAT);
                     }
                 }
+                _pluginState.EofVoteHappening = false;
             }
-        }
-
-        static IList<T> Shuffle<T>(Random rng, IList<T> array)
-        {
-            int n = array.Count;
-            while (n > 1)
-            {
-                int k = rng.Next(n--);
-                (array[k], array[n]) = (array[n], array[k]);
-            }
-            return array;
-        }
-        public void StartVote(IEndOfMapConfig config)
-        {
-            Votes.Clear();
-            _pluginState.EofVoteHappening = true;
-            _config = config;
-            
-            int mapsToShow = _config!.MapsToShow == 0 ? MAX_OPTIONS_HUD_MENU : _config!.MapsToShow;
-            
-            if (_config.HudMenu && mapsToShow > MAX_OPTIONS_HUD_MENU)
-                mapsToShow = MAX_OPTIONS_HUD_MENU;
-            
-            bool canShowExtendOption = _config.IncludeExtendCurrentMap && _pluginState.MapExtensionCount < _config.MaxMapExtensions;
-            int mapOptionsCount = canShowExtendOption ? mapsToShow - 1 : mapsToShow;
-            
-            var mapsScrambled = Shuffle(new Random(), _mapLister.Maps!.Select(x => x.Name)
-                .Where(x => x != Server.MapName && !_mapCooldown.IsMapInCooldown(x)).ToList());
-            
-            mapsEllected = _nominationManager.NominationWinners().Concat(mapsScrambled).Distinct().ToList();
-            
-            _canVote = ServerManager.ValidPlayerCount();
-            ChatMenu menu = new(_localizer.Localize("emv.hud.menu-title"));
-            
-            foreach (var map in mapsEllected.Take(mapOptionsCount))
-            {
-                Votes[map] = 0;
-                menu.AddMenuOption(map, (player, option) =>
-                {
-                    MapVoted(player, map);
-                    MenuManager.CloseActiveMenu(player);
-                });
-            }
-            
-            if (canShowExtendOption)
-            {
-                string extendOption = _localizer.Localize("extendtime.list-name");
-                Votes[extendOption] = 0;
-                menu.AddMenuOption(extendOption, (player, option) =>
-                {
-                    MapVoted(player, extendOption);
-                    MenuManager.CloseActiveMenu(player);
-                });
-            }
-            
-            foreach (var player in ServerManager.ValidPlayers())
-            {
-                MenuManager.OpenChatMenu(player, menu);
-                if (_config?.SoundEnabled == true)
-                {
-                    PlaySound(player);
-                }
-            }
-            
-            timeLeft = _config!.VoteDuration;
-            Timer = _plugin!.AddTimer(1.0F, () =>
-            {
-                if (timeLeft <= 0)
-                    EndVote();
-                else
-                    timeLeft--;
-            }, TimerFlags.STOP_ON_MAPCHANGE);
         }
     }
 }
