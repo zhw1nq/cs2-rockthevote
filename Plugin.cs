@@ -8,6 +8,7 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Extensions;
+using PanoramaVote;
 
 namespace cs2_rockthevote
 {
@@ -45,6 +46,7 @@ namespace cs2_rockthevote
         private readonly NextMapCommand _nextMap = nextMap;
         private readonly ExtendRoundTimeCommand _extendRoundTime = extendRoundTime;
         private readonly VoteExtendRoundTimeCommand _voteExtendRoundTime = voteExtendRoundTime;
+        public required CPanoramaVote _panoramaVoteHandler;
 
         public Config Config { get; set; } = new Config();
 
@@ -56,6 +58,14 @@ namespace cs2_rockthevote
         {
             _dependencyManager.OnPluginLoad(this);
             RegisterListener<OnMapStart>(_dependencyManager.OnMapStart);
+
+            _panoramaVoteHandler = new CPanoramaVote(this);
+            RegisterEventHandler<EventVoteCast>((ev, info) =>
+            {
+                _panoramaVoteHandler.VoteCast(ev);
+
+                return HookResult.Continue;
+            });
         }
 
         [GameEventHandler(HookMode.Post)]
