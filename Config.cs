@@ -1,4 +1,5 @@
 ﻿using CounterStrikeSharp.API.Core;
+using System.Text.Json.Serialization;
 
 namespace cs2_rockthevote
 {
@@ -66,6 +67,7 @@ namespace cs2_rockthevote
         public string SoundPath { get; set; } = "sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c";
         public int MapsToShow { get; set; } = 6;
         public int VoteDuration { get; set; } = 30;
+        public int CooldownDuration { get; set; } = 60;
         public int VotePercentage { get; set; } = 60;
         public bool HudMenu { get; set; } = false;
         public bool ScreenMenu { get; set; } = true;
@@ -101,6 +103,7 @@ namespace cs2_rockthevote
 
     public class Config : BasePluginConfig, IBasePluginConfig
     {
+        [JsonPropertyName("ConfigVersion")]
         public override int Version { get; set; } = 10;
         public RtvConfig Rtv { get; set; } = new();
         public VotemapConfig Votemap { get; set; } = new();
