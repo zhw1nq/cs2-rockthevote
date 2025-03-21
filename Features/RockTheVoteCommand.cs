@@ -2,7 +2,7 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Utils;
+using Microsoft.Extensions.Logging;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace cs2_rockthevote
@@ -42,17 +42,21 @@ namespace cs2_rockthevote
         //private AsyncVoteManager? _voteManager;
         private bool _isCooldownActive = false;
         private CCSPlayerController? _initiatingPlayer;
+        private readonly ILogger<RockTheVoteCommand> _logger;
+        private YesNoVoteInfo? _currentVoteInfo;
         
         public RockTheVoteCommand(
             GameRules gameRules, 
             EndMapVoteManager endmapVoteManager, 
             StringLocalizer localizer, 
-            PluginState pluginState)
+            PluginState pluginState,
+            ILogger<RockTheVoteCommand> logger)
         {
             _localizer = localizer;
             _gameRules = gameRules;
             _endmapVoteManager = endmapVoteManager;
             _pluginState = pluginState;
+            _logger = logger;
         }
         
         /*public void OnMapStart(string map)
@@ -62,72 +66,62 @@ namespace cs2_rockthevote
 
         public void CommandHandler(CCSPlayerController? player)
         {
-            if (player == null)
-                return;
-            
-            _initiatingPlayer = player;
-            
-            if (_isCooldownActive)
-            {
-                player.PrintToChat(_localizer.LocalizeWithPrefix("rtv.cooldown"));
-                return;
-            }
-            if (_pluginState.DisableCommands || !_config.Enabled)
-            {
-                player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.disabled"));
-                return;
-            }
-            if (_gameRules.WarmupRunning && !_config.EnabledInWarmup)
-            {
-                player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.warmup"));
-                return;
-            }
-            if (_config.MinRounds > 0 && _config.MinRounds > _gameRules.TotalRoundsPlayed)
-            {
-                player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.minimum-rounds", _config.MinRounds));
-                return;
-            }
-            if (ServerManager.ValidPlayerCount() < _config.MinPlayers)
-            {
-                player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.minimum-players", _config.MinPlayers));
-                return;
-            }
             try
             {
-                bool voteStarted = PanoramaVote.SendYesNoVoteToAll(
+                if (player == null)
+                    return;
+
+                _initiatingPlayer = player;
+
+                if (_isCooldownActive)
+                {
+                    player.PrintToChat(_localizer.LocalizeWithPrefix("rtv.cooldown"));
+                    return;
+                }
+                if (_pluginState.DisableCommands || !_config.Enabled)
+                {
+                    player.PrintToChat(_localizer.LocalizeWithPrefix("rtv.disabled"));
+                    return;
+                }
+                if (_gameRules.WarmupRunning && !_config.EnabledInWarmup)
+                {
+                    player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.warmup"));
+                    return;
+                }
+                if (_config.MinRounds > 0 && _config.MinRounds > _gameRules.TotalRoundsPlayed)
+                {
+                    player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.minimum-rounds", _config.MinRounds));
+                    return;
+                }
+                if (ServerManager.ValidPlayerCount() < _config.MinPlayers)
+                {
+                    player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.minimum-players", _config.MinPlayers));
+                    return;
+                }
+
+                PanoramaVote.SendYesNoVoteToAll(
                     _config.VoteDuration,
                     VoteConstants.VOTE_CALLER_SERVER,
                     "#SFUI_vote_changelevel",
-                    _localizer.Localize("rtv.ui.question"),
+                    _localizer.Localize("rtv.ui-question"),
                     VoteResultCallback,
                     VoteHandlerCallback
                 );
-                if (voteStarted && PanoramaVote.VoteController != null)
-                {
-                    Server.NextFrame(() => {
-                        if (player.IsValid && player.Connected == PlayerConnectedState.PlayerConnected)
-                        {
-                            PanoramaVote.VoteController.VotesCast[player.Slot] = (int)CastVote.VOTE_OPTION1; // Auto cast yes vote for initiator
-                            PanoramaVote.VoteController.VoteOptionCount[(int)CastVote.VOTE_OPTION1]++;
-                            PanoramaVote.UpdateVoteCounts();
-                        }
-                    });
-                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[RTV ERROR] Failed to start RTV vote: {ex.Message}");
+                _logger.LogWarning("Something went wrong with the rtv command: {message}", ex.Message);
             }
         }
 
         private bool VoteResultCallback(YesNoVoteInfo info)
         {
+            _currentVoteInfo = info;
             int requiredYesVotes = (int)Math.Ceiling(info.num_clients * (_config.VotePercentage / 100.0));
-            Server.PrintToChatAll($" {ChatColors.Green}[RTV] {ChatColors.White}YES votes: {info.yes_votes}/{requiredYesVotes}, NO votes: {info.no_votes}, Total Voters: {info.num_clients}");
 
             if (info.yes_votes >= requiredYesVotes)
             {
-                Server.PrintToChatAll($" {ChatColors.Green}[RTV] Vote passed!");
+                Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.votes-reached")}");
                 
                 if (_config.ScreenMenu)
                 {
@@ -145,7 +139,7 @@ namespace cs2_rockthevote
             }
             else
             {
-                Server.PrintToChatAll($" {ChatColors.Red}[RTV] Vote failed!");
+                Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.failed")}");
                 ActivateCooldown();
                 return false;
             }
@@ -164,21 +158,16 @@ namespace cs2_rockthevote
                 case YesNoVoteAction.VoteAction_Vote:
                     if (player == null || !player.IsValid || player.Connected != PlayerConnectedState.PlayerConnected)
                         return;
-                        
-                    player.PrintToChat($" {ChatColors.Lime}[RTV] {player.PlayerName} voted: " +
-                                    (param2 == (int)CastVote.VOTE_OPTION1 ? 
-                                    $" {ChatColors.Green}Yes" : 
-                                    $" {ChatColors.Red}No"));
                     break;
                     
                 case YesNoVoteAction.VoteAction_End:
                     if ((YesNoVoteEndReason)param1 == YesNoVoteEndReason.VoteEnd_Cancelled)
                     {
-                        Server.PrintToChatAll($" {ChatColors.Red}[RTV] Vote Ended! Cancelled.");
+                        Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.cancelled")}");
                     }
                     else if ((YesNoVoteEndReason)param1 == YesNoVoteEndReason.VoteEnd_TimeUp)
                     {
-                        Server.PrintToChatAll($" {ChatColors.Red}[RTV] Vote Ended! Time is up.");
+                        Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.time-up")}");
                     }
                     break;
             }
