@@ -147,7 +147,6 @@ namespace cs2_rockthevote
 
         private void VoteHandlerCallback(YesNoVoteAction action, int param1, int param2)
         {
-            CCSPlayerController? player = null;
 
             switch (action)
             {
@@ -156,8 +155,42 @@ namespace cs2_rockthevote
                     break;
                     
                 case YesNoVoteAction.VoteAction_Vote:
-                    if (player == null || !player.IsValid || player.Connected != PlayerConnectedState.PlayerConnected)
-                        return;
+                    try
+                    {
+                        var vc = PanoramaVote.VoteController;
+                        if (vc != null)
+                        {
+                            if (!vc.IsValid)
+                                return;
+                            
+                            int potentialVotes = vc.PotentialVotes;
+                            
+                            if (vc.VoteOptionCount.Length <= (int)CastVote.VOTE_OPTION2)
+                                return;
+                            
+                            int yesVotes = vc.VoteOptionCount[(int)CastVote.VOTE_OPTION1];
+                            int noVotes = vc.VoteOptionCount[(int)CastVote.VOTE_OPTION2];
+                            int requiredYesVotes = (int)Math.Ceiling(potentialVotes * (_config.VotePercentage / 100.0));
+                            
+                            if ((potentialVotes - noVotes) < requiredYesVotes)
+                            {
+                                Server.NextFrame(() => {
+                                    try {
+                                        Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.failed")}");
+                                        PanoramaVote.CancelVote();
+                                        ActivateCooldown();
+                                    }
+                                    catch (Exception ex) {
+                                        _logger.LogError(ex, "Error during vote cancellation: {Message}", ex.Message);
+                                    }
+                                });
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error processing vote: {Message}", ex.Message);
+                    }
                     break;
                     
                 case YesNoVoteAction.VoteAction_End:
