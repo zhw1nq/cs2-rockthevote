@@ -353,7 +353,8 @@ namespace cs2_rockthevote
 
             bool passed = m_VoteResult(info);
             if (passed)
-                SendVotePassed("#SFUI_vote_passed_panorama_vote", "Vote Passed!");
+                //SendVotePassed("#SFUI_vote_passed_panorama_vote", "Vote Passed!");
+                SendVotePassed("#SFUI_Vote_None", "#SFUI_vote_passed_panorama_vote");
             else
                 SendVoteFailed(reason);
         }
@@ -373,9 +374,10 @@ namespace cs2_rockthevote
         }
 
         /// Sends a user message indicating that the vote passed.
-        private static void SendVotePassed(string disp_str = "#SFUI_Vote_None", string details_str = "")
+        private static void SendVotePassed(string disp_str = "", string details_str = "")
         {
             UserMessage votePass = UserMessage.FromId(347);
+
             votePass.SetInt("team", -1);
             votePass.SetInt("vote_type", 2);
             votePass.SetString("disp_str", disp_str);
