@@ -39,6 +39,9 @@ namespace cs2_rockthevote
 
         public void StartVote()
         {
+            if (_pluginState.EofVoteHappening)
+                return; // Prevent duplicate vote if one is already running
+
             KillTimer();
 
             if (_config.Enabled)
