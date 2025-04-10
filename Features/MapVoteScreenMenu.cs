@@ -1,6 +1,6 @@
 using CounterStrikeSharp.API.Core;
-using CS2ScreenMenuAPI.Enums;
-using CS2ScreenMenuAPI.Internal;
+using CS2MenuManager.API.Class;
+using CS2MenuManager.API.Menu;
 
 namespace cs2_rockthevote
 {
@@ -8,23 +8,41 @@ namespace cs2_rockthevote
     {
         public static void Open(Plugin plugin, CCSPlayerController player, List<string> voteOptions, Action<CCSPlayerController, string> onOptionSelected)
         {
-            ScreenMenu menu = new ScreenMenu("Map Vote:", plugin)
-            {
-                PostSelectAction = PostSelectAction.Close,
-            };
+            var menu = MenuManager.CreateMenu<ScreenMenu>("Map Vote", plugin);
+            menu.ExitButton = false;
+            menu.ShowResolutionsOption = true;
 
-            int optionIndex = 1;
-            foreach (var option in voteOptions)
+            for (int i = 0; i < voteOptions.Count; i++)
             {
-                // Prefix the option with a number e.g. "!1 surf_test"
-                string optionText = $"!{optionIndex} {option}";
-                menu.AddOption(optionText, (p, selectedOption) =>
+                int index = i;
+                //string optionText = $"!{index + 1} {voteOptions[i]}";
+                string optionText = $"{voteOptions[i]}";
+                menu.AddItem(optionText, (p, o) =>
                 {
-                    onOptionSelected(p, option);
+                    onOptionSelected(p, voteOptions[index]);
                 });
-                optionIndex++;
             }
-            menu.Open(player);
+
+            MenuManager.OpenMenu(player, menu, 0, (p, m) => new ScreenMenuInstance(p, m));
+        }
+
+        public static void Prime(BasePlugin plugin, CCSPlayerController player)
+        {
+            var menu = MenuManager.CreateMenu<ScreenMenu>(" ", plugin);
+            menu.ExitButton = false;
+            menu.ShowResolutionsOption = false;
+            menu.Size = 1;
+
+            // Add an invisible dummy item
+            menu.AddItem(" ", (p, o) => { });
+
+            MenuManager.OpenMenu(player, menu, 0, (p, m) => new ScreenMenuInstance(p, m));
+            MenuManager.CloseActiveMenu(player);
+        }
+
+        public static void Close(BasePlugin plugin, CCSPlayerController player)
+        {
+            MenuManager.CloseActiveMenu(player);
         }
     }
 }
