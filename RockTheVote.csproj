@@ -8,8 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-     <PackageReference Include="CounterStrikeSharp.API" Version="1.0.315" />
-     <PackageReference Include="CS2MenuManager" Version="1.0.27" />
+    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.316" />
+    <Reference Include="CS2MenuManager">
+      <HintPath>C:\CounterStrikeSharp\CS2MenuManager\BuildOutput\shared\CS2MenuManager\CS2MenuManager.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
@@ -21,5 +24,4 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup> 
-
 </Project>
