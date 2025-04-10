@@ -175,15 +175,18 @@ namespace cs2_rockthevote
                 Votes[extendOption] = 0;
                 voteOptions.Add(extendOption);
             }
-            
+
+            _canVote = ServerManager.ValidPlayerCount();
+
             // Open Chat or Screen Menu (config dependant)
             foreach (var player in ServerManager.ValidPlayers())
             {
                 if (_config.ScreenMenu)
                 {
-                    MapVoteScreenMenu.Open(_plugin!, player, voteOptions, (p, selectedOption) =>
+                    MapVoteScreenMenu.Prime(_plugin!, player);
+                    _plugin!.AddTimer(0.1f, () =>
                     {
-                        MapVoted(p, selectedOption);
+                        MapVoteScreenMenu.Open(_plugin!, player, voteOptions, MapVoted);
                     });
                 }
                 if (_config.ChatMenu)
@@ -221,6 +224,14 @@ namespace cs2_rockthevote
 
         void EndVote()
         {
+            foreach (var player in ServerManager.ValidPlayers())
+            {
+                if (player.IsValid)
+                {
+                    MapVoteScreenMenu.Close(_plugin!, player);
+                }
+            }
+            
             KillTimer();
             
             bool mapEnd = _config is EndOfMapConfig;
