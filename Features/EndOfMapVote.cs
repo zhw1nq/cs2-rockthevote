@@ -40,8 +40,22 @@ namespace cs2_rockthevote
         public void StartVote()
         {
             KillTimer();
+
             if (_config.Enabled)
-                _voteManager.StartVote(_config);
+            {
+                if (_config.ScreenMenu)
+                {
+                    PanoramaVote.CancelVote();
+                    _ = new Timer(3.5F, () =>
+                    {
+                        _voteManager.StartVote(_config);
+                    });
+                }
+                else
+                {
+                    _voteManager.StartVote(_config);
+                }
+            }
         }
 
         public void OnMapStart(string map)
