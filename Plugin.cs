@@ -8,6 +8,7 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Extensions;
+using CounterStrikeSharp.API.Modules.Events;
 
 namespace cs2_rockthevote
 {
