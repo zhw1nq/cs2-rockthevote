@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Timers;
 using cs2_rockthevote.Core;
@@ -39,9 +40,6 @@ namespace cs2_rockthevote
 
         public void StartVote()
         {
-            if (_pluginState.EofVoteHappening)
-                return; // Prevent duplicate vote if one is already running
-
             KillTimer();
 
             if (_config.Enabled)

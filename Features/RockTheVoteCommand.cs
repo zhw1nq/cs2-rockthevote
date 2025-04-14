@@ -15,7 +15,7 @@ namespace cs2_rockthevote
         {
             if (player == null)
                 return;
-
+            
             PanoramaVote.Init();
             _rtvManager.CommandHandler(player!);
         }
@@ -98,6 +98,11 @@ namespace cs2_rockthevote
                     player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.minimum-players", _config.MinPlayers));
                     return;
                 }
+
+                Server.ExecuteCommand("sv_allow_votes 1");
+                Server.ExecuteCommand("sv_vote_allow_in_warmup 1");
+                Server.ExecuteCommand("sv_vote_allow_spectators 1");
+                Server.ExecuteCommand("sv_vote_count_spectator_votes 1");
 
                 PanoramaVote.SendYesNoVoteToAll(
                     _config.VoteDuration,

@@ -144,6 +144,14 @@ namespace cs2_rockthevote
 
         public void StartVote(IEndOfMapConfig config)
         {
+            if (_pluginState.EofVoteHappening)
+                return; // Prevent duplicate vote if one is already running
+            
+            Server.ExecuteCommand("sv_allow_votes 0");
+            Server.ExecuteCommand("sv_vote_allow_in_warmup 0");
+            Server.ExecuteCommand("sv_vote_allow_spectators 0");
+            Server.ExecuteCommand("sv_vote_count_spectator_votes 0");
+            
             Votes.Clear();
             _pluginState.EofVoteHappening = true;
             _config = config;
