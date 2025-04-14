@@ -41,9 +41,9 @@ namespace cs2_rockthevote
         public bool ScreenMenu { get; set; } = true;
         public bool ChatMenu { get; set; } = false;
         public bool ChangeMapImmediatly { get; set; } = false;
-        public int VoteDuration { get; set; } = 30;
+        public int VoteDuration { get; set; } = 60;
         public bool HideHudAfterVote { get; set; } = true;
-        public bool SoundEnabled { get; set; } = true;
+        public bool SoundEnabled { get; set; } = false;
         public string SoundPath { get; set; } = "sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c";
         public int TriggerSecondsBeforeEnd { get; set; } = 120;
         public int TriggerRoundsBeforEnd { get; set; } = 2;
@@ -63,10 +63,11 @@ namespace cs2_rockthevote
         public int MinRounds { get; set; } = 0;
         public bool ChangeMapImmediatly { get; set; } = true;
         public bool HideHudAfterVote { get; set; } = false;
-        public bool SoundEnabled { get; set; } = true;
+        public bool SoundEnabled { get; set; } = false;
         public string SoundPath { get; set; } = "sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c";
         public int MapsToShow { get; set; } = 6;
-        public int VoteDuration { get; set; } = 30;
+        public int VoteDuration { get; set; } = 60;
+        public int RtvVoteDuration { get; set; } = 60;
         public int CooldownDuration { get; set; } = 60;
         public int VotePercentage { get; set; } = 60;
         public bool HudMenu { get; set; } = false;
@@ -104,7 +105,7 @@ namespace cs2_rockthevote
     public class Config : BasePluginConfig, IBasePluginConfig
     {
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 10;
+        public override int Version { get; set; } = 11;
         public RtvConfig Rtv { get; set; } = new();
         public VotemapConfig Votemap { get; set; } = new();
         public EndOfMapConfig EndOfMapVote { get; set; } = new();
