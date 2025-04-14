@@ -152,13 +152,12 @@ namespace cs2_rockthevote
 
         private void VoteHandlerCallback(YesNoVoteAction action, int param1, int param2)
         {
-
             switch (action)
             {
                 case YesNoVoteAction.VoteAction_Start:
                     Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.rocked-the-vote", _initiatingPlayer!.PlayerName)}");
                     break;
-                    
+
                 case YesNoVoteAction.VoteAction_Vote:
                     try
                     {
@@ -167,16 +166,17 @@ namespace cs2_rockthevote
                         {
                             if (!vc.IsValid)
                                 return;
-                            
+
                             int potentialVotes = vc.PotentialVotes;
-                            
+
                             if (vc.VoteOptionCount.Length <= (int)CastVote.VOTE_OPTION2)
                                 return;
-                            
+
                             int yesVotes = vc.VoteOptionCount[(int)CastVote.VOTE_OPTION1];
                             int noVotes = vc.VoteOptionCount[(int)CastVote.VOTE_OPTION2];
                             int requiredYesVotes = (int)Math.Ceiling(potentialVotes * (_config.VotePercentage / 100.0));
-                            
+
+                            // Early cancel if the vote can no longer pass
                             if ((potentialVotes - noVotes) < requiredYesVotes)
                             {
                                 Server.NextFrame(() => {
@@ -189,6 +189,21 @@ namespace cs2_rockthevote
                                         _logger.LogError(ex, "Error during vote cancellation: {Message}", ex.Message);
                                     }
                                 });
+                                return;
+                            }
+
+                            // Early pass if enough yes votes are already in
+                            if (yesVotes >= requiredYesVotes)
+                            {
+                                Server.NextFrame(() => {
+                                    try {
+                                        PanoramaVote.EndVote(YesNoVoteEndReason.VoteEnd_AllVotes);
+                                    }
+                                    catch (Exception ex) {
+                                        _logger.LogError(ex, "Error during early vote pass: {Message}", ex.Message);
+                                    }
+                                });
+                                return;
                             }
                         }
                     }
@@ -197,7 +212,7 @@ namespace cs2_rockthevote
                         _logger.LogError(ex, "Error processing vote: {Message}", ex.Message);
                     }
                     break;
-                    
+
                 case YesNoVoteAction.VoteAction_End:
                     if ((YesNoVoteEndReason)param1 == YesNoVoteEndReason.VoteEnd_Cancelled)
                     {

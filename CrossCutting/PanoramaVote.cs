@@ -293,7 +293,7 @@ namespace cs2_rockthevote
         }
         
         /// Ends the current vote with the specified reason.
-        private static void EndVote(YesNoVoteEndReason reason)
+        public static void EndVote(YesNoVoteEndReason reason)
         {
             if (!m_bIsVoteInProgress)
                 return;
