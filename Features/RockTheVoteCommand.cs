@@ -44,6 +44,8 @@ namespace cs2_rockthevote
         private CCSPlayerController? _initiatingPlayer;
         private readonly ILogger<RockTheVoteCommand> _logger;
         private YesNoVoteInfo? _currentVoteInfo;
+        private DateTime _cooldownEndTime;
+
         
         public RockTheVoteCommand(
             GameRules gameRules, 
@@ -75,7 +77,10 @@ namespace cs2_rockthevote
 
                 if (_isCooldownActive)
                 {
-                    player.PrintToChat(_localizer.LocalizeWithPrefix("rtv.cooldown"));
+                    double secondsLeft = Math.Max(0, (_cooldownEndTime - DateTime.UtcNow).TotalSeconds);
+                    int secondsInt = (int)Math.Ceiling(secondsLeft);
+
+                    player.PrintToChat(_localizer.LocalizeWithPrefix("rtv.cooldown", secondsInt));
                     return;
                 }
                 if (_pluginState.DisableCommands || !_config.Enabled)
@@ -105,7 +110,7 @@ namespace cs2_rockthevote
                 Server.ExecuteCommand("sv_vote_count_spectator_votes 1");
 
                 PanoramaVote.SendYesNoVoteToAll(
-                    _config.VoteDuration,
+                    _config.RtvVoteDuration,
                     VoteConstants.VOTE_CALLER_SERVER,
                     "#SFUI_vote_changelevel",
                     _localizer.Localize("rtv.ui-question"),
@@ -234,6 +239,8 @@ namespace cs2_rockthevote
             {
                 _isCooldownActive = false;
             });
+
+            _cooldownEndTime = DateTime.UtcNow.AddSeconds(_config.CooldownDuration);
         }
 
         public void PlayerDisconnected(CCSPlayerController? player)

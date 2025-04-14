@@ -39,7 +39,7 @@
   "rtv.failed": "{red}Vote failed!",
   "rtv.disabled": "{red}Command is disabled right now.",
   "rtv.cancelled": "{red}The vote was cancelled.",
-  "rtv.cooldown": "{red}Command is on cooldown.",
+  "rtv.cooldown": "{red}Command is on cooldown. ({white}{0}{red} seconds remaining)",
   "rtv.time-up": "{red}Not enough players voted during the time limit.",
   "rtv.ui-question": "a different map",
   "emv.you-voted": "You voted in {0}",
