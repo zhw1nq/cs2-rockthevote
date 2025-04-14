@@ -150,6 +150,10 @@ namespace cs2_rockthevote
             else
             {
                 Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.failed")}");
+                Server.ExecuteCommand("sv_allow_votes 0");
+                Server.ExecuteCommand("sv_vote_allow_in_warmup 0");
+                Server.ExecuteCommand("sv_vote_allow_spectators 0");
+                Server.ExecuteCommand("sv_vote_count_spectator_votes 0");
                 ActivateCooldown();
                 return false;
             }
