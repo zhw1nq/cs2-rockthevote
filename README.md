@@ -8,7 +8,6 @@ Features added since fork:
 - Add optional Extend Map feature for rtv/end of map votes
 - Add optional sound when map vote starts (configurable sound)
 - Add vote extend
-- Add extend current map in end of map vote
 - Add panorama vote (F1 = Yes, F2 = No) for !rtv
 - Add ScreenMenu integration for map vote
 
