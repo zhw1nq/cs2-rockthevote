@@ -8,12 +8,20 @@ Features added since fork:
 - Add optional Extend Map feature for rtv/end of map votes
 - Add optional sound when map vote starts (configurable sound)
 - Add vote extend
+- Add extend current map in end of map vote
+- Add panorama vote (F1 = Yes, F2 = No) for !rtv
+- Add ScreenMenu integration for map vote
 
-![image](https://github.com/user-attachments/assets/87d34a7c-3333-4272-aba1-2dae6f9d5d3a)
-![image](https://github.com/user-attachments/assets/4f536075-2b9d-4be1-9572-7c728d79ef4c)
+![nextmap1](https://github.com/user-attachments/assets/87d34a7c-3333-4272-aba1-2dae6f9d5d3a)
+![nextmap2](https://github.com/user-attachments/assets/4f536075-2b9d-4be1-9572-7c728d79ef4c)
+![panoramavote](https://github.com/user-attachments/assets/31ebe223-225f-4cef-812e-3bf6c56e590d)
+![screenmenu](https://github.com/user-attachments/assets/10bfa73e-2ea3-4c49-b874-f87b85211136)
+
 
 ## Requirements
-Latest release of [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp/releases)
+v315+ of [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp/releases)
+
+v1.0.28 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/releases/tag/v1.0.28)
 
 # Instalation
 - Download the latest release from https://github.com/M-archand/cs2-rockthevote/releases
@@ -31,7 +39,7 @@ Latest release of [CounterStrikeSharp](https://github.com/roflmuffin/CounterStri
 - Translated by the community
 
 # Roadmap
-- [ ] Add time extension feature
+- [x] Add time extension feature
 
 # Translations
 | Language             | Contributor          |
