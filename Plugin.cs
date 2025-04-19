@@ -2,13 +2,14 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using static CounterStrikeSharp.API.Core.Listeners;
-using cs2_rockthevote.Features;
-using Microsoft.Extensions.DependencyInjection;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Extensions;
 using CounterStrikeSharp.API.Modules.Events;
+using cs2_rockthevote.Features;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace cs2_rockthevote
 {
@@ -16,6 +17,8 @@ namespace cs2_rockthevote
     {
         public void ConfigureServices(IServiceCollection serviceCollection)
         {
+            serviceCollection.AddLogging();
+            
             var di = new DependencyManager<Plugin, Config>();
             di.LoadDependencies(typeof(Plugin).Assembly);
             di.AddIt(serviceCollection);
@@ -31,7 +34,8 @@ namespace cs2_rockthevote
         TimeLeftCommand timeLeft,
         NextMapCommand nextMap,
         ExtendRoundTimeCommand extendRoundTime,
-        VoteExtendRoundTimeCommand voteExtendRoundTime) : BasePlugin, IPluginConfig<Config>
+        VoteExtendRoundTimeCommand voteExtendRoundTime,
+        ILogger<Plugin> logger) : BasePlugin, IPluginConfig<Config>
     {
         public override string ModuleName => "RockTheVote";
         public override string ModuleVersion => "2.0.1";
@@ -46,6 +50,7 @@ namespace cs2_rockthevote
         private readonly NextMapCommand _nextMap = nextMap;
         private readonly ExtendRoundTimeCommand _extendRoundTime = extendRoundTime;
         private readonly VoteExtendRoundTimeCommand _voteExtendRoundTime = voteExtendRoundTime;
+        private readonly ILogger<Plugin> _logger = logger;
 
 
         public Config Config { get; set; } = new Config();
@@ -106,11 +111,9 @@ namespace cs2_rockthevote
         {
             Config = config;
 
-            if (Config.Version < 10)
+            if (Config.Version < 12)
                 Console.WriteLine("[RockTheVote] Your config file is too old, please delete it from addons/counterstrikesharp/configs/plugins/RockTheVote and let the plugin recreate it on load.");
-
-            if (Config.Version < 9)
-                throw new Exception("[RockTheVote] Your config file is too old, please delete it from addons/counterstrikesharp/configs/plugins/RockTheVote and let the plugin recreate it on load.");
+                _logger.LogError("Your config file is too old, please delete it from addons/counterstrikesharp/configs/plugins/RockTheVote and let the plugin recreate it on load.");
 
             _dependencyManager.OnConfigParsed(config);
         }
