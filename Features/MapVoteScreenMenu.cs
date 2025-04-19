@@ -6,11 +6,11 @@ namespace cs2_rockthevote
 {
     public static class MapVoteScreenMenu
     {
-        public static void Open(Plugin plugin, CCSPlayerController player, List<string> voteOptions, Action<CCSPlayerController, string> onOptionSelected)
+        public static void Open(Plugin plugin, CCSPlayerController player, List<string> voteOptions, Action<CCSPlayerController, string> onOptionSelected, string title)
         {
-            var menu = MenuManager.CreateMenu<ScreenMenu>("Map Vote", plugin);
+            var menu = MenuManager.CreateMenu<ScreenMenu>(title, plugin);
             menu.ExitButton = false;
-            menu.ShowResolutionsOption = true;
+            menu.ShowResolutionsOption = false;
 
             for (int i = 0; i < voteOptions.Count; i++)
             {
