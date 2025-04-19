@@ -8,9 +8,11 @@ namespace cs2_rockthevote
     {
         public static void Open(Plugin plugin, CCSPlayerController player, List<string> voteOptions, Action<CCSPlayerController, string> onOptionSelected, string title)
         {
+            var screenCfg = plugin.Config.ScreenMenu;
             var menu = MenuManager.CreateMenu<ScreenMenu>(title, plugin);
-            menu.ExitButton = false;
-            menu.ShowResolutionsOption = false;
+
+            menu.ShowResolutionsOption = screenCfg.EnabledResolutionOption;
+            menu.ExitButton = screenCfg.EnabledExitOption;
 
             for (int i = 0; i < voteOptions.Count; i++)
             {
