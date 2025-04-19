@@ -10,9 +10,17 @@ namespace cs2_rockthevote
 {
     public partial class Plugin
     {
-        [ConsoleCommand("nominate", "nominate a map to rtv")]
+        [ConsoleCommand("nominate", "Nominate a map to appear in the vote.")]
         public void OnNominate(CCSPlayerController? player, CommandInfo command)
         {
+            // If configured to use screen menus, open the menu instead of using chat
+            if (player is not null && Config.EndOfMapVote.ScreenMenu)
+            {
+                _nominationManager.OpenMenu(player);
+                return;
+            }
+
+            // Fallback: chat based nomination
             string map = command.GetArg(1).Trim().ToLower();
             _nominationManager.CommandHandler(player!, map);
         }
@@ -39,6 +47,7 @@ namespace cs2_rockthevote
         private PluginState _pluginState;
         private MapCooldown _mapCooldown;
         private MapLister _mapLister;
+        private Plugin? _plugin;
 
         public NominationCommand(MapLister mapLister, GameRules gamerules, StringLocalizer localizer, PluginState pluginState, MapCooldown mapCooldown)
         {
@@ -56,6 +65,10 @@ namespace cs2_rockthevote
         {
             Nominations.Clear();
         }
+        public void OnLoad(Plugin plugin)
+        {
+            _plugin = plugin;
+        }
 
         public void OnConfigParsed(Config config)
         {
@@ -72,6 +85,29 @@ namespace cs2_rockthevote
                     Nominate(player, option.Text);
                 }, _mapCooldown.IsMapInCooldown(map.Name));
             }
+        }
+
+        public void OpenMenu(CCSPlayerController player)
+        {
+            // Build the list of map names, skipping the current map and the ones on cool down
+            var voteOptions = _mapLister.Maps!
+                .Where(m => m.Name != Server.MapName 
+                        && !_mapCooldown.IsMapInCooldown(m.Name))
+                .Select(m => m.Name)
+                .ToList();
+
+            // Prime the menu show it appears on the first call
+            MapVoteScreenMenu.Prime(_plugin!, player);
+
+            _plugin!.AddTimer(0.1f, () =>
+                MapVoteScreenMenu.Open(
+                    _plugin!, 
+                    player, 
+                    voteOptions, 
+                    (p, mapName) => CommandHandler(p, mapName),
+                    "Nominate a Map"
+                )
+            );
         }
 
         public void CommandHandler(CCSPlayerController? player, string map)
