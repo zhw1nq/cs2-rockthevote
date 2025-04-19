@@ -1,6 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Menu;
 using cs2_rockthevote.Core;
@@ -11,8 +12,17 @@ namespace cs2_rockthevote
     public partial class Plugin
     {
         [ConsoleCommand("votemap", "Vote to change to a map")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
         public void OnVotemap(CCSPlayerController? player, CommandInfo command)
         {
+            if (player == null || command == null) return;
+
+            if (!AdminManager.PlayerHasPermissions(player, Config.Votemap.Permission))
+            {
+                command.ReplyToCommand("You do not have the correct permission to execute this command.");
+                return;
+            }
+            
             string map = command.GetArg(1).Trim().ToLower();
             _votemapManager.CommandHandler(player!, map);
         }
