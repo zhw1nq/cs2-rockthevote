@@ -35,9 +35,17 @@ namespace cs2_rockthevote
         private StringLocalizer _localizer = new StringLocalizer(stringLocalizer, "extendtime.prefix");
         private PluginState _pluginState = pluginState;
         private RtvConfig _config = new();
+        private VoteExtendConfig _voteExtendConfig = new();
+
 
         public void CommandHandler(CCSPlayerController player, CommandInfo commandInfo)
         {
+            if (!_voteExtendConfig.Enabled)
+            {
+                player.PrintToChat(_localizer.LocalizeWithPrefix("extendtime.disbled"));
+                return;
+            }
+            
             if (_gameRules.WarmupRunning)
             {
                 player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.warmup"));
