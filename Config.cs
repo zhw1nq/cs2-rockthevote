@@ -119,7 +119,7 @@ namespace cs2_rockthevote
     public class Config : BasePluginConfig, IBasePluginConfig
     {
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 11;
+        public override int Version { get; set; } = 12;
         public RtvConfig Rtv { get; set; } = new();
         public VotemapConfig Votemap { get; set; } = new();
         public VoteExtendConfig VoteExtend { get; set; } = new();
