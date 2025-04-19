@@ -194,7 +194,7 @@ namespace cs2_rockthevote
                     MapVoteScreenMenu.Prime(_plugin!, player);
                     _plugin!.AddTimer(0.1f, () =>
                     {
-                        MapVoteScreenMenu.Open(_plugin!, player, voteOptions, MapVoted);
+                        MapVoteScreenMenu.Open(_plugin!, player, voteOptions, MapVoted, _localizer.Localize("emv.screenmenu-title"));
                     });
                 }
                 if (_config.ChatMenu)
