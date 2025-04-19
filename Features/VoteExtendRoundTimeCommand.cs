@@ -12,9 +12,17 @@ namespace cs2_rockthevote
         [ConsoleCommand("css_voteextend", "Extends time for the current map")]
         [ConsoleCommand("css_ve", "Extends time for the current map")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
-        [RequiresPermissions("@css/vip")]
+        //[RequiresPermissions("@css/vip")]
         public void OnVoteExtendRoundTimeCommandCommand(CCSPlayerController? player, CommandInfo commandInfo)
         {
+            if (player == null || commandInfo == null) return;
+
+            if (!AdminManager.PlayerHasPermissions(player, Config.VoteExtend.Permission))
+            {
+                commandInfo.ReplyToCommand("You do not have the correct permission to execute this command.");
+                return;
+            }
+            
             _voteExtendRoundTime.CommandHandler(player!, commandInfo);
         }
 
