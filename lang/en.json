@@ -13,6 +13,7 @@
   "extendtime.hud.hud-timer": "Vote to extend the map: {0}s",
   "extendtime.hud.menu-title": "Vote to extend the map:",
   "extendtime.notapplicable": "Voting to extend is not applicable right now.",
+  "extendtime.disbled": "Voting to extend is currently disabled.",
   "extendtime.prefix": "{red}[VoteExtend]{default}",
   "extendtime.vote-ended.failed": "Vote ended, the map will be not extended ({0:N2}% of {1} vote(s))",
   "extendtime.vote-ended.passed": "Vote ended, the map will be extended for {green}{0}{default} minutes ({1:N2}% of {2} vote(s))",
