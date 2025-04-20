@@ -289,29 +289,16 @@ namespace cs2_rockthevote
             if (!m_bIsVoteInProgress)
                 return;
 
-            EndVote(YesNoVoteEndReason.VoteEnd_Cancelled);
+            EndVote(YesNoVoteEndReason.VoteEnd_TimeUp);
         }
         
         /// Ends the current vote with the specified reason.
-        public static void EndVote(YesNoVoteEndReason reason)
+        public static void EndVote(YesNoVoteEndReason reason, int overrideFailCode = -1)
         {
             if (!m_bIsVoteInProgress)
                 return;
 
             m_bIsVoteInProgress = false;
-
-            switch (reason)
-            {
-                case YesNoVoteEndReason.VoteEnd_AllVotes:
-                    Console.WriteLine($"[Vote Ending] [id:{m_iVoteCount}] All possible players voted.");
-                    break;
-                case YesNoVoteEndReason.VoteEnd_TimeUp:
-                    Console.WriteLine($"[Vote Ending] [id:{m_iVoteCount}] Time ran out.");
-                    break;
-                case YesNoVoteEndReason.VoteEnd_Cancelled:
-                    Console.WriteLine($"[Vote Ending] [id:{m_iVoteCount}] The vote has been cancelled.");
-                    break;
-            }
 
             if (m_iVoteCount == 99)
                 m_iVoteCount = 0;
@@ -321,54 +308,55 @@ namespace cs2_rockthevote
             if (m_VoteHandler != null)
                 m_VoteHandler(YesNoVoteAction.VoteAction_End, (int)reason, 0);
 
-            if(VoteController == null)
+            if (VoteController == null)
             {
-                SendVoteFailed(reason);
+                SendVoteFailed(reason, overrideFailCode);
                 return;
             }
+
             if (m_VoteResult == null || reason == YesNoVoteEndReason.VoteEnd_Cancelled)
             {
-                SendVoteFailed(reason);
+                SendVoteFailed(reason, overrideFailCode);
                 VoteController.ActiveIssueIndex = -1;
                 return;
             }
-            
-            YesNoVoteInfo info = new YesNoVoteInfo();
-            info.num_clients = m_iVoterCount;
-            info.yes_votes = VoteController.VoteOptionCount[(int)CastVote.VOTE_OPTION1];
-            info.no_votes = VoteController.VoteOptionCount[(int)CastVote.VOTE_OPTION2];
-            info.num_votes = info.yes_votes + info.no_votes;
+
+            var info = new YesNoVoteInfo
+            {
+                num_clients = m_iVoterCount,
+                yes_votes   = VoteController.VoteOptionCount[(int)CastVote.VOTE_OPTION1],
+                no_votes    = VoteController.VoteOptionCount[(int)CastVote.VOTE_OPTION2],
+                num_votes   = VoteController.VoteOptionCount[(int)CastVote.VOTE_OPTION1]
+                            + VoteController.VoteOptionCount[(int)CastVote.VOTE_OPTION2]
+            };
 
             for (int i = 0; i < CurrentVotefilter.Count; i++)
             {
                 if (i < m_iVoterCount)
-                {
                     info.clientInfo[i] = (m_iVoters[i], VoteController.VotesCast[m_iVoters[i]]);
-                }
                 else
-                {
                     info.clientInfo[i] = (-1, -1);
-                }
             }
 
             bool passed = m_VoteResult(info);
             if (passed)
                 SendVotePassed("#SFUI_vote_passed", "Vote Passed!");
             else
-                SendVoteFailed(reason);
+                SendVoteFailed(YesNoVoteEndReason.VoteEnd_TimeUp, 4); 
+                // 0 = "Vote Failed." in pano ui descripiton. 4 = Not enough players voted. 5 = Server has disabled that issue.
+
         }
 
-        /// Sends a user message indicating that the vote failed.
-        private static void SendVoteFailed(YesNoVoteEndReason reason)
+        private static void SendVoteFailed(YesNoVoteEndReason reason, int failCodeOverride = -1)
         {
             UserMessage voteFailed = UserMessage.FromId(348);
-
             voteFailed.SetInt("team", -1);
-            voteFailed.SetInt("reason", (int)reason);
 
-            RecipientFilter pFilter = new RecipientFilter();
+            int codeToSend = failCodeOverride >= 0 ? failCodeOverride : (int)reason;
+            voteFailed.SetInt("reason", codeToSend);
+
+            var pFilter = new RecipientFilter();
             pFilter.AddAllPlayers();
-            
             voteFailed.Send(pFilter);
         }
 

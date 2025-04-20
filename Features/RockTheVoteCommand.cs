@@ -111,7 +111,7 @@ namespace cs2_rockthevote
 
                 PanoramaVote.SendYesNoVoteToAll(
                     _config.RtvVoteDuration,
-                    VoteConstants.VOTE_CALLER_SERVER,
+                    player.Slot, // player.Slot Header = Vote by: playerName. VoteConstants.VOTE_CALLER_SERVER Header = Vote by: Server
                     "#SFUI_vote_changelevel",
                     _localizer.Localize("rtv.ui-question"),
                     VoteResultCallback,
@@ -149,7 +149,6 @@ namespace cs2_rockthevote
             }
             else
             {
-                Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.failed")}");
                 Server.ExecuteCommand("sv_allow_votes 0");
                 Server.ExecuteCommand("sv_vote_allow_in_warmup 0");
                 Server.ExecuteCommand("sv_vote_allow_spectators 0");
@@ -190,8 +189,7 @@ namespace cs2_rockthevote
                             {
                                 Server.NextFrame(() => {
                                     try {
-                                        Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.failed")}");
-                                        PanoramaVote.CancelVote();
+                                        PanoramaVote.EndVote(YesNoVoteEndReason.VoteEnd_Cancelled, overrideFailCode: 0);
                                         ActivateCooldown();
                                     }
                                     catch (Exception ex) {
@@ -225,7 +223,7 @@ namespace cs2_rockthevote
                 case YesNoVoteAction.VoteAction_End:
                     if ((YesNoVoteEndReason)param1 == YesNoVoteEndReason.VoteEnd_Cancelled)
                     {
-                        Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.cancelled")}");
+                        Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.failed")}");
                     }
                     else if ((YesNoVoteEndReason)param1 == YesNoVoteEndReason.VoteEnd_TimeUp)
                     {
