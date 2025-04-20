@@ -92,11 +92,6 @@ namespace cs2_rockthevote
         public string Permission { get; set; } = "@css/vip";
     }
 
-    public class TimeleftConfig
-    {
-        public bool ShowToAll { get; set; } = false;
-    }
-
     public class NextmapConfig
     {
         public bool ShowToAll { get; set; } = false;
@@ -125,7 +120,6 @@ namespace cs2_rockthevote
         public VoteExtendConfig VoteExtend { get; set; } = new();
         public EndOfMapConfig EndOfMapVote { get; set; } = new();
         public ScreenMenuConfig ScreenMenu { get; set; } = new();
-        public TimeleftConfig Timeleft { get; set; } = new();
         public NextmapConfig Nextmap { get; set; } = new();
         public ushort MapsInCoolDown { get; set; } = 3;
     }

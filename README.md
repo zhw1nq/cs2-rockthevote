@@ -30,7 +30,6 @@ v1.0.28 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/releases
 # Features
 - Reads from a custom maplist
 - RTV Command
-- Timeleft command
 - Nominate command
 - Supports workshop maps
 - Nextmap command
@@ -109,13 +108,6 @@ Players can vote to change to an specific map by using the votemap <mapname> com
 | MinRounds           | Minimum rounds to enable votemap                                         | 0             |       |      |
 | MinPlayers          | Minimum amount of players to enable votemap                              | 0             |       |      |
 
-
-## Timeleft
-Players can type `timeleft` to see how much time is left in the current map 
-
-| Config    | Description                                                                      | Default Value | Min   | Max  |
-| --------- | -------------------------------------------------------------------------------- | ------------- | ----- | ---- |
-| ShowToAll | Whether to show command response to everyone or just the player that executed it | false         | false | true |
 
 ## Nextmap
 Players can type `nextmap` to see which map is going to be played next

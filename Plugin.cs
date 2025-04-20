@@ -31,7 +31,6 @@ namespace cs2_rockthevote
         ChangeMapManager changeMapManager,
         VotemapCommand voteMapManager,
         RockTheVoteCommand rtvManager,
-        TimeLeftCommand timeLeft,
         NextMapCommand nextMap,
         ExtendRoundTimeCommand extendRoundTime,
         VoteExtendRoundTimeCommand voteExtendRoundTime,
@@ -46,7 +45,6 @@ namespace cs2_rockthevote
         private readonly ChangeMapManager _changeMapManager = changeMapManager;
         private readonly VotemapCommand _votemapManager = voteMapManager;
         private readonly RockTheVoteCommand _rtvManager = rtvManager;
-        private readonly TimeLeftCommand _timeLeft = timeLeft;
         private readonly NextMapCommand _nextMap = nextMap;
         private readonly ExtendRoundTimeCommand _extendRoundTime = extendRoundTime;
         private readonly VoteExtendRoundTimeCommand _voteExtendRoundTime = voteExtendRoundTime;
@@ -95,7 +93,6 @@ namespace cs2_rockthevote
             {
                 { "nominate", () => _nominationManager.CommandHandler(player, arg) },
                 { "votemap", () => _votemapManager.CommandHandler(player, arg) },
-                { "timeleft", () => _timeLeft.CommandHandler(player) },
                 { "nextmap", () => _nextMap.CommandHandler(player) },
                 { "extendroundtime", () => _extendRoundTime.CommandHandler(player) },
                 { "voteextendroundtime", () => _voteExtendRoundTime.CommandHandler(player) }
