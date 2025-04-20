@@ -353,8 +353,7 @@ namespace cs2_rockthevote
 
             bool passed = m_VoteResult(info);
             if (passed)
-                //SendVotePassed("#SFUI_vote_passed_panorama_vote", "Vote Passed!");
-                SendVotePassed("#SFUI_Vote_None", "#SFUI_vote_passed_panorama_vote");
+                SendVotePassed("#SFUI_vote_passed", "Vote Passed!");
             else
                 SendVoteFailed(reason);
         }
