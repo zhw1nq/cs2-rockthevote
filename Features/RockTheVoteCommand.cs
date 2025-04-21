@@ -75,6 +75,15 @@ namespace cs2_rockthevote
 
                 _initiatingPlayer = player;
 
+                double elapsed = Server.CurrentTime - _gameRules.GameStartTime;
+                if (elapsed < _config.MapStartDelay)
+                {
+                    int secondsLeft = (int)Math.Ceiling(_config.MapStartDelay - elapsed);
+                    player.PrintToChat(
+                        _localizer.LocalizeWithPrefix("rtv.cooldown", secondsLeft)
+                    );
+                    return;
+                }
                 if (_isCooldownActive)
                 {
                     double secondsLeft = Math.Max(0, (_cooldownEndTime - DateTime.UtcNow).TotalSeconds);

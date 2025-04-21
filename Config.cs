@@ -67,8 +67,9 @@ namespace cs2_rockthevote
         public string SoundPath { get; set; } = "sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c";
         public int MapsToShow { get; set; } = 6;
         public int VoteDuration { get; set; } = 60;
-        public int RtvVoteDuration { get; set; } = 60;
+        public int RtvVoteDuration { get; set; } = 45;
         public int CooldownDuration { get; set; } = 180;
+        public int MapStartDelay { get; set; } = 180;
         public int VotePercentage { get; set; } = 51;
         public bool HudMenu { get; set; } = false;
         public bool ScreenMenu { get; set; } = true;
@@ -81,7 +82,7 @@ namespace cs2_rockthevote
     public class VotemapConfig : ICommandConfig, IVoteConfig
     {
         public bool Enabled { get; set; } = false;
-        public int VotePercentage { get; set; } = 60;
+        public int VotePercentage { get; set; } = 51;
         public bool ChangeMapImmediatly { get; set; } = true;
         public bool EnabledInWarmup { get; set; } = false;
         public int MinPlayers { get; set; } = 0;
@@ -99,7 +100,7 @@ namespace cs2_rockthevote
 
     public class VoteExtendConfig
     {
-        public bool Enabled { get; set; } = true;
+        public bool Enabled { get; set; } = false;
         public int Duration { get; set; } = 60;
         public int VotePercentage { get; set; } = 51;
         public string Permission { get; set; } = "@css/vip";
