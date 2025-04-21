@@ -44,9 +44,9 @@ namespace cs2_rockthevote
 
             if (_config.Enabled)
             {
-                if (_config.ScreenMenu)
+                if (_config.ScreenMenu && PanoramaVote.IsVoteInProgress())
                 {
-                    PanoramaVote.CancelVote();
+                    PanoramaVote.EndVote(YesNoVoteEndReason.VoteEnd_Cancelled, overrideFailCode: 0);
                     _ = new Timer(3.5F, () =>
                     {
                         _voteManager.StartVote(_config);
