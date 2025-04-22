@@ -11,18 +11,32 @@ namespace cs2_rockthevote
     public partial class Plugin
     {
         [ConsoleCommand("nominate", "Nominate a map to appear in the vote.")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void OnNominate(CCSPlayerController? player, CommandInfo command)
         {
-            // If configured to use screen menus, open the menu instead of using chat
-            if (player is not null && Config.EndOfMapVote.ScreenMenu)
+            if (player == null) return;
+
+            // Grab whatever the user typed after "!nominate"
+            string raw = command.GetArg(1)?.Trim() ?? "";
+
+            // If they didn't supply a map name, show the menu
+            if (string.IsNullOrEmpty(raw))
             {
-                _nominationManager.OpenMenu(player);
+                if (Config.EndOfMapVote.ScreenMenu)
+                {
+                    _nominationManager.OpenMenu(player);
+                }
+                else
+                {
+                     // Use chat menu if ScreenMenu is disabled
+                    _nominationManager.OpenNominationMenu(player);
+                }
                 return;
             }
 
-            // Fallback: chat based nomination
-            string map = command.GetArg(1).Trim().ToLower();
-            _nominationManager.CommandHandler(player!, map);
+            // If they did supply a map name, nominate directly
+            string map = raw.ToLower();
+            _nominationManager.CommandHandler(player, map);
         }
 
         [GameEventHandler(HookMode.Pre)]
