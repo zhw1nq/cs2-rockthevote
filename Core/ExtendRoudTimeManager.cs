@@ -27,6 +27,7 @@ namespace cs2_rockthevote
         int timeLeft = -1;
 
         private IEndOfMapConfig? _config = null;
+        private VoteExtendConfig _voteExtendConfig = new();
 
         private int _canVote = 0;
         private Plugin? _plugin;
@@ -42,6 +43,12 @@ namespace cs2_rockthevote
             Votes.Clear();
             timeLeft = 0;
             KillTimer();
+        }
+
+        public void OnConfigParsed(Config config)
+        {
+            _config = config.EndOfMapVote;
+            _voteExtendConfig = config.VoteExtend;
         }
 
         public void ExtendTimeVoted(CCSPlayerController player, string voteResponse)
@@ -82,7 +89,7 @@ namespace cs2_rockthevote
 
             int index = 1;
             StringBuilder stringBuilder = new();
-            stringBuilder.AppendFormat($"<b>{_localizer.Localize("extendtime.hud.hud-timer", timeLeft)}</b>");
+            stringBuilder.AppendFormat($"{_localizer.Localize("extendtime.hud.hud-timer", timeLeft)}");
             if (!_config!.HudMenu)
                 foreach (var kv in Votes.OrderByDescending(x => x.Value).Take(MAX_OPTIONS_HUD_MENU).Where(x => x.Value > 0))
                 {
@@ -96,7 +103,17 @@ namespace cs2_rockthevote
 
             foreach (CCSPlayerController player in ServerManager.ValidPlayers())
             {
-                player.PrintToCenterHtml(stringBuilder.ToString());
+                if (_voteExtendConfig.EnableCountdown)
+                {
+                    if (_voteExtendConfig.HudCountdown)
+                    {
+                        player.PrintToCenter(stringBuilder.ToString());
+                    }
+                    else
+                    {
+                        player.PrintToChat(stringBuilder.ToString());
+                    }
+                }
             }
         }
 
@@ -144,11 +161,11 @@ namespace cs2_rockthevote
             _pluginState.ExtendTimeVoteHappening = false;
         }
 
-        public void StartVote(IEndOfMapConfig config)
+        public void StartExtendVote(VoteExtendConfig config)
         {
             Votes.Clear();
             _pluginState.ExtendTimeVoteHappening = true;
-            _config = config;
+            _voteExtendConfig = config;
 
             _canVote = ServerManager.ValidPlayerCount();
 
@@ -168,7 +185,7 @@ namespace cs2_rockthevote
             foreach (var player in ServerManager.ValidPlayers())
                 MenuManager.OpenChatMenu(player, menu);
 
-            timeLeft = _config.VoteDuration;
+            timeLeft = _voteExtendConfig.VoteDuration;
             Timer = _plugin!.AddTimer(1.0F, () =>
             {
                 if (timeLeft <= 0)
