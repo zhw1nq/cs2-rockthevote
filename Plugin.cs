@@ -70,40 +70,6 @@ namespace cs2_rockthevote
             });
         }
 
-        [GameEventHandler(HookMode.Post)]
-        public HookResult OnChat(EventPlayerChat @event, GameEventInfo info)
-        {
-            var player = Utilities.GetPlayerFromUserid(@event.Userid);
-            if (player is null)
-                return HookResult.Continue;
-
-            var text = @event.Text.Trim().ToLower();
-            /*
-            if (text == "rtv")
-            {
-                _rtvManager.CommandHandler(player);
-                    return HookResult.Continue;
-            }
-            */
-            var tokens = text.Split(' ', 2);
-            var command = tokens[0];
-            var arg = tokens.Length > 1 ? tokens[1].Trim() : "";
-
-            var commandActions = new Dictionary<string, Action>
-            {
-                { "nominate", () => _nominationManager.CommandHandler(player, arg) },
-                { "votemap", () => _votemapManager.CommandHandler(player, arg) },
-                { "nextmap", () => _nextMap.CommandHandler(player) },
-                { "extendroundtime", () => _extendRoundTime.CommandHandler(player) },
-                { "voteextendroundtime", () => _voteExtendRoundTime.CommandHandler(player) }
-            };
-
-            if (commandActions.TryGetValue(command, out var action))
-                action();
-
-            return HookResult.Continue;
-        }
-
         public void OnConfigParsed(Config config)
         {
             Config = config;
