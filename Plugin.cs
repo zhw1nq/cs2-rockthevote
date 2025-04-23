@@ -107,12 +107,12 @@ namespace cs2_rockthevote
         public void OnConfigParsed(Config config)
         {
             Config = config;
+            _dependencyManager.OnConfigParsed(config);
 
             if (Config.Version < 12)
-                Console.WriteLine("[RockTheVote] Your config file is too old, please delete it from addons/counterstrikesharp/configs/plugins/RockTheVote and let the plugin recreate it on load.");
+            {
                 _logger.LogError("Your config file is too old, please delete it from addons/counterstrikesharp/configs/plugins/RockTheVote and let the plugin recreate it on load.");
-
-            _dependencyManager.OnConfigParsed(config);
+            }
         }
 
         [ConsoleCommand("css_reloadrtv", "Reloads the RTV config.")]
