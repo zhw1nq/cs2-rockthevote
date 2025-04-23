@@ -101,8 +101,13 @@ namespace cs2_rockthevote
     public class VoteExtendConfig
     {
         public bool Enabled { get; set; } = false;
-        public int Duration { get; set; } = 60;
+        public int VoteDuration { get; set; } = 60;
         public int VotePercentage { get; set; } = 51;
+        public int CooldownDuration { get; set; } = 180;
+        public int RoundTimeExtension { get; set; } = 10;
+        public int MaxMapExtensions { get; set; } = 2;
+        public bool EnableCountdown { get; set; } = true;
+        public bool HudCountdown { get; set; } = true;
         public string Permission { get; set; } = "@css/vip";
     }
 
@@ -110,6 +115,12 @@ namespace cs2_rockthevote
     {
         public bool EnabledResolutionOption { get; set; } = true;
         public bool EnabledExitOption { get; set; } = true;
+    }
+
+    public class VoteTypeConfig
+    {
+        public bool EnableScreenMenu { get; set; } = true;
+        public bool EnablePanorama { get; set; } = true;
     }
 
     public class Config : BasePluginConfig, IBasePluginConfig
@@ -121,6 +132,7 @@ namespace cs2_rockthevote
         public VoteExtendConfig VoteExtend { get; set; } = new();
         public EndOfMapConfig EndOfMapVote { get; set; } = new();
         public ScreenMenuConfig ScreenMenu { get; set; } = new();
+        public VoteTypeConfig VoteType { get; set; } = new();
         public NextmapConfig Nextmap { get; set; } = new();
         public ushort MapsInCoolDown { get; set; } = 3;
     }
