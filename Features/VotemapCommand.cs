@@ -41,19 +41,20 @@ namespace cs2_rockthevote
 
     public class VotemapCommand : IPluginDependency<Plugin, Config>
     {
-        Dictionary<string, AsyncVoteManager> VotedMaps = [];
-        ChatMenu? votemapMenu = null;
-        CenterHtmlMenu? votemapMenuHud = null;
-        private VotemapConfig _config = new();
+        private EndOfMapVote _endOfMapVote;
+        private VotemapConfig _config = new VotemapConfig();
         private GameRules _gamerules;
         private StringLocalizer _localizer;
         private ChangeMapManager _changeMapManager;
         private PluginState _pluginState;
         private MapCooldown _mapCooldown;
         private MapLister _mapLister;
+        private ChatMenu? votemapMenu = null;
+        private CenterHtmlMenu? votemapMenuHud = null;
         private Plugin? _plugin;
+        private Dictionary<string, AsyncVoteManager> VotedMaps = new Dictionary<string, AsyncVoteManager>();
 
-        public VotemapCommand(MapLister mapLister, GameRules gamerules, IStringLocalizer stringLocalizer, ChangeMapManager changeMapManager, PluginState pluginState, MapCooldown mapCooldown)
+        public VotemapCommand(MapLister mapLister, GameRules gamerules, IStringLocalizer stringLocalizer, ChangeMapManager changeMapManager, PluginState pluginState, MapCooldown mapCooldown, EndOfMapVote endOfMapVote)
         {
             _mapLister = mapLister;
             _gamerules = gamerules;
@@ -61,6 +62,7 @@ namespace cs2_rockthevote
             _changeMapManager = changeMapManager;
             _pluginState = pluginState;
             _mapCooldown = mapCooldown;
+            _endOfMapVote = endOfMapVote;
             _mapCooldown.EventCooldownRefreshed += OnMapsLoaded;
         }
 
@@ -137,10 +139,18 @@ namespace cs2_rockthevote
 
         public void OpenVotemapMenu(CCSPlayerController player)
         {
-            if (_config.HudMenu)
+            if (_config.ScreenMenu)
+            {
+                _endOfMapVote.StartVote();
+            }
+            else if (_config.HudMenu)
+            {
                 MenuManager.OpenCenterHtmlMenu(_plugin!, player, votemapMenuHud!);
+            }
             else
+            {
                 MenuManager.OpenChatMenu(player, votemapMenu!);
+            }
         }
 
         void AddVote(CCSPlayerController player, string map)
