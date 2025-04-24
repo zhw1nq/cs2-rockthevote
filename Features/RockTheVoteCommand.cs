@@ -16,7 +16,6 @@ namespace cs2_rockthevote
             if (player == null)
                 return;
             
-            PanoramaVote.Init();
             _rtvManager.CommandHandler(player!);
         }
 
@@ -113,6 +112,7 @@ namespace cs2_rockthevote
                     return;
                 }
 
+                PanoramaVote.Init();
                 Server.ExecuteCommand("sv_allow_votes 1");
                 Server.ExecuteCommand("sv_vote_allow_in_warmup 1");
                 Server.ExecuteCommand("sv_vote_allow_spectators 1");
