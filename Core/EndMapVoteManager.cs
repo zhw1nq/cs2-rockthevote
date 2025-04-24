@@ -321,7 +321,7 @@ namespace cs2_rockthevote
                                 _changeMapManager.ChangeNextMap(mapEnd);
                                 checkTimer?.Kill();
                             }
-                        }, TimerFlags.REPEAT);
+                        }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
                     }
                 }
                 _pluginState.EofVoteHappening = false;

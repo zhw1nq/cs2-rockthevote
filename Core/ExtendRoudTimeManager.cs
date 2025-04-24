@@ -194,7 +194,7 @@ namespace cs2_rockthevote
                 }
                 else
                     timeLeft--;
-            }, TimerFlags.REPEAT);
+            }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
         }
         public bool ExtendRoundTime(int minutesToExtendBy)
         {
