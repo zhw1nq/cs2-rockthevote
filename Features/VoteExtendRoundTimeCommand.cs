@@ -43,9 +43,9 @@ namespace cs2_rockthevote
         }
     }
 
-    public class VoteExtendRoundTimeCommand(TimeLimitManager timeLimitManager, ExtendRoundTimeManager extendRoundTimeManager, GameRules gameRules, IStringLocalizer stringLocalizer, PluginState pluginState) : IPluginDependency<Plugin, Config>
+    public class VoteExtendRoundTimeCommand(TimeLimitManager timeLimitManager, ExtendRoundTimeManager extendRoundTimeManager, GameRules gameRules, IStringLocalizer stringLocalizer, PluginState pluginState, ILogger<VoteExtendRoundTimeCommand> logger) : IPluginDependency<Plugin, Config>
     {
-        private readonly ILogger<RockTheVoteCommand>? _logger;
+        private readonly ILogger<VoteExtendRoundTimeCommand> _logger = logger;
         private TimeLimitManager _timeLimitManager = timeLimitManager;
         private ExtendRoundTimeManager _extendRoundTimeManager = extendRoundTimeManager;
         private readonly GameRules _gameRules = gameRules;
@@ -55,7 +55,6 @@ namespace cs2_rockthevote
         private VoteTypeConfig _voteTypeConfig = new();
         private CCSPlayerController? _initiatingPlayer;
         private bool _isCooldownActive = false;
-        private YesNoVoteInfo? _currentVoteInfo;
         private DateTime _cooldownEndTime;
 
         public void CommandHandler(CCSPlayerController player, CommandInfo commandInfo)
@@ -126,7 +125,6 @@ namespace cs2_rockthevote
 
         private bool VoteResultCallback(YesNoVoteInfo info)
         {
-            _currentVoteInfo = info;
             int requiredYesVotes = (int)Math.Ceiling(info.num_clients * (_voteExtendConfig.VotePercentage / 100.0));
 
             if (info.yes_votes >= requiredYesVotes)
@@ -182,7 +180,7 @@ namespace cs2_rockthevote
                                         ActivateCooldown();
                                     }
                                     catch (Exception ex) {
-                                        _logger!.LogError(ex, "Error during vote cancellation: {Message}", ex.Message);
+                                        _logger.LogError(ex, "Error during vote cancellation: {Message}", ex.Message);
                                     }
                                 });
                                 return;
@@ -196,7 +194,7 @@ namespace cs2_rockthevote
                                         PanoramaVote.EndVote(YesNoVoteEndReason.VoteEnd_AllVotes);
                                     }
                                     catch (Exception ex) {
-                                        _logger!.LogError(ex, "Error during early vote pass: {Message}", ex.Message);
+                                        _logger.LogError(ex, "Error during early vote pass: {Message}", ex.Message);
                                     }
                                 });
                                 return;
@@ -205,7 +203,7 @@ namespace cs2_rockthevote
                     }
                     catch (Exception ex)
                     {
-                        _logger!.LogError(ex, "Error processing vote: {Message}", ex.Message);
+                        _logger.LogError(ex, "Error processing vote: {Message}", ex.Message);
                     }
                     break;
 
