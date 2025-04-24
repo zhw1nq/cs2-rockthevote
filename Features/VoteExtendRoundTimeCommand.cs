@@ -60,6 +60,8 @@ namespace cs2_rockthevote
 
         public void CommandHandler(CCSPlayerController player, CommandInfo commandInfo)
         {
+            _initiatingPlayer = player;
+            
             if (!_voteExtendConfig.Enabled)
             {
                 player.PrintToChat(_localizer.LocalizeWithPrefix("extendtime.disbled"));
@@ -91,7 +93,6 @@ namespace cs2_rockthevote
                 }
                 else if (_voteTypeConfig.EnablePanorama && !_pluginState.ExtendTimeVoteHappening && !PanoramaVote.IsVoteInProgress())
                 {
-                    player.PrintToChat(_localizer.LocalizeWithPrefix("extendtime.vote-started"));
                     PanoramaVote.Init();
                     Server.ExecuteCommand("sv_allow_votes 1");
                     Server.ExecuteCommand("sv_vote_allow_in_warmup 1");
@@ -145,7 +146,7 @@ namespace cs2_rockthevote
             switch (action)
             {
                 case YesNoVoteAction.VoteAction_Start:
-                    Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.rocked-the-vote", _initiatingPlayer!.PlayerName)}");
+                    Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("extendtime.vote-started", _initiatingPlayer!.PlayerName)}"); 
                     break;
 
                 case YesNoVoteAction.VoteAction_Vote:
