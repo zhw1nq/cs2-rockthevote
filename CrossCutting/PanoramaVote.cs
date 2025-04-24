@@ -243,7 +243,7 @@ namespace cs2_rockthevote
             UserMessage voteStart = UserMessage.FromId(346);
             voteStart.SetInt("team", -1);
             voteStart.SetInt("player_slot", m_iCurrentVoteCaller);
-            voteStart.SetInt("vote_type", -1);
+            voteStart.SetInt("vote_type", -1);  // -1 = csgo logo icon, 1 = Change a map icon
             voteStart.SetString("disp_str", m_szCurrentVoteTitle);
             voteStart.SetString("details_str", m_szCurrentVoteDetailStr);
             voteStart.SetBool("is_yes_no_vote", true);
