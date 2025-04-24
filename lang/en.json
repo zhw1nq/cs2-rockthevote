@@ -16,6 +16,7 @@
   "extendtime.you-voted": "You voted {0}",
   "extendtime.list-name": "Extend Current Map",
   "extendtime.ui-question": "by {0} minutes?",
+  "extendtime.max-extensions-reached": "The map has reached its extension limit ({0} extensions).",
   "votemap.player-voted": "Player {green}{0}{default} voted in {green}{1}{default}",
   "votemap.already-voted": "You already vote in {green}{0}{default}",
   "votemap.in-the-map": "in the map {0}",
