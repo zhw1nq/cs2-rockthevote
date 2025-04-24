@@ -67,6 +67,11 @@ namespace cs2_rockthevote
                 player.PrintToChat(_localizer.LocalizeWithPrefix("extendtime.disbled"));
                 return;
             }
+            if (_pluginState.MapExtensionCount >= _voteExtendConfig.MaxMapExtensions)
+            {
+                player.PrintToChat(_localizer.LocalizeWithPrefix("extendtime.max-extensions-reached", _voteExtendConfig.MaxMapExtensions));
+                return;
+            }
             if (_isCooldownActive)
             {
                 double secondsLeft = Math.Max(0, (_cooldownEndTime - DateTime.UtcNow).TotalSeconds);
@@ -128,6 +133,7 @@ namespace cs2_rockthevote
             {
                 Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("extendtime.vote-ended.passed2", _voteExtendConfig.RoundTimeExtension)}");
                 _extendRoundTimeManager.ExtendRoundTime(_voteExtendConfig.RoundTimeExtension);
+                _pluginState.MapExtensionCount++;
                 return true;
             }
             else
