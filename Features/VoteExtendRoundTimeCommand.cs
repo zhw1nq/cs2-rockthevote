@@ -12,17 +12,20 @@ namespace cs2_rockthevote
         [ConsoleCommand("css_voteextend", "Extends time for the current map")]
         [ConsoleCommand("css_ve", "Extends time for the current map")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
-        public void OnVoteExtend(CCSPlayerController? player, CommandInfo command)
+        public void OnVoteExtendRoundTimeCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (player == null || command == null) return;
+            if (player == null || command == null)
+                return;
 
-            if (!AdminManager.PlayerHasPermissions(player, Config.VoteExtend.Permission))
+            bool hasPerm = AdminManager.PlayerHasPermissions(player, Config.VoteExtend.Permission);
+
+            if (!hasPerm)
             {
                 command.ReplyToCommand("You do not have the correct permission to execute this command.");
                 return;
             }
-            
-            _voteExtendRoundTime.CommandHandler(player!, command);
+
+            _voteExtendRoundTime.CommandHandler(player, command);
         }
 
         [GameEventHandler(HookMode.Pre)]
@@ -44,9 +47,7 @@ namespace cs2_rockthevote
         private readonly GameRules _gameRules = gameRules;
         private StringLocalizer _localizer = new StringLocalizer(stringLocalizer, "extendtime.prefix");
         private PluginState _pluginState = pluginState;
-        private RtvConfig _config = new();
         private VoteExtendConfig _voteExtendConfig = new();
-
 
         public void CommandHandler(CCSPlayerController player, CommandInfo commandInfo)
         {
@@ -66,7 +67,7 @@ namespace cs2_rockthevote
             {
                 if (!_pluginState.ExtendTimeVoteHappening)
                 {
-                    _extendRoundTimeManager.StartVote(_config);
+                    _extendRoundTimeManager.StartExtendVote(_voteExtendConfig);
                 }
                 else
                 {
@@ -81,11 +82,7 @@ namespace cs2_rockthevote
 
         public void OnConfigParsed(Config config)
         {
-            _config = config.Rtv;
-        }
-           internal void CommandHandler(CCSPlayerController player)
-        {
-            throw new NotImplementedException();
+            _voteExtendConfig = config.VoteExtend;
         }
     }
 }
