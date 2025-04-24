@@ -316,7 +316,7 @@ namespace cs2_rockthevote
                         checkTimer = _plugin!.AddTimer(1.0F, () =>
                         {
                             int remainingSeconds = (int)(_gameRules.RoundTime - (Server.CurrentTime - _gameRules.GameStartTime));
-                            if (remainingSeconds <= 1)
+                            if (remainingSeconds <= 3)
                             {
                                 _changeMapManager.ChangeNextMap(mapEnd);
                                 checkTimer?.Kill();
