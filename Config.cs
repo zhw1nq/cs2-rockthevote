@@ -51,6 +51,8 @@ namespace cs2_rockthevote
         public bool IncludeExtendCurrentMap { get; set; } = true;
         public int RoundTimeExtension { get; set; } = 15;
         public int MaxMapExtensions { get; set; } = 2;
+        public bool EnableCountdown { get; set; } = true;
+        public bool HudCountdown { get; set; } = true;
 
     }
 
