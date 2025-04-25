@@ -45,6 +45,7 @@ namespace cs2_rockthevote
         List<string> mapsEllected = new();
 
         private IEndOfMapConfig? _config = null;
+        private VoteExtendConfig _voteExtendConfig = new();
         private int _canVote = 0;
         private Plugin? _plugin;
 
@@ -57,6 +58,11 @@ namespace cs2_rockthevote
             {
                 plugin.RegisterListener<OnTick>(VoteDisplayTick);
             }
+        }
+
+        public void OnConfigParsed(Config config)
+        {
+            _voteExtendConfig = config.VoteExtend;
         }
 
         public void OnMapStart(string map)
@@ -107,7 +113,7 @@ namespace cs2_rockthevote
             return array;
         }
         
-        void PrintCenterTextAll(string text)
+        public void PrintCenterTextAll(string text)
         {
             foreach (var player in Utilities.GetPlayers())
             {
@@ -120,25 +126,40 @@ namespace cs2_rockthevote
         
         public void VoteDisplayTick()
         {
-            if (timeLeft < 0)
-                return;
+            if (timeLeft < 0) return;
 
-            int index = 1;
-            StringBuilder stringBuilder = new();
-            stringBuilder.AppendFormat($"<b>{_localizer.Localize("emv.hud.hud-timer", timeLeft)}</b>");
+            var sb = new StringBuilder();
+            sb.Append($"<b>{_localizer.Localize("extendtime.hud.hud-timer", timeLeft)}</b>");
+
             if (!_config!.HudMenu)
-                foreach (var kv in Votes.OrderByDescending(x => x.Value).Take(MAX_OPTIONS_HUD_MENU).Where(x => x.Value > 0))
+            {
+                foreach (var kv in Votes
+                    .OrderByDescending(x => x.Value)
+                    .Where(x => x.Value > 0)
+                    .Take(MAX_OPTIONS_HUD_MENU))
                 {
-                    stringBuilder.AppendFormat($"<br>{kv.Key} <font color='green'>({kv.Value})</font>");
+                    sb.Append($"<br>{kv.Key} <font color='green'>({kv.Value})</font>");
                 }
+            }
             else
+            {
+                int index = 1;
                 foreach (var kv in Votes.Take(MAX_OPTIONS_HUD_MENU))
                 {
-                    stringBuilder.AppendFormat($"<br><font color='yellow'>!{index++}</font> {kv.Key} <font color='green'>({kv.Value})</font>");
+                    sb.Append($"<br><font color='yellow'>!{index++}</font> {kv.Key} <font color='green'>({kv.Value})</font>");
                 }
+            }
+            
+            string text = sb.ToString();
             foreach (CCSPlayerController player in ServerManager.ValidPlayers())
             {
-                player.PrintToCenterHtml(stringBuilder.ToString());
+                if (_voteExtendConfig.EnableCountdown)
+                {
+                    if (_voteExtendConfig.HudCountdown)
+                        player.PrintToCenter(sb.ToString());
+                    else
+                        player.PrintToChat(sb.ToString());
+                }
             }
         }
 
