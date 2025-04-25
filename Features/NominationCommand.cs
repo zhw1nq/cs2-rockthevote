@@ -12,31 +12,10 @@ namespace cs2_rockthevote
     {
         [ConsoleCommand("nominate", "Nominate a map to appear in the vote.")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
-        public void OnNominate(CCSPlayerController? player, CommandInfo command)
+        public void OnNominateCommand(CCSPlayerController? player, CommandInfo command)
         {
             if (player == null) return;
-
-            // Grab whatever the user typed after "!nominate"
-            string raw = command.GetArg(1)?.Trim() ?? "";
-
-            // If they didn't supply a map name, show the menu
-            if (string.IsNullOrEmpty(raw))
-            {
-                if (Config.EndOfMapVote.ScreenMenu)
-                {
-                    _nominationManager.OpenMenu(player);
-                }
-                else
-                {
-                     // Use chat menu if ScreenMenu is disabled
-                    _nominationManager.OpenNominationMenu(player);
-                }
-                return;
-            }
-
-            // If they did supply a map name, nominate directly
-            string map = raw.ToLower();
-            _nominationManager.CommandHandler(player, map);
+            _nominationManager.CommandHandler(player, command.GetArg(1)?.Trim().ToLower() ?? "");
         }
 
         [GameEventHandler(HookMode.Pre)]
@@ -56,6 +35,7 @@ namespace cs2_rockthevote
         Dictionary<int, List<string>> Nominations = new();
         ChatMenu? nominationMenu = null;
         private RtvConfig _config = new();
+        private VoteTypeConfig _voteTypeConfig = new();
         private GameRules _gamerules;
         private StringLocalizer _localizer;
         private PluginState _pluginState;
@@ -87,6 +67,7 @@ namespace cs2_rockthevote
         public void OnConfigParsed(Config config)
         {
             _config = config.Rtv;
+            _voteTypeConfig = config.VoteType;
         }
 
         public void OnMapsLoaded(object? sender, Map[] maps)
@@ -101,7 +82,7 @@ namespace cs2_rockthevote
             }
         }
 
-        public void OpenMenu(CCSPlayerController player)
+        public void OpenScreenMenu(CCSPlayerController player)
         {
             // Build the list of map names, skipping the current map and the ones on cool down
             var voteOptions = _mapLister.Maps!
@@ -130,7 +111,8 @@ namespace cs2_rockthevote
                 return;
 
             map = map.ToLower().Trim();
-            if (_pluginState.DisableCommands || !_config.NominationEnabled)
+
+            if (_pluginState.DisableCommands || !_config.NominationEnabled || _pluginState.EofVoteHappening)
             {
                 player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.disabled"));
                 return;
@@ -158,7 +140,14 @@ namespace cs2_rockthevote
 
             if (string.IsNullOrEmpty(map))
             {
-                OpenNominationMenu(player!);
+                if (_voteTypeConfig.EnableScreenMenu)
+                {
+                    OpenScreenMenu(player);
+                }
+                else
+                {
+                    OpenChatNomination(player!);
+                }
             }
             else
             {
@@ -166,7 +155,7 @@ namespace cs2_rockthevote
             }
         }
 
-        public void OpenNominationMenu(CCSPlayerController player)
+        public void OpenChatNomination(CCSPlayerController player)
         {
             MenuManager.OpenChatMenu(player!, nominationMenu!);
         }
