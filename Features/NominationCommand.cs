@@ -162,23 +162,24 @@ namespace cs2_rockthevote
 
         void Nominate(CCSPlayerController player, string map)
         {
+            map = map.ToLower().Trim();
+
             if (map == Server.MapName)
             {
-                player!.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.current-map"));
+                player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.current-map"));
                 return;
             }
 
             string matchingMap = _mapLister.GetSingleMatchingMapName(map, player, _localizer);
-
-            if (matchingMap == "")
+            if (string.IsNullOrEmpty(matchingMap))
             {
-                player!.PrintToChat(_localizer.LocalizeWithPrefix("general.invalid-map"));
+                player.PrintToChat(_localizer.LocalizeWithPrefix("general.invalid-map"));
                 return;
             }
 
             if (_mapCooldown.IsMapInCooldown(matchingMap))
             {
-                player!.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.map-played-recently"));
+                player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.map-played-recently"));
                 return;
             }
 
@@ -186,12 +187,11 @@ namespace cs2_rockthevote
             if (!Nominations.ContainsKey(userId))
                 Nominations[userId] = new();
 
-            bool alreadyVoted = Nominations[userId].IndexOf(matchingMap) != -1;
+            bool alreadyVoted = Nominations[userId].Contains(matchingMap);
             if (!alreadyVoted)
                 Nominations[userId].Add(matchingMap);
 
-            var totalVotes = Nominations.Select(x => x.Value.Where(y => y == matchingMap).Count())
-                .Sum();
+            var totalVotes = Nominations.Select(x => x.Value.Count(y => y == matchingMap)).Sum();
 
             if (!alreadyVoted)
                 Server.PrintToChatAll(_localizer.LocalizeWithPrefix("nominate.nominated", player.PlayerName, matchingMap, totalVotes));

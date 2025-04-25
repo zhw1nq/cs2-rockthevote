@@ -73,11 +73,19 @@ namespace cs2_rockthevote
             if (!_pluginState.MapChangeScheduled)
                 return false;
 
+            Map? map = _maps.FirstOrDefault(x => string.Equals(x.Name, NextMap, StringComparison.OrdinalIgnoreCase));
+            if (map == null)
+            {
+                Server.PrintToChatAll($"[RTV Debug] Could not resolve map object for '{NextMap}'");
+                return false;
+            }
+
             _pluginState.MapChangeScheduled = false;
-            Server.PrintToChatAll(_localizer.LocalizeWithPrefixInternal(_prefix, "general.changing-map", NextMap!));
+
+            Server.PrintToChatAll(_localizer.LocalizeWithPrefixInternal(_prefix, "general.changing-map", map.Name));
+
             _plugin?.AddTimer(3.0F, () =>
             {
-                Map map = _maps.FirstOrDefault(x => x.Name == NextMap!)!;
                 if (Server.IsMapValid(map.Name))
                 {
                     Server.ExecuteCommand($"changelevel {map.Name}");
@@ -87,8 +95,11 @@ namespace cs2_rockthevote
                     Server.ExecuteCommand($"host_workshop_map {map.Id}");
                 }
                 else
+                {
                     Server.ExecuteCommand($"ds_workshop_changelevel {map.Name}");
+                }
             });
+
             return true;
         }
 
