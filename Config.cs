@@ -22,9 +22,6 @@ namespace cs2_rockthevote
         public int MapsToShow { get; set; }
         public bool ChangeMapImmediatly { get; set; }
         public int VoteDuration { get; set; }
-        public bool HudMenu { get; set; }
-        public bool ScreenMenu { get; set; }
-        public bool ChatMenu { get; set; }
         public bool HideHudAfterVote { get; set; }
         public bool SoundEnabled { get; set; }
         public string SoundPath { get; set; }
@@ -37,9 +34,6 @@ namespace cs2_rockthevote
     {
         public bool Enabled { get; set; } = true;
         public int MapsToShow { get; set; } = 6;
-        public bool HudMenu { get; set; } = false;
-        public bool ScreenMenu { get; set; } = true;
-        public bool ChatMenu { get; set; } = false;
         public bool ChangeMapImmediatly { get; set; } = false;
         public int VoteDuration { get; set; } = 150;
         public bool HideHudAfterVote { get; set; } = true;
@@ -73,9 +67,6 @@ namespace cs2_rockthevote
         public int CooldownDuration { get; set; } = 180;
         public int MapStartDelay { get; set; } = 180;
         public int VotePercentage { get; set; } = 51;
-        public bool HudMenu { get; set; } = false;
-        public bool ScreenMenu { get; set; } = true;
-        public bool ChatMenu { get; set; } = false;
         public bool IncludeExtendCurrentMap { get; set; } = false;
         public int RoundTimeExtension { get; set; } = 15;
         public int MaxMapExtensions { get; set; } = 2;
@@ -89,9 +80,6 @@ namespace cs2_rockthevote
         public bool EnabledInWarmup { get; set; } = false;
         public int MinPlayers { get; set; } = 0;
         public int MinRounds { get; set; } = 0;
-        public bool HudMenu { get; set; } = false;
-        public bool ScreenMenu { get; set; } = true;
-        public bool ChatMenu { get; set; } = false;
         public string Permission { get; set; } = "@css/vip";
     }
 
@@ -122,6 +110,8 @@ namespace cs2_rockthevote
     public class VoteTypeConfig
     {
         public bool EnableScreenMenu { get; set; } = true;
+        public bool EnableChatMenu { get; set; } = true;
+        public bool EnableHudMenu { get; set; } = true;
         public bool EnablePanorama { get; set; } = true;
     }
 
