@@ -16,7 +16,7 @@ namespace cs2_rockthevote
             if (player == null)
                 return;
             
-            _rtvManager.CommandHandler(player!);
+            _rtvManager.CommandHandler(player);
         }
 
         [GameEventHandler(HookMode.Pre)]
@@ -38,11 +38,11 @@ namespace cs2_rockthevote
         private readonly EndMapVoteManager _endmapVoteManager;
         private readonly PluginState _pluginState;
         private RtvConfig _config = new();
-        //private AsyncVoteManager? _voteManager;
+        private VoteTypeConfig _voteTypeConfig = new();
+        private AsyncVoteManager? _voteManager;
         private bool _isCooldownActive = false;
         private CCSPlayerController? _initiatingPlayer;
         private readonly ILogger<RockTheVoteCommand> _logger;
-        private YesNoVoteInfo? _currentVoteInfo;
         private DateTime _cooldownEndTime;
 
         
@@ -60,10 +60,10 @@ namespace cs2_rockthevote
             _logger = logger;
         }
         
-        /*public void OnMapStart(string map)
+        public void OnMapStart(string map)
         {
             _voteManager?.OnMapStart(map);
-        }*/
+        }
 
         public void CommandHandler(CCSPlayerController? player)
         {
@@ -111,21 +111,44 @@ namespace cs2_rockthevote
                     player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.minimum-players", _config.MinPlayers));
                     return;
                 }
+                if (_voteTypeConfig.EnablePanorama)
+                {
+                    PanoramaVote.Init();
+                    Server.ExecuteCommand("sv_allow_votes 1");
+                    Server.ExecuteCommand("sv_vote_allow_in_warmup 1");
+                    Server.ExecuteCommand("sv_vote_allow_spectators 1");
+                    Server.ExecuteCommand("sv_vote_count_spectator_votes 1");
 
-                PanoramaVote.Init();
-                Server.ExecuteCommand("sv_allow_votes 1");
-                Server.ExecuteCommand("sv_vote_allow_in_warmup 1");
-                Server.ExecuteCommand("sv_vote_allow_spectators 1");
-                Server.ExecuteCommand("sv_vote_count_spectator_votes 1");
-
-                PanoramaVote.SendYesNoVoteToAll(
-                    _config.RtvVoteDuration,
-                    player.Slot, // player.Slot Header = Vote by: playerName. VoteConstants.VOTE_CALLER_SERVER Header = Vote by: Server
-                    "#SFUI_vote_changelevel",
-                    _localizer.Localize("rtv.ui-question"),
-                    VoteResultCallback,
-                    VoteHandlerCallback
-                );
+                    PanoramaVote.SendYesNoVoteToAll(
+                        _config.RtvVoteDuration,
+                        player.Slot, // player.Slot Header = Vote by: playerName. VoteConstants.VOTE_CALLER_SERVER Header = Vote by: Server
+                        "#SFUI_vote_changelevel",
+                        _localizer.Localize("rtv.ui-question"),
+                        VoteResultCallback,
+                        VoteHandlerCallback
+                    );
+                }
+                if (!_voteTypeConfig.EnablePanorama)
+                {
+                    VoteResult result = _voteManager!.AddVote(player.UserId!.Value);
+                    switch (result.Result)
+                    {
+                        case VoteResultEnum.Added:
+                            Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.rocked-the-vote", player.PlayerName)} {_localizer.Localize("general.votes-needed", result.VoteCount, result.RequiredVotes)}");
+                            break;
+                        case VoteResultEnum.AlreadyAddedBefore:
+                            player.PrintToChat($"{_localizer.LocalizeWithPrefix("rtv.already-rocked-the-vote")} {_localizer.Localize("general.votes-needed", result.VoteCount, result.RequiredVotes)}");
+                            break;
+                        case VoteResultEnum.VotesAlreadyReached:
+                            player.PrintToChat(_localizer.LocalizeWithPrefix("rtv.disabled"));
+                            break;
+                        case VoteResultEnum.VotesReached:
+                            Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.rocked-the-vote", player.PlayerName)} {_localizer.Localize("general.votes-needed", result.VoteCount, result.RequiredVotes)}");
+                            Server.PrintToChatAll(_localizer.LocalizeWithPrefix("rtv.votes-reached"));
+                            _endmapVoteManager.StartVote(_config);
+                            break;
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -135,14 +158,13 @@ namespace cs2_rockthevote
 
         private bool VoteResultCallback(YesNoVoteInfo info)
         {
-            _currentVoteInfo = info;
             int requiredYesVotes = (int)Math.Ceiling(info.num_clients * (_config.VotePercentage / 100.0));
 
             if (info.yes_votes >= requiredYesVotes)
             {
                 Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.votes-reached")}");
                 
-                if (_config.ScreenMenu)
+                if (_voteTypeConfig.EnableScreenMenu)
                 {
                     _ = new Timer(3.5F, () =>
                     {
@@ -265,6 +287,8 @@ namespace cs2_rockthevote
         public void OnConfigParsed(Config config)
         {
             _config = config.Rtv;
+            _voteTypeConfig = config.VoteType;
+            _voteManager = new AsyncVoteManager(_config);
         }
     }
 }
