@@ -6,6 +6,7 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Menu;
 using cs2_rockthevote.Core;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 
 namespace cs2_rockthevote
 {
@@ -43,6 +44,7 @@ namespace cs2_rockthevote
     {
         private EndOfMapVote _endOfMapVote;
         private VotemapConfig _config = new VotemapConfig();
+        private VoteTypeConfig _voteTypeConfig = new VoteTypeConfig();
         private GameRules _gamerules;
         private StringLocalizer _localizer;
         private ChangeMapManager _changeMapManager;
@@ -74,8 +76,20 @@ namespace cs2_rockthevote
         public void OnConfigParsed(Config config)
         {
             _config = config.Votemap;
+            _voteTypeConfig = config.VoteType;
         }
 
+        public void PlayerDisconnected(CCSPlayerController player)
+        {
+            int userId = player.UserId!.Value;
+            foreach (var map in VotedMaps)
+                map.Value.RemoveVote(userId);
+        }
+
+        public void OnLoad(Plugin plugin)
+        {
+            _plugin = plugin;
+        }
 
         public void OnMapsLoaded(object? sender, Map[] maps)
         {
@@ -139,18 +153,22 @@ namespace cs2_rockthevote
 
         public void OpenVotemapMenu(CCSPlayerController player)
         {
-            if (_config.ScreenMenu)
+            // All 3 menu types can be used. However, if none are enabled for some reason, throw an error and fall back to chat menu
+            if (!(_voteTypeConfig.EnableScreenMenu || _voteTypeConfig.EnableHudMenu || _voteTypeConfig.EnableChatMenu))
             {
-                _endOfMapVote.StartVote();
-            }
-            else if (_config.HudMenu)
-            {
-                MenuManager.OpenCenterHtmlMenu(_plugin!, player, votemapMenuHud!);
-            }
-            else
-            {
+                _plugin!.Logger.LogError("No vote‐menu types enabled in config please enable at least one. Falling back to chat menu.");
                 MenuManager.OpenChatMenu(player, votemapMenu!);
+                return;
             }
+
+            if (_voteTypeConfig.EnableScreenMenu)
+                _endOfMapVote.StartVote();
+
+            if (_voteTypeConfig.EnableHudMenu)
+                MenuManager.OpenCenterHtmlMenu(_plugin!, player, votemapMenuHud!);
+
+            if (_voteTypeConfig.EnableChatMenu)
+                MenuManager.OpenChatMenu(player, votemapMenu!);
         }
 
         void AddVote(CCSPlayerController player, string map)
@@ -193,24 +211,12 @@ namespace cs2_rockthevote
                 case VoteResultEnum.VotesReached:
                     Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("votemap.player-voted", player.PlayerName, map)} {_localizer.Localize("general.votes-needed", result.VoteCount, result.RequiredVotes)}");
                     _changeMapManager.ScheduleMapChange(map, prefix: "votemap.prefix");
-                    if (_config!.ChangeMapImmediatly)
+                    if (_config.ChangeMapImmediatly)
                         _changeMapManager.ChangeNextMap();
                     else
                         Server.PrintToChatAll(_localizer.LocalizeWithPrefix("general.changing-map-next-round", map));
                     break;
             }
-        }
-
-        public void PlayerDisconnected(CCSPlayerController player)
-        {
-            int userId = player.UserId!.Value;
-            foreach (var map in VotedMaps)
-                map.Value.RemoveVote(userId);
-        }
-
-        public void OnLoad(Plugin plugin)
-        {
-            _plugin = plugin;
         }
     }
 }
