@@ -5,6 +5,7 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Menu;
 using cs2_rockthevote.Core;
+using Microsoft.Extensions.Logging;
 
 namespace cs2_rockthevote
 {
@@ -34,6 +35,7 @@ namespace cs2_rockthevote
     {
         Dictionary<int, List<string>> Nominations = new();
         ChatMenu? nominationMenu = null;
+        CenterHtmlMenu? nominationMenuHud = null;
         private RtvConfig _config = new();
         private VoteTypeConfig _voteTypeConfig = new();
         private GameRules _gamerules;
@@ -91,18 +93,15 @@ namespace cs2_rockthevote
                 .Select(m => m.Name)
                 .ToList();
 
-            // Prime the menu show it appears on the first call
-            MapVoteScreenMenu.Prime(_plugin!, player);
-
-            _plugin!.AddTimer(0.1f, () =>
+            // Once the list is built, we open the menu on the next frame
+            Server.NextFrame(() =>
                 MapVoteScreenMenu.Open(
-                    _plugin!, 
-                    player, 
-                    voteOptions, 
+                    _plugin!,
+                    player,
+                    voteOptions,
                     (p, mapName) => CommandHandler(p, mapName),
-                    "Nominate a Map"
-                )
-            );
+                    _localizer.Localize("nominate.screenmenu-title")
+            ));
         }
 
         public void CommandHandler(CCSPlayerController? player, string map)
@@ -128,11 +127,11 @@ namespace cs2_rockthevote
             }
             else if (_config.MinRounds > 0 && _config.MinRounds > _gamerules.TotalRoundsPlayed)
             {
-                player!.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.minimum-rounds", _config.MinRounds));
+                player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.minimum-rounds", _config.MinRounds));
                 return;
             }
 
-            if (ServerManager.ValidPlayerCount() < _config!.MinPlayers)
+            if (ServerManager.ValidPlayerCount() < _config.MinPlayers)
             {
                 player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.minimum-players", _config!.MinPlayers));
                 return;
@@ -140,15 +139,24 @@ namespace cs2_rockthevote
 
             if (string.IsNullOrEmpty(map))
             {
+                // All 3 menu types can be used. However, if none are enabled for some reason, throw an error and fall back to chat menu
+                if (!(_voteTypeConfig.EnableScreenMenu || _voteTypeConfig.EnableHudMenu || _voteTypeConfig.EnableChatMenu))
+                {
+                    _plugin!.Logger.LogError("No menu types enabled in VoteType section of the config, please enable at least one. Falling back to chat menu.");
+                    OpenChatNomination(player);
+                    return;
+                }
+
                 if (_voteTypeConfig.EnableScreenMenu)
-                {
                     OpenScreenMenu(player);
-                }
-                else
-                {
-                    OpenChatNomination(player!);
-                }
+
+                if (_voteTypeConfig.EnableHudMenu && nominationMenuHud != null)
+                    MenuManager.OpenCenterHtmlMenu(_plugin!, player, nominationMenuHud);
+
+                if (_voteTypeConfig.EnableChatMenu)
+                    OpenChatNomination(player);
             }
+
             else
             {
                 Nominate(player, map);
@@ -157,7 +165,7 @@ namespace cs2_rockthevote
 
         public void OpenChatNomination(CCSPlayerController player)
         {
-            MenuManager.OpenChatMenu(player!, nominationMenu!);
+            MenuManager.OpenChatMenu(player, nominationMenu!);
         }
 
         void Nominate(CCSPlayerController player, string map)
@@ -218,8 +226,7 @@ namespace cs2_rockthevote
         public void PlayerDisconnected(CCSPlayerController player)
         {
             int userId = player.UserId!.Value;
-            if (!Nominations.ContainsKey(userId))
-                Nominations.Remove(userId);
+            Nominations.Remove(userId);
         }
     }
 }
