@@ -66,10 +66,5 @@ namespace cs2_rockthevote
                 return false;
             }
         }
-
-        internal void CommandHandler(CCSPlayerController player)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
