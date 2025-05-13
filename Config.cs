@@ -103,8 +103,11 @@ namespace cs2_rockthevote
 
     public class ScreenMenuConfig
     {
-        public bool EnabledResolutionOption { get; set; } = true;
-        public bool EnabledExitOption { get; set; } = true;
+        public bool EnableResolutionOption { get; set; } = true;
+        public bool EnableExitOption { get; set; } = true;
+        public string ScrollUpKey { get; set; } = "Attack";
+        public string ScrollDownKey { get; set; } = "Attack2";
+        public string SelectKey { get; set; } = "E";
     }
 
     public class VoteTypeConfig

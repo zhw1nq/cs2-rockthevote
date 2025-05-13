@@ -12,8 +12,11 @@ namespace cs2_rockthevote
 
             var menu = new ScreenMenu(title, plugin)
             {
-                ScreenMenu_ShowResolutionsOption = screenCfg.EnabledResolutionOption,
-                ExitButton = screenCfg.EnabledExitOption
+                ScreenMenu_ShowResolutionsOption = screenCfg.EnableResolutionOption,
+                ExitButton = screenCfg.EnableExitOption,
+                ScreenMenu_ScrollUpKey = screenCfg.ScrollUpKey,
+                ScreenMenu_ScrollDownKey = screenCfg.ScrollDownKey,
+                ScreenMenu_SelectKey = screenCfg.SelectKey
             };
 
             for (int i = 0; i < voteOptions.Count; i++)
