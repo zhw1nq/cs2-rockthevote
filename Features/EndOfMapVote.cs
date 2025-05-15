@@ -93,6 +93,20 @@ namespace cs2_rockthevote
                 }
             }
 
+            plugin.RegisterEventHandler<EventRoundStart>((ev, info) =>
+            {
+
+                if (!_pluginState.DisableCommands && !_gameRules.WarmupRunning && CheckMaxRounds() && _config.Enabled)
+                    StartVote();
+                else if (DeathMatch)
+                {
+                    MaybeStartTimer();
+                }
+
+                return HookResult.Continue;
+            });
+
+
             plugin.RegisterEventHandler<EventRoundAnnounceMatchStart>((ev, info) =>
             {
                 if (_hasInitializedTimer)
