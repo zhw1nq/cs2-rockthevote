@@ -102,6 +102,8 @@ namespace cs2_rockthevote
                     Server.ExecuteCommand("sv_vote_allow_in_warmup 1");
                     Server.ExecuteCommand("sv_vote_allow_spectators 1");
                     Server.ExecuteCommand("sv_vote_count_spectator_votes 1");
+                    _pluginState.ExtendTimeVoteHappening = true;
+                    _extendRoundTimeManager.VoteCountdown();
 
                     PanoramaVote.SendYesNoVoteToAll(
                         _voteExtendConfig.VoteDuration,
@@ -126,6 +128,14 @@ namespace cs2_rockthevote
         private bool VoteResultCallback(YesNoVoteInfo info)
         {
             int requiredYesVotes = (int)Math.Ceiling(info.num_clients * (_voteExtendConfig.VotePercentage / 100.0));
+            _pluginState.ExtendTimeVoteHappening = false;
+            _extendRoundTimeManager.KillTimer();
+            ActivateCooldown();
+
+            Server.ExecuteCommand("sv_allow_votes 0");
+            Server.ExecuteCommand("sv_vote_allow_in_warmup 0");
+            Server.ExecuteCommand("sv_vote_allow_spectators 0");
+            Server.ExecuteCommand("sv_vote_count_spectator_votes 0");
 
             if (info.yes_votes >= requiredYesVotes)
             {
@@ -135,14 +145,7 @@ namespace cs2_rockthevote
                 return true;
             }
             else
-            {
-                Server.ExecuteCommand("sv_allow_votes 0");
-                Server.ExecuteCommand("sv_vote_allow_in_warmup 0");
-                Server.ExecuteCommand("sv_vote_allow_spectators 0");
-                Server.ExecuteCommand("sv_vote_count_spectator_votes 0");
-                ActivateCooldown();
                 return false;
-            }
         }
 
         private void VoteHandlerCallback(YesNoVoteAction action, int param1, int param2)
@@ -177,6 +180,7 @@ namespace cs2_rockthevote
                                 Server.NextFrame(() => {
                                     try {
                                         PanoramaVote.EndVote(YesNoVoteEndReason.VoteEnd_Cancelled, overrideFailCode: 0);
+                                        _pluginState.ExtendTimeVoteHappening = false;
                                         ActivateCooldown();
                                     }
                                     catch (Exception ex) {

@@ -28,6 +28,7 @@ namespace cs2_rockthevote
 
         private IEndOfMapConfig? _config = null;
         private VoteExtendConfig _voteExtendConfig = new();
+        private VoteTypeConfig _voteTypeConfig = new();
 
         private readonly int _chatIntervalSeconds = 10;
         private DateTime _lastChatPrintTime = DateTime.MinValue;
@@ -38,7 +39,10 @@ namespace cs2_rockthevote
         public void OnLoad(Plugin plugin)
         {
             _plugin = plugin;
-            plugin.RegisterListener<OnTick>(VoteDisplayTick);
+            if (_voteTypeConfig.EnableHudMenu || _voteExtendConfig.EnableCountdown)
+            {
+                plugin.RegisterListener<OnTick>(VoteDisplayTick);
+            }
         }
 
         public void OnMapStart(string map)
@@ -51,6 +55,7 @@ namespace cs2_rockthevote
         public void OnConfigParsed(Config config)
         {
             _config = config.EndOfMapVote;
+            _voteTypeConfig = config.VoteType;
             _voteExtendConfig = config.VoteExtend;
         }
 
@@ -87,33 +92,28 @@ namespace cs2_rockthevote
 
         public void VoteDisplayTick()
         {
-            if (timeLeft < 0)
+            if (timeLeft < 0 || !_voteExtendConfig.EnableCountdown || !_pluginState.ExtendTimeVoteHappening)
                 return;
 
-            var sb = new StringBuilder();
-            sb.Append($"{_localizer.Localize("extendtime.hud.hud-timer", timeLeft)}");
+            string text = _localizer.Localize("extendtime.hud.hud-timer", timeLeft);
 
-            string text = sb.ToString();
+            var now = DateTime.UtcNow;
+            bool sendChat = !_voteExtendConfig.HudCountdown && (now - _lastChatPrintTime).TotalSeconds >= _chatIntervalSeconds;
 
-            foreach (CCSPlayerController player in ServerManager.ValidPlayers())
+            foreach (var player in ServerManager.ValidPlayers())
             {
-                if (!_voteExtendConfig.EnableCountdown)
-                    continue;
-
                 if (_voteExtendConfig.HudCountdown)
                 {
                     player.PrintToCenter(text);
                 }
-                else
+                else if (sendChat)
                 {
-                    var now = DateTime.UtcNow;
-                    if ((now - _lastChatPrintTime).TotalSeconds >= _chatIntervalSeconds)
-                    {
-                        player.PrintToChat(text);
-                        _lastChatPrintTime = now;
-                    }
+                    player.PrintToChat(text);
                 }
             }
+
+            if (sendChat)
+                _lastChatPrintTime = now;
         }
 
         public void ExtendTimeVote()
@@ -184,17 +184,26 @@ namespace cs2_rockthevote
             foreach (var player in ServerManager.ValidPlayers())
                 MenuManager.OpenChatMenu(player, menu);
 
-            timeLeft = _voteExtendConfig.VoteDuration;
-            Timer = _plugin!.AddTimer(1.0F, () =>
-            {
-                if (timeLeft <= 0)
-                {
-                    ExtendTimeVote();
-                }
-                else
-                    timeLeft--;
-            }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
+            VoteCountdown();
         }
+
+        public void VoteCountdown()
+        {
+            timeLeft = _voteExtendConfig.VoteDuration;
+
+            Timer = _plugin!.AddTimer(
+                1.0f,
+                () =>
+                {
+                    if (timeLeft <= 0 && !_voteTypeConfig.EnablePanorama)
+                        ExtendTimeVote();
+                    else
+                        timeLeft--;
+                },
+                TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE
+            );
+        }
+
         public bool ExtendRoundTime(int minutesToExtendBy)
         {
             return ExtendRoundTime(minutesToExtendBy, _timeLimitManager, _gameRules);
