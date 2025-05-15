@@ -46,15 +46,18 @@ namespace cs2_rockthevote
 
         private IEndOfMapConfig? _config = null;
         private VoteExtendConfig _voteExtendConfig = new();
+        private VoteTypeConfig _voteTypeConfig = new();
+        private EndOfMapConfig _endMapConfig = new();
         private int _canVote = 0;
         private Plugin? _plugin;
-
         HashSet<int> _voted = new();
+        private readonly int _chatIntervalSeconds = 10;
+        private DateTime _lastChatPrintTime = DateTime.MinValue;
 
         public void OnLoad(Plugin plugin)
         {
             _plugin = plugin;
-            if (_config?.HudMenu == true)
+            if (_voteTypeConfig.EnableHudMenu || _endMapConfig.EnableCountdown)
             {
                 plugin.RegisterListener<OnTick>(VoteDisplayTick);
             }
@@ -63,6 +66,8 @@ namespace cs2_rockthevote
         public void OnConfigParsed(Config config)
         {
             _voteExtendConfig = config.VoteExtend;
+            _voteTypeConfig = config.VoteType;
+            _endMapConfig = config.EndOfMapVote;
         }
 
         public void OnMapStart(string map)
@@ -92,7 +97,7 @@ namespace cs2_rockthevote
             player.ExecuteClientCommand($"play {soundPath}");
         }
 
-        void KillTimer()
+        public void KillTimer()
         {
             timeLeft = -1;
             if (Timer is not null)
@@ -102,7 +107,7 @@ namespace cs2_rockthevote
             }
         }
 
-        static IList<T> Shuffle<T>(Random rng, IList<T> array)
+        public static IList<T> Shuffle<T>(Random rng, IList<T> array)
         {
             int n = array.Count;
             while (n > 1)
@@ -126,59 +131,49 @@ namespace cs2_rockthevote
         
         public void VoteDisplayTick()
         {
-            if (timeLeft < 0) return;
+            if (timeLeft < 0 || !_endMapConfig.EnableCountdown || !_pluginState.EofVoteHappening)
+                return;
 
-            var sb = new StringBuilder();
-            sb.Append($"<b>{_localizer.Localize("extendtime.hud.hud-timer", timeLeft)}</b>");
+            string countdown = _localizer.Localize("emv.hud.hud-timer", timeLeft);
 
-            if (!_config!.HudMenu)
-            {
-                foreach (var kv in Votes
-                    .OrderByDescending(x => x.Value)
-                    .Where(x => x.Value > 0)
-                    .Take(MAX_OPTIONS_HUD_MENU))
-                {
-                    sb.Append($"<br>{kv.Key} <font color='green'>({kv.Value})</font>");
-                }
-            }
-            else
-            {
-                int index = 1;
-                foreach (var kv in Votes.Take(MAX_OPTIONS_HUD_MENU))
-                {
-                    sb.Append($"<br><font color='yellow'>!{index++}</font> {kv.Key} <font color='green'>({kv.Value})</font>");
-                }
-            }
-            
-            string text = sb.ToString();
+            var now = DateTime.UtcNow;
+            bool sendChat = !_endMapConfig.HudCountdown && (now - _lastChatPrintTime).TotalSeconds >= _chatIntervalSeconds;
+
             foreach (CCSPlayerController player in ServerManager.ValidPlayers())
             {
-                if (_voteExtendConfig.EnableCountdown)
+                if (_endMapConfig.HudCountdown)
                 {
-                    if (_voteExtendConfig.HudCountdown)
-                        player.PrintToCenter(sb.ToString());
-                    else
-                        player.PrintToChat(sb.ToString());
+                    player.PrintToCenter(countdown);
+                }
+                else
+                {
+                    player.PrintToChat(countdown);
                 }
             }
+
+            if (sendChat)
+                _lastChatPrintTime = now;
         }
 
         public void StartVote(IEndOfMapConfig config)
         {
             if (_pluginState.EofVoteHappening)
-                return; // Prevent duplicate vote if one is already running
+                return;
             
-            Server.ExecuteCommand("sv_allow_votes 0");
-            Server.ExecuteCommand("sv_vote_allow_in_warmup 0");
-            Server.ExecuteCommand("sv_vote_allow_spectators 0");
-            Server.ExecuteCommand("sv_vote_count_spectator_votes 0");
+            if (_voteTypeConfig.EnablePanorama)
+            {
+                Server.ExecuteCommand("sv_allow_votes 0");
+                Server.ExecuteCommand("sv_vote_allow_in_warmup 0");
+                Server.ExecuteCommand("sv_vote_allow_spectators 0");
+                Server.ExecuteCommand("sv_vote_count_spectator_votes 0");
+            }
             
             Votes.Clear();
             _pluginState.EofVoteHappening = true;
             _config = config;
             
             int mapsToShow = _config.MapsToShow == 0 ? MAX_OPTIONS_HUD_MENU : _config.MapsToShow;
-            if (_config.HudMenu && mapsToShow > MAX_OPTIONS_HUD_MENU)
+            if (_voteTypeConfig.EnableHudMenu && mapsToShow > MAX_OPTIONS_HUD_MENU)
                 mapsToShow = MAX_OPTIONS_HUD_MENU;
             
             bool canShowExtendOption = _config.IncludeExtendCurrentMap && _pluginState.MapExtensionCount < _config.MaxMapExtensions;
@@ -210,15 +205,13 @@ namespace cs2_rockthevote
             // Open Chat or Screen Menu (config dependant)
             foreach (var player in ServerManager.ValidPlayers())
             {
-                if (_config.ScreenMenu)
+                if (_voteTypeConfig.EnableScreenMenu)
                 {
-                    MapVoteScreenMenu.Prime(_plugin!, player);
-                    _plugin!.AddTimer(0.1f, () =>
-                    {
-                        MapVoteScreenMenu.Open(_plugin!, player, voteOptions, MapVoted, _localizer.Localize("emv.screenmenu-title"));
-                    });
+                    Server.NextFrame(() =>
+                        MapVoteScreenMenu.Open(_plugin!, player, voteOptions, MapVoted, _localizer.Localize("emv.screenmenu-title"))
+                    );
                 }
-                if (_config.ChatMenu)
+                if (!_voteTypeConfig.EnableScreenMenu)
                 {
                     ChatMenu chatMenu = new ChatMenu(_localizer.Localize("emv.hud.menu-title"));
                     foreach (var option in voteOptions)
@@ -251,13 +244,13 @@ namespace cs2_rockthevote
             }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
         }
 
-        void EndVote()
+        public void EndVote()
         {
             foreach (var player in ServerManager.ValidPlayers())
             {
                 if (player.IsValid)
                 {
-                    MapVoteScreenMenu.Close(_plugin!, player);
+                    MapVoteScreenMenu.Close(player);
                 }
             }
             
