@@ -45,8 +45,8 @@ namespace cs2_rockthevote
         public bool IncludeExtendCurrentMap { get; set; } = true;
         public int RoundTimeExtension { get; set; } = 15;
         public int MaxMapExtensions { get; set; } = 2;
-        public bool EnableCountdown { get; set; } = true;
-        public bool HudCountdown { get; set; } = true;
+        public bool EnableCountdown { get; set; } = false;
+        public bool HudCountdown { get; set; } = false;
 
     }
 
@@ -75,7 +75,7 @@ namespace cs2_rockthevote
     public class VotemapConfig : ICommandConfig, IVoteConfig
     {
         public bool Enabled { get; set; } = false;
-        public int VotePercentage { get; set; } = 51;
+        public int VotePercentage { get; set; } = 50;
         public bool ChangeMapImmediatly { get; set; } = true;
         public bool EnabledInWarmup { get; set; } = false;
         public int MinPlayers { get; set; } = 0;
@@ -92,12 +92,12 @@ namespace cs2_rockthevote
     {
         public bool Enabled { get; set; } = false;
         public int VoteDuration { get; set; } = 60;
-        public int VotePercentage { get; set; } = 51;
+        public int VotePercentage { get; set; } = 50;
         public int CooldownDuration { get; set; } = 180;
         public int RoundTimeExtension { get; set; } = 10;
         public int MaxMapExtensions { get; set; } = 2;
-        public bool EnableCountdown { get; set; } = true;
-        public bool HudCountdown { get; set; } = true;
+        public bool EnableCountdown { get; set; } = false;
+        public bool HudCountdown { get; set; } = false;
         public string Permission { get; set; } = "@css/vip";
     }
 
@@ -113,8 +113,8 @@ namespace cs2_rockthevote
     public class VoteTypeConfig
     {
         public bool EnableScreenMenu { get; set; } = true;
-        public bool EnableChatMenu { get; set; } = true;
-        public bool EnableHudMenu { get; set; } = true;
+        public bool EnableChatMenu { get; set; } = false;
+        public bool EnableHudMenu { get; set; } = false;
         public bool EnablePanorama { get; set; } = true;
     }
 
