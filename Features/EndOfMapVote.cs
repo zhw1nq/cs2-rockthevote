@@ -20,6 +20,7 @@ namespace cs2_rockthevote
         private bool DeathMatch => _gameMode?.GetPrimitiveValue<int>() == 2 && _gameType?.GetPrimitiveValue<int>() == 1;
         private ConVar? _gameType;
         private ConVar? _gameMode;
+        private bool _hasInitializedTimer = false;
 
         bool CheckMaxRounds()
         {
@@ -92,22 +93,16 @@ namespace cs2_rockthevote
                 }
             }
 
-            plugin.RegisterEventHandler<EventRoundStart>((ev, info) =>
+            plugin.RegisterEventHandler<EventRoundAnnounceMatchStart>((ev, info) =>
             {
-
-                if (!_pluginState.DisableCommands && !_gameRules.WarmupRunning && CheckMaxRounds() && _config.Enabled)
-                    StartVote();
-                else if (DeathMatch)
+                if (_hasInitializedTimer)
                 {
                     MaybeStartTimer();
                 }
-
-                return HookResult.Continue;
-            });
-
-            plugin.RegisterEventHandler<EventRoundAnnounceMatchStart>((ev, info) =>
-            {
-                MaybeStartTimer();
+                else
+                {
+                    _hasInitializedTimer = true;
+                }
                 return HookResult.Continue;
             });
         }
