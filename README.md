@@ -1,15 +1,15 @@
 # CS2 RockTheVote (RTV)
 General purpose map voting plugin.
 Features added since fork:
-- Better !nomiate (partial name matching). Credits: [exd02](https://github.com/abnerfs/cs2-rockthevote/pull/31)
-- "VotePercentage" logic now works properly with 2 players on the server.
-- Ability to add map info after name w/ capitalization.
-- Removed any HUD alerts (avoid issues with timer plugins)
+- Better !nominate (partial name matching). Credits: [exd02](https://github.com/abnerfs/cs2-rockthevote/pull/31)
+- "VotePercentage" logic now works properly with 2 players on the server
+- Ability to add map info after name w/ capitalization
 - Add optional Extend Map feature for rtv/end of map votes
 - Add optional sound when map vote starts (configurable sound)
-- Add vote extend
-- Add panorama vote (F1 = Yes, F2 = No) for !rtv
-- Add ScreenMenu integration for map vote
+- Add vote extend (!ve/!voteextend)
+- Add !extend {0}
+- Add panorama vote (F1 = Yes, F2 = No) for !rtv & !voteextend
+- Add ScreenMenu integration for end of map vote/nominate
 
 ![nextmap1](https://github.com/user-attachments/assets/87d34a7c-3333-4272-aba1-2dae6f9d5d3a)
 ![nextmap2](https://github.com/user-attachments/assets/4f536075-2b9d-4be1-9572-7c728d79ef4c)
@@ -20,7 +20,7 @@ Features added since fork:
 ## Requirements
 v315+ of [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp/releases)
 
-v1.0.28 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/releases/tag/v1.0.28)
+v1.0.32 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/releases/tag/v1.0.32)
 
 # Instalation
 - Download the latest release from https://github.com/M-archand/cs2-rockthevote/releases
@@ -38,6 +38,10 @@ v1.0.28 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/releases
 
 # Roadmap
 - [x] Add time extension feature
+- [ ] Fix HudMenu voting
+- [ ] Fix !nominate name matching for conflicting names
+- [ ] Add vote percentage required for winning map (e.g. must receive 25% of the vote)
+- [ ] Add vote runnoff (e.g. 2nd stage of voting between 2 maps if minimum vote percentage not achieved for a map)
 
 # Translations
 | Language             | Contributor          |
