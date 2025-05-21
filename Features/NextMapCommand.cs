@@ -7,7 +7,7 @@ namespace cs2_rockthevote.Features
     {
         private ChangeMapManager _changeMapManager = changeMapManager;
         private StringLocalizer _stringLocalizer = stringLocalizer;
-        private NextmapConfig _config = new();
+        private GeneralConfig _config = new();
 
         public void CommandHandler(CCSPlayerController? player)
         {
@@ -19,7 +19,7 @@ namespace cs2_rockthevote.Features
             else
                 text = _stringLocalizer.LocalizeWithPrefix("nextmap.decided-by-vote");
 
-            if (_config.ShowToAll)
+            if (_config.ShowNextMapToAll)
                 Server.PrintToChatAll(text);
             else if (player is not null)
                 player.PrintToChat(text);
@@ -38,7 +38,7 @@ namespace cs2_rockthevote.Features
 
         public void OnConfigParsed(Config config)
         {
-            _config = config.Nextmap ?? new();
+            _config = config.General ?? new();
         }
     }
 }
