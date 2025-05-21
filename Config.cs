@@ -27,7 +27,6 @@ namespace cs2_rockthevote
         public string SoundPath { get; set; }
         public bool IncludeExtendCurrentMap { get; set; }
         public int RoundTimeExtension { get; set; }
-        int MaxMapExtensions { get; set; }
     }
 
     public class EndOfMapConfig : IEndOfMapConfig
@@ -44,13 +43,12 @@ namespace cs2_rockthevote
         public float DelayToChangeInTheEnd { get; set; } = 0F;
         public bool IncludeExtendCurrentMap { get; set; } = true;
         public int RoundTimeExtension { get; set; } = 15;
-        public int MaxMapExtensions { get; set; } = 2;
         public bool EnableCountdown { get; set; } = false;
         public bool HudCountdown { get; set; } = false;
 
     }
 
-    public class RtvConfig : ICommandConfig, IVoteConfig, IEndOfMapConfig
+    public class RtvConfig : ICommandConfig, IVoteConfig
     {
         public bool Enabled { get; set; } = true;
         public bool EnabledInWarmup { get; set; } = false;
@@ -67,9 +65,6 @@ namespace cs2_rockthevote
         public int CooldownDuration { get; set; } = 180;
         public int MapStartDelay { get; set; } = 180;
         public int VotePercentage { get; set; } = 51;
-        public bool IncludeExtendCurrentMap { get; set; } = false;
-        public int RoundTimeExtension { get; set; } = 15;
-        public int MaxMapExtensions { get; set; } = 2;
     }
 
     public class VotemapConfig : ICommandConfig, IVoteConfig
@@ -83,9 +78,12 @@ namespace cs2_rockthevote
         public string Permission { get; set; } = "@css/vip";
     }
 
-    public class NextmapConfig
+    public class GeneralConfig
     {
-        public bool ShowToAll { get; set; } = false;
+        public bool ShowNextMapToAll { get; set; } = false;
+        public int MaxMapExtensions { get; set; } = 2;
+        public int  MapsInCoolDown { get; set; } = 3;
+        public int ChatCountdownInterval { get; set; } = 10;
     }
 
     public class VoteExtendConfig
@@ -95,7 +93,6 @@ namespace cs2_rockthevote
         public int VotePercentage { get; set; } = 50;
         public int CooldownDuration { get; set; } = 180;
         public int RoundTimeExtension { get; set; } = 10;
-        public int MaxMapExtensions { get; set; } = 2;
         public bool EnableCountdown { get; set; } = false;
         public bool HudCountdown { get; set; } = false;
         public string Permission { get; set; } = "@css/vip";
@@ -128,7 +125,6 @@ namespace cs2_rockthevote
         public EndOfMapConfig EndOfMapVote { get; set; } = new();
         public ScreenMenuConfig ScreenMenu { get; set; } = new();
         public VoteTypeConfig VoteType { get; set; } = new();
-        public NextmapConfig Nextmap { get; set; } = new();
-        public ushort MapsInCoolDown { get; set; } = 3;
+        public GeneralConfig General { get; set; } = new();
     }
 }
