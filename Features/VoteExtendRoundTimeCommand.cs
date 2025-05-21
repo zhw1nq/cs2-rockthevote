@@ -52,6 +52,7 @@ namespace cs2_rockthevote
         private StringLocalizer _localizer = new StringLocalizer(stringLocalizer, "extendtime.prefix");
         private PluginState _pluginState = pluginState;
         private VoteExtendConfig _voteExtendConfig = new();
+        private GeneralConfig _generalConfig = new();
         private VoteTypeConfig _voteTypeConfig = new();
         private CCSPlayerController? _initiatingPlayer;
         private bool _isCooldownActive = false;
@@ -66,9 +67,9 @@ namespace cs2_rockthevote
                 player.PrintToChat(_localizer.LocalizeWithPrefix("extendtime.disbled"));
                 return;
             }
-            if (_pluginState.MapExtensionCount >= _voteExtendConfig.MaxMapExtensions)
+            if (_pluginState.MapExtensionCount >= _generalConfig.MaxMapExtensions)
             {
-                player.PrintToChat(_localizer.LocalizeWithPrefix("extendtime.max-extensions-reached", _voteExtendConfig.MaxMapExtensions));
+                player.PrintToChat(_localizer.LocalizeWithPrefix("extendtime.max-extensions-reached", _generalConfig.MaxMapExtensions));
                 return;
             }
             if (_isCooldownActive)
@@ -247,7 +248,8 @@ namespace cs2_rockthevote
         public void OnConfigParsed(Config config)
         {
             _voteExtendConfig = config.VoteExtend;
-            _voteTypeConfig = config.VoteType; 
+            _voteTypeConfig = config.VoteType;
+            _generalConfig = config.General; 
         }
     }
 }
