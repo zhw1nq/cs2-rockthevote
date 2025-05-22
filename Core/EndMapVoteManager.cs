@@ -179,7 +179,7 @@ namespace cs2_rockthevote
             int maxExt = _generalConfig.MaxMapExtensions;
             bool unlimited = maxExt <= 0;  // treat 0 or negative as unlimited
 
-            bool canShowExtendOption = _config.IncludeExtendCurrentMap && (unlimited || _pluginState.MapExtensionCount < maxExt);
+            bool canShowExtendOption = _endMapConfig.IncludeExtendCurrentMap && (unlimited || _pluginState.MapExtensionCount < maxExt);
             int mapOptionsCount = canShowExtendOption ? mapsToShow - 1 : mapsToShow;
             
             // Get map list
@@ -293,10 +293,10 @@ namespace cs2_rockthevote
 
                 if (unlimited || _pluginState.MapExtensionCount < maxExt)
                 {
-                    bool success = _extendRoundTimeManager.ExtendRoundTime(_config!.RoundTimeExtension);
+                    bool success = _extendRoundTimeManager.ExtendRoundTime(_generalConfig.RoundTimeExtension);
                     if (success)
                     {
-                        Server.PrintToChatAll(_localizer.LocalizeWithPrefix("extendtime.vote-ended.passed", _config.RoundTimeExtension, percent, totalVotes));
+                        Server.PrintToChatAll(_localizer.LocalizeWithPrefix("extendtime.vote-ended.passed", _generalConfig.RoundTimeExtension, percent, totalVotes));
                         _pluginState.MapExtensionCount++;
                     }
                     else
