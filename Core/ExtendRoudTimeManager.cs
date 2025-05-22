@@ -122,7 +122,7 @@ namespace cs2_rockthevote
             bool mapEnd = _config is EndOfMapConfig;
             KillTimer();
 
-            var minutesToExtend = _config?.RoundTimeExtension ?? 15;
+            var minutesToExtend = _generalConfig.RoundTimeExtension;
 
             decimal maxVotes = Votes.Select(x => x.Value).Max();
             IEnumerable<KeyValuePair<string, int>> potentialWinners = Votes.Where(x => x.Value == maxVotes);

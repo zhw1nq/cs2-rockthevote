@@ -110,7 +110,7 @@ namespace cs2_rockthevote
                         _voteExtendConfig.VoteDuration,
                         player.Slot, // player.Slot Header = Vote by: playerName. VoteConstants.VOTE_CALLER_SERVER Header = Vote by: Server
                         "#SFUI_vote_passed_nextlevel_extend",
-                        _localizer.Localize("extendtime.ui-question", _voteExtendConfig.RoundTimeExtension),
+                        _localizer.Localize("extendtime.ui-question", _generalConfig.RoundTimeExtension),
                         VoteResultCallback,
                         VoteHandlerCallback
                     );
@@ -140,8 +140,8 @@ namespace cs2_rockthevote
 
             if (info.yes_votes >= requiredYesVotes)
             {
-                Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("extendtime.vote-ended.passed2", _voteExtendConfig.RoundTimeExtension)}");
-                _extendRoundTimeManager.ExtendRoundTime(_voteExtendConfig.RoundTimeExtension);
+                Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("extendtime.vote-ended.passed2", _generalConfig.RoundTimeExtension)}");
+                _extendRoundTimeManager.ExtendRoundTime(_generalConfig.RoundTimeExtension);
                 _pluginState.MapExtensionCount++;
                 return true;
             }
