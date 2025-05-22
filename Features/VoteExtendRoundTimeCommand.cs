@@ -67,7 +67,7 @@ namespace cs2_rockthevote
                 player.PrintToChat(_localizer.LocalizeWithPrefix("extendtime.disbled"));
                 return;
             }
-            if (_pluginState.MapExtensionCount >= _generalConfig.MaxMapExtensions)
+            if (_generalConfig.MaxMapExtensions > 0 && _pluginState.MapExtensionCount >= _generalConfig.MaxMapExtensions)
             {
                 player.PrintToChat(_localizer.LocalizeWithPrefix("extendtime.max-extensions-reached", _generalConfig.MaxMapExtensions));
                 return;
