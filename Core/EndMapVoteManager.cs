@@ -5,7 +5,6 @@ using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Timers;
 using cs2_rockthevote.Core;
 using System.Data;
-using System.Text;
 using static CounterStrikeSharp.API.Core.Listeners;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
@@ -45,13 +44,13 @@ namespace cs2_rockthevote
         List<string> mapsEllected = new();
 
         private IEndOfMapConfig? _config = null;
-        private VoteExtendConfig _voteExtendConfig = new();
+        private GeneralConfig _generalConfig = new();
         private VoteTypeConfig _voteTypeConfig = new();
         private EndOfMapConfig _endMapConfig = new();
+
         private int _canVote = 0;
         private Plugin? _plugin;
         HashSet<int> _voted = new();
-        private readonly int _chatIntervalSeconds = 10;
         private DateTime _lastChatPrintTime = DateTime.MinValue;
 
         public void OnLoad(Plugin plugin)
@@ -65,7 +64,7 @@ namespace cs2_rockthevote
 
         public void OnConfigParsed(Config config)
         {
-            _voteExtendConfig = config.VoteExtend;
+            _generalConfig = config.General;
             _voteTypeConfig = config.VoteType;
             _endMapConfig = config.EndOfMapVote;
         }
@@ -137,6 +136,7 @@ namespace cs2_rockthevote
             string countdown = _localizer.Localize("emv.hud.hud-timer", timeLeft);
 
             var now = DateTime.UtcNow;
+            int _chatIntervalSeconds = _generalConfig.ChatCountdownInterval;
             bool sendChat = !_endMapConfig.HudCountdown && (now - _lastChatPrintTime).TotalSeconds >= _chatIntervalSeconds;
 
             foreach (CCSPlayerController player in ServerManager.ValidPlayers())
@@ -176,7 +176,10 @@ namespace cs2_rockthevote
             if (_voteTypeConfig.EnableHudMenu && mapsToShow > MAX_OPTIONS_HUD_MENU)
                 mapsToShow = MAX_OPTIONS_HUD_MENU;
             
-            bool canShowExtendOption = _config.IncludeExtendCurrentMap && _pluginState.MapExtensionCount < _config.MaxMapExtensions;
+            int maxExt = _generalConfig.MaxMapExtensions;
+            bool unlimited = maxExt <= 0;  // treat 0 or negative as unlimited
+
+            bool canShowExtendOption = _config.IncludeExtendCurrentMap && (unlimited || _pluginState.MapExtensionCount < maxExt);
             int mapOptionsCount = canShowExtendOption ? mapsToShow - 1 : mapsToShow;
             
             // Get map list
@@ -285,9 +288,12 @@ namespace cs2_rockthevote
             
             if (winner.Key == extendOption)
             {
-                if (_pluginState.MapExtensionCount < _config!.MaxMapExtensions)
+                int maxExt = _generalConfig.MaxMapExtensions;
+                bool unlimited = maxExt <= 0;
+
+                if (unlimited || _pluginState.MapExtensionCount < maxExt)
                 {
-                    bool success = _extendRoundTimeManager.ExtendRoundTime(_config.RoundTimeExtension);
+                    bool success = _extendRoundTimeManager.ExtendRoundTime(_config!.RoundTimeExtension);
                     if (success)
                     {
                         Server.PrintToChatAll(_localizer.LocalizeWithPrefix("extendtime.vote-ended.passed", _config.RoundTimeExtension, percent, totalVotes));
@@ -300,7 +306,7 @@ namespace cs2_rockthevote
                 }
                 
                 int newRemainingSeconds = (int)(_gameRules.RoundTime - (Server.CurrentTime - _gameRules.GameStartTime));
-                int triggerSeconds = ((EndOfMapConfig)_config).TriggerSecondsBeforeEnd;
+                int triggerSeconds = ((EndOfMapConfig)_config!).TriggerSecondsBeforeEnd;
                 int delay = Math.Max(newRemainingSeconds - triggerSeconds, 0);
                 
                 _plugin?.AddTimer(delay, () =>
