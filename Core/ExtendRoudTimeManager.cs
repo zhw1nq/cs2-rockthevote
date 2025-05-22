@@ -28,8 +28,8 @@ namespace cs2_rockthevote
         private IEndOfMapConfig? _config = null;
         private VoteExtendConfig _voteExtendConfig = new();
         private VoteTypeConfig _voteTypeConfig = new();
+        private GeneralConfig _generalConfig = new();
 
-        private readonly int _chatIntervalSeconds = 10;
         private DateTime _lastChatPrintTime = DateTime.MinValue;
 
         private int _canVote = 0;
@@ -56,6 +56,7 @@ namespace cs2_rockthevote
             _config = config.EndOfMapVote;
             _voteTypeConfig = config.VoteType;
             _voteExtendConfig = config.VoteExtend;
+            _generalConfig = config.General;
         }
 
         public void ExtendTimeVoted(CCSPlayerController player, string voteResponse)
@@ -97,6 +98,7 @@ namespace cs2_rockthevote
             string text = _localizer.Localize("extendtime.hud.hud-timer", timeLeft);
 
             var now = DateTime.UtcNow;
+            int _chatIntervalSeconds = _generalConfig.ChatCountdownInterval;
             bool sendChat = !_voteExtendConfig.HudCountdown && (now - _lastChatPrintTime).TotalSeconds >= _chatIntervalSeconds;
 
             foreach (var player in ServerManager.ValidPlayers())
