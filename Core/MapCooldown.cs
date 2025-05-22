@@ -5,12 +5,15 @@ namespace cs2_rockthevote.Core
     public class MapCooldown : IPluginDependency<Plugin, Config>
     {
         List<string> mapsOnCoolDown = new();
-        private ushort InCoolDown = 0;
+
+        private GeneralConfig _generalConfig = new();
 
         public event EventHandler<Map[]>? EventCooldownRefreshed;
 
         public MapCooldown(MapLister mapLister)
         {
+            int InCoolDown = _generalConfig.MapsInCoolDown;
+                
             mapLister.EventMapsLoaded += (e, maps) =>
             {
                 var map = Server.MapName;
@@ -33,7 +36,7 @@ namespace cs2_rockthevote.Core
 
         public void OnConfigParsed(Config config)
         {
-            InCoolDown = config.MapsInCoolDown;
+            _generalConfig = config.General;
         }
 
         public bool IsMapInCooldown(string map)
