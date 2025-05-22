@@ -25,8 +25,6 @@ namespace cs2_rockthevote
         public bool HideHudAfterVote { get; set; }
         public bool SoundEnabled { get; set; }
         public string SoundPath { get; set; }
-        public bool IncludeExtendCurrentMap { get; set; }
-        public int RoundTimeExtension { get; set; }
     }
 
     public class EndOfMapConfig : IEndOfMapConfig
@@ -42,13 +40,12 @@ namespace cs2_rockthevote
         public int TriggerRoundsBeforEnd { get; set; } = 0;
         public float DelayToChangeInTheEnd { get; set; } = 0F;
         public bool IncludeExtendCurrentMap { get; set; } = true;
-        public int RoundTimeExtension { get; set; } = 15;
         public bool EnableCountdown { get; set; } = false;
         public bool HudCountdown { get; set; } = false;
 
     }
 
-    public class RtvConfig : ICommandConfig, IVoteConfig
+    public class RtvConfig : ICommandConfig, IVoteConfig, IEndOfMapConfig
     {
         public bool Enabled { get; set; } = true;
         public bool EnabledInWarmup { get; set; } = false;
@@ -78,21 +75,12 @@ namespace cs2_rockthevote
         public string Permission { get; set; } = "@css/vip";
     }
 
-    public class GeneralConfig
-    {
-        public bool ShowNextMapToAll { get; set; } = false;
-        public int MaxMapExtensions { get; set; } = 2;
-        public int  MapsInCoolDown { get; set; } = 3;
-        public int ChatCountdownInterval { get; set; } = 10;
-    }
-
     public class VoteExtendConfig
     {
         public bool Enabled { get; set; } = false;
         public int VoteDuration { get; set; } = 60;
         public int VotePercentage { get; set; } = 50;
         public int CooldownDuration { get; set; } = 180;
-        public int RoundTimeExtension { get; set; } = 10;
         public bool EnableCountdown { get; set; } = false;
         public bool HudCountdown { get; set; } = false;
         public string Permission { get; set; } = "@css/vip";
@@ -113,6 +101,15 @@ namespace cs2_rockthevote
         public bool EnableChatMenu { get; set; } = false;
         public bool EnableHudMenu { get; set; } = false;
         public bool EnablePanorama { get; set; } = true;
+    }
+
+    public class GeneralConfig
+    {
+        public bool ShowNextMapToAll { get; set; } = false;
+        public int MaxMapExtensions { get; set; } = 2;
+        public int RoundTimeExtension { get; set; } = 15;
+        public int MapsInCoolDown { get; set; } = 3;
+        public int ChatCountdownInterval { get; set; } = 10;
     }
 
     public class Config : BasePluginConfig, IBasePluginConfig
