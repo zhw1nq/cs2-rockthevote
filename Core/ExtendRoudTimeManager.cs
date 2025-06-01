@@ -38,7 +38,7 @@ namespace cs2_rockthevote
         public void OnLoad(Plugin plugin)
         {
             _plugin = plugin;
-            if (_voteTypeConfig.EnableHudMenu || _voteExtendConfig.EnableCountdown)
+            if (_voteTypeConfig.EnableHudMenu || (_voteExtendConfig.EnableCountdown && _voteExtendConfig.HudCountdown))
             {
                 plugin.RegisterListener<OnTick>(VoteDisplayTick);
             }
@@ -117,6 +117,33 @@ namespace cs2_rockthevote
                 _lastChatPrintTime = now;
         }
 
+        public void ChatCountdown(int secondsLeft)
+        {
+            // schedule one callback after ChatCountdownInterval seconds
+            new Timer(_generalConfig.ChatCountdownInterval, () =>
+            {
+                // stop if vote is over
+                if (!_pluginState.ExtendTimeVoteHappening)
+                    return;
+
+                // compute remaining time
+                int nextSecondsLeft = secondsLeft - _generalConfig.ChatCountdownInterval;
+                if (nextSecondsLeft <= 0)
+                    return;
+
+                // print the countdown text
+                string text = _localizer.LocalizeWithPrefix(
+                    "extendtime.countdown",
+                    nextSecondsLeft
+                );
+                foreach (var player in ServerManager.ValidPlayers())
+                    player.PrintToChat(text);
+
+                // schedule the next tick
+                ChatCountdown(nextSecondsLeft);
+            });
+        }
+
         public void ExtendTimeVote()
         {
             bool mapEnd = _config is EndOfMapConfig;
@@ -166,6 +193,11 @@ namespace cs2_rockthevote
             Votes.Clear();
             _pluginState.ExtendTimeVoteHappening = true;
             _voteExtendConfig = config;
+            
+            if (_voteExtendConfig.EnableCountdown && !_voteExtendConfig.HudCountdown)
+            {
+                ChatCountdown(_voteExtendConfig.VoteDuration);
+            }
 
             _canVote = ServerManager.ValidPlayerCount();
 
