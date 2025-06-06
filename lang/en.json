@@ -24,6 +24,7 @@
   "votemap.changing-map-next-round": "The map will be changed to {green}{0}{default} in the next round...",
   "nominate.nominated": "{green}{0}{default} nominated map {green}{1}{default}, now it has {2} vote(s)",
   "nominate.already-nominated": "You already nominated the map {green}{0}{default}, it has {1} vote(s)",
+  "nominate.limit": "{red}You can only nominate once per map.",
   "nominate.screenmenu-title": "Nominate a Map:",
   "general.votes-needed": "({0} voted, {1} needed)",
   "general.invalid-map": "Invalid map",

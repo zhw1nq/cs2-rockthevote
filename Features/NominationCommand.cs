@@ -107,12 +107,21 @@ namespace cs2_rockthevote
         {
             if (player is null)
                 return;
+            
+            var userId = player.UserId!.Value;
 
             map = map.ToLower().Trim();
 
             if (_pluginState.DisableCommands || !_config.NominationEnabled || _pluginState.EofVoteHappening)
             {
                 player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.disabled"));
+                return;
+            }
+
+            // Can't nominate more than once per map
+            if (Nominations.ContainsKey(userId))
+            {
+                player.PrintToChat(_localizer.LocalizeWithPrefix("nominate.limit"));
                 return;
             }
 
@@ -167,16 +176,18 @@ namespace cs2_rockthevote
             MenuManager.OpenChatMenu(player, nominationMenu!);
         }
 
-        void Nominate(CCSPlayerController player, string map)
+        public void Nominate(CCSPlayerController player, string map)
         {
             map = map.ToLower().Trim();
 
+            // Can't nominate the current map
             if (map == Server.MapName)
             {
                 player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.current-map"));
                 return;
             }
 
+            // Can't nominate an invalid map name (doesn't exist)
             string matchingMap = _mapLister.GetSingleMatchingMapName(map, player, _localizer);
             if (string.IsNullOrEmpty(matchingMap))
             {
@@ -184,6 +195,7 @@ namespace cs2_rockthevote
                 return;
             }
 
+            // Can't nominate a map on cooldown (set in GeneralCOnfig.MapsInCoolDown)
             if (_mapCooldown.IsMapInCooldown(matchingMap))
             {
                 player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.map-played-recently"));
@@ -191,6 +203,7 @@ namespace cs2_rockthevote
             }
 
             var userId = player.UserId!.Value;
+
             if (!Nominations.ContainsKey(userId))
                 Nominations[userId] = new();
 
