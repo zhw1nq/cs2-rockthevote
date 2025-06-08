@@ -97,49 +97,30 @@ namespace cs2_rockthevote
 
             string text = _localizer.Localize("extendtime.hud.hud-timer", timeLeft);
 
-            var now = DateTime.UtcNow;
-            int _chatIntervalSeconds = _generalConfig.ChatCountdownInterval;
-            bool sendChat = !_voteExtendConfig.HudCountdown && (now - _lastChatPrintTime).TotalSeconds >= _chatIntervalSeconds;
-
             foreach (var player in ServerManager.ValidPlayers())
             {
                 if (_voteExtendConfig.HudCountdown)
                 {
                     player.PrintToCenter(text);
                 }
-                else if (sendChat)
-                {
-                    player.PrintToChat(text);
-                }
             }
-
-            if (sendChat)
-                _lastChatPrintTime = now;
         }
 
         public void ChatCountdown(int secondsLeft)
         {
-            // schedule one callback after ChatCountdownInterval seconds
-            new Timer(_generalConfig.ChatCountdownInterval, () =>
+            if (!_pluginState.ExtendTimeVoteHappening || !_voteExtendConfig.EnableCountdown || _voteExtendConfig.HudCountdown)
+                return;
+
+            string text = _localizer.LocalizeWithPrefix("general.chat-countdown", secondsLeft);
+            foreach (var player in ServerManager.ValidPlayers())
+                player.PrintToChat(text);
+
+            int nextSecondsLeft = secondsLeft - _generalConfig.ChatCountdownInterval;
+            if (nextSecondsLeft <= 0)
+                return;
+
+            _ = new Timer(_generalConfig.ChatCountdownInterval, () =>
             {
-                // stop if vote is over
-                if (!_pluginState.ExtendTimeVoteHappening)
-                    return;
-
-                // compute remaining time
-                int nextSecondsLeft = secondsLeft - _generalConfig.ChatCountdownInterval;
-                if (nextSecondsLeft <= 0)
-                    return;
-
-                // print the countdown text
-                string text = _localizer.LocalizeWithPrefix(
-                    "extendtime.countdown",
-                    nextSecondsLeft
-                );
-                foreach (var player in ServerManager.ValidPlayers())
-                    player.PrintToChat(text);
-
-                // schedule the next tick
                 ChatCountdown(nextSecondsLeft);
             });
         }
