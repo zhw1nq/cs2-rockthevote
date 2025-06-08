@@ -1,6 +1,4 @@
-﻿using CounterStrikeSharp.API.Core;
-
-namespace cs2_rockthevote
+﻿namespace cs2_rockthevote
 {
     public class MapLister : IPluginDependency<Plugin, Config>
     {
@@ -9,18 +7,13 @@ namespace cs2_rockthevote
         public event EventHandler<Map[]>? EventMapsLoaded;
         private Plugin? _plugin;
 
-        public MapLister()
-        {
-
-        }
-
         public void Clear()
         {
             MapsLoaded = false;
             Maps = null;
         }
 
-        void LoadMaps()
+        public void LoadMaps()
         {
             Clear();
             string mapsFile = Path.Combine(_plugin!.ModulePath, "../maplist.txt");
@@ -35,11 +28,8 @@ namespace cs2_rockthevote
                 .Select(mapLine =>
                 {
                     string[] args = mapLine.Split(":");
-
                     string mapName = args[0];
-
                     string? mapValue = args.Length == 2 ? args[1] : null;
-
                     return new Map(mapName, mapValue);
                 })];
 
@@ -60,28 +50,22 @@ namespace cs2_rockthevote
             LoadMaps();
         }
 
-        public string GetSingleMatchingMapName(string map, CCSPlayerController player, StringLocalizer _localizer)
+        // Returns the exact map name, or null if none found
+        public string? GetExactMapName(string name)
         {
-            if (Maps!.Select(x => x.Name).FirstOrDefault(x => string.Equals(x, map, StringComparison.OrdinalIgnoreCase)) is not null)
-                return map;
+            if (Maps == null) return null;
+            return Maps
+                .Select(m => m.Name)
+                .FirstOrDefault(n => n.Equals(name, StringComparison.OrdinalIgnoreCase));
+        }
 
-            var matchingMaps = Maps!
-                .Select(x => x.Name)
-                .Where(x => x.Contains(map, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            if (matchingMaps.Count == 0)
-            {
-                player!.PrintToChat(_localizer.LocalizeWithPrefix("general.invalid-map"));
-                return "";
-            }
-            else if (matchingMaps.Count > 1)
-            {
-                player!.PrintToChat(_localizer.LocalizeWithPrefix("nominate.multiple-maps-containing-name"));
-                return "";
-            }
-
-            return matchingMaps[0];
+        // Returns all map names that contain the given argument
+        public List<string> GetMatchingMapNames(string partial)
+        {
+            if (Maps == null) return new List<string>();
+            return [.. Maps
+                .Select(m => m.Name)
+                .Where(n => n.Contains(partial, StringComparison.OrdinalIgnoreCase))];
         }
     }
 }
