@@ -145,7 +145,7 @@ namespace cs2_rockthevote
                         case VoteResultEnum.VotesReached:
                             Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.rocked-the-vote", player.PlayerName)} {_localizer.Localize("general.votes-needed", result.VoteCount, result.RequiredVotes)}");
                             Server.PrintToChatAll(_localizer.LocalizeWithPrefix("rtv.votes-reached"));
-                            _endmapVoteManager.StartVote(_config);
+                            _endmapVoteManager.StartVote(_config, isRtv: true);
                             break;
                     }
                 }
@@ -168,12 +168,12 @@ namespace cs2_rockthevote
                 {
                     _ = new Timer(3.5F, () =>
                     {
-                        _endmapVoteManager.StartVote(_config);
+                        _endmapVoteManager.StartVote(_config, isRtv: true);
                     });
                 }
                 else
                 {
-                    _endmapVoteManager.StartVote(_config);
+                    _endmapVoteManager.StartVote(_config, isRtv: true);
                 }
                 
                 return true;
