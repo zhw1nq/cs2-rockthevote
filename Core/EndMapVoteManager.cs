@@ -154,27 +154,16 @@ namespace cs2_rockthevote
 
             string countdown = _localizer.Localize("emv.hud.hud-timer", timeLeft);
 
-            var now = DateTime.UtcNow;
-            int _chatIntervalSeconds = _generalConfig.ChatCountdownInterval;
-            bool sendChat = !_endMapConfig.HudCountdown && (now - _lastChatPrintTime).TotalSeconds >= _chatIntervalSeconds;
-
             foreach (CCSPlayerController player in ServerManager.ValidPlayers())
             {
                 if (_endMapConfig.HudCountdown)
                 {
                     player.PrintToCenter(countdown);
                 }
-                else
-                {
-                    player.PrintToChat(countdown);
-                }
             }
-
-            if (sendChat)
-                _lastChatPrintTime = now;
         }
 
-        public void StartVote(IEndOfMapConfig config)
+        public void StartVote(IEndOfMapConfig config, bool isRtv = false)
         {
             if (_pluginState.EofVoteHappening)
                 return;
@@ -198,7 +187,10 @@ namespace cs2_rockthevote
             int maxExt = _generalConfig.MaxMapExtensions;
             bool unlimited = maxExt <= 0;  // treat 0 or negative as unlimited
 
-            bool canShowExtendOption = _endMapConfig.IncludeExtendCurrentMap && (unlimited || _pluginState.MapExtensionCount < maxExt);
+            bool canShowExtendOption = !isRtv
+                && _endMapConfig.IncludeExtendCurrentMap
+                && (unlimited || _pluginState.MapExtensionCount < maxExt);
+
             int mapOptionsCount = canShowExtendOption ? mapsToShow - 1 : mapsToShow;
             
             // Get map list
