@@ -105,12 +105,11 @@ namespace cs2_rockthevote
 
         public void CommandHandler(CCSPlayerController? player, string map)
         {
-            if (player is null)
+            if (player == null)
                 return;
             
             var userId = player.UserId!.Value;
-
-            map = map.ToLower().Trim();
+            var mapName = map.Trim().ToLower();
 
             if (_pluginState.DisableCommands || !_config.NominationEnabled || _pluginState.EofVoteHappening)
             {
@@ -145,7 +144,7 @@ namespace cs2_rockthevote
                 return;
             }
 
-            if (string.IsNullOrEmpty(map))
+            if (string.IsNullOrEmpty(mapName))
             {
                 // All 3 menu types can be used. However, if none are enabled for some reason, throw an error and fall back to chat menu
                 if (!(_voteTypeConfig.EnableScreenMenu || _voteTypeConfig.EnableHudMenu || _voteTypeConfig.EnableChatMenu))
@@ -163,12 +162,16 @@ namespace cs2_rockthevote
 
                 if (_voteTypeConfig.EnableChatMenu)
                     OpenChatNomination(player);
+                
+                return;
             }
 
-            else
-            {
-                Nominate(player, map);
-            }
+            var resolved = ResolveMapNameOrPrompt(player, mapName, _localizer);
+            if (resolved == null)
+                return;
+
+            // Now there is exactly one map name to nominate
+            Nominate(player, resolved);
         }
 
         public void OpenChatNomination(CCSPlayerController player)
@@ -178,25 +181,17 @@ namespace cs2_rockthevote
 
         public void Nominate(CCSPlayerController player, string map)
         {
-            map = map.ToLower().Trim();
+            var mapName = map.Trim();
 
             // Can't nominate the current map
-            if (map == Server.MapName)
+            if (map.Equals(Server.MapName, StringComparison.OrdinalIgnoreCase))
             {
                 player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.current-map"));
                 return;
             }
 
-            // Can't nominate an invalid map name (doesn't exist)
-            string matchingMap = _mapLister.GetSingleMatchingMapName(map, player, _localizer);
-            if (string.IsNullOrEmpty(matchingMap))
-            {
-                player.PrintToChat(_localizer.LocalizeWithPrefix("general.invalid-map"));
-                return;
-            }
-
-            // Can't nominate a map on cooldown (set in GeneralCOnfig.MapsInCoolDown)
-            if (_mapCooldown.IsMapInCooldown(matchingMap))
+            // Can't nominate a map on cooldown
+            if (_mapCooldown.IsMapInCooldown(map))
             {
                 player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.map-played-recently"));
                 return;
@@ -204,19 +199,60 @@ namespace cs2_rockthevote
 
             var userId = player.UserId!.Value;
 
-            if (!Nominations.ContainsKey(userId))
-                Nominations[userId] = new();
+            if (Nominations.ContainsKey(userId))
+            {
+                player.PrintToChat(_localizer.LocalizeWithPrefix("nominate.limit"));
+                return;
+            }
 
-            bool alreadyVoted = Nominations[userId].Contains(matchingMap);
-            if (!alreadyVoted)
-                Nominations[userId].Add(matchingMap);
+            Nominations[userId] = new List<string> { map };
 
-            var totalVotes = Nominations.Select(x => x.Value.Count(y => y == matchingMap)).Sum();
+            int totalVotes = Nominations.Values.Count(list => list.Contains(map));
 
-            if (!alreadyVoted)
-                Server.PrintToChatAll(_localizer.LocalizeWithPrefix("nominate.nominated", player.PlayerName, matchingMap, totalVotes));
-            else
-                player.PrintToChat(_localizer.LocalizeWithPrefix("nominate.already-nominated", matchingMap, totalVotes));
+            Server.PrintToChatAll(_localizer.LocalizeWithPrefix("nominate.nominated", player.PlayerName, map, totalVotes));
+        }
+
+        private void ShowMultipleMatchesMenu(CCSPlayerController player, List<string> matchingMaps)
+        {
+            var menu = new ChatMenu(_localizer.Localize("nominate.multiple-maps"));
+            foreach (var name in matchingMaps)
+            {
+                menu.AddMenuOption(
+                    name,
+                    (p, opt) => Nominate(p, opt.Text),
+                    false
+                );
+            }
+            MenuManager.OpenChatMenu(player, menu);
+        }
+
+        // Attempt to resolve the user’s text into exactly one map. If 0 matches → send "invalid" and return null.
+        // If > 1 matches → show the mini‐menu and return null. Otherwise → return the single map name.
+        private string? ResolveMapNameOrPrompt(CCSPlayerController player, string input, StringLocalizer localizer)
+        {
+            // Exact match
+            var exact = _mapLister.GetExactMapName(input);
+            if (exact is not null)
+                return exact;
+
+            // Find all "contains" matches
+            var matches = _mapLister.GetMatchingMapNames(input);
+
+            // No matches found
+            if (matches.Count == 0)
+            {
+                player.PrintToChat(localizer.LocalizeWithPrefix("general.invalid-map"));
+                return null;
+            }
+            // Found more than 1 match
+            if (matches.Count > 1)
+            {
+                ShowMultipleMatchesMenu(player, matches);
+                return null;
+            }
+
+            // Exactly one
+            return matches[0];
         }
 
         public List<string> NominationWinners()
