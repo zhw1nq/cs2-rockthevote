@@ -7,17 +7,19 @@ using cs2_rockthevote.Core;
 using System.Data;
 using static CounterStrikeSharp.API.Core.Listeners;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
+using Microsoft.Extensions.Logging;
 
 namespace cs2_rockthevote
 {
     public class EndMapVoteManager : IPluginDependency<Plugin, Config>
     {
+        private readonly ILogger<EndMapVoteManager> _logger;
         private readonly ExtendRoundTimeManager _extendRoundTimeManager;
         const int MAX_OPTIONS_HUD_MENU = 6;
         private readonly TimeLimitManager _timeLimitManager;
         private readonly GameRules _gameRules;
-        
-        public EndMapVoteManager(MapLister mapLister, ChangeMapManager changeMapManager, NominationCommand nominationManager, StringLocalizer localizer, PluginState pluginState, MapCooldown mapCooldown,ExtendRoundTimeManager extendRoundTimeManager, TimeLimitManager timeLimitManager, GameRules gameRules)
+
+        public EndMapVoteManager(MapLister mapLister, ChangeMapManager changeMapManager, NominationCommand nominationManager, StringLocalizer localizer, PluginState pluginState, MapCooldown mapCooldown, ExtendRoundTimeManager extendRoundTimeManager, TimeLimitManager timeLimitManager, GameRules gameRules, ILogger<EndMapVoteManager> logger)
         {
             _mapLister = mapLister;
             _changeMapManager = changeMapManager;
@@ -28,6 +30,7 @@ namespace cs2_rockthevote
             _extendRoundTimeManager = extendRoundTimeManager;
             _timeLimitManager = timeLimitManager;
             _gameRules = gameRules;
+            _logger = logger;
         }
 
         private readonly MapLister _mapLister;
@@ -67,6 +70,22 @@ namespace cs2_rockthevote
             _generalConfig = config.General;
             _voteTypeConfig = config.VoteType;
             _endMapConfig = config.EndOfMapVote;
+
+            // Check to make sure VoteDuration isn't >= TriggerSecondsBeforeEnd, if it is, use a fallback
+            if (_endMapConfig.VoteDuration >= _endMapConfig.TriggerSecondsBeforeEnd)
+            {
+                var original = _endMapConfig.VoteDuration;
+                var adjusted = Math.Max(1, _endMapConfig.TriggerSecondsBeforeEnd - 5);
+                _endMapConfig.VoteDuration = adjusted;
+
+                _logger.LogError(
+                    $"EndOfMapVote config invalid: VoteDuration ({_endMapConfig.VoteDuration}s) must be less than " +
+                    $"TriggerSecondsBeforeEnd ({_endMapConfig.TriggerSecondsBeforeEnd}s). Automatically adjusting VoteDuration to {adjusted}s.",
+                    original,
+                    config.EndOfMapVote.TriggerSecondsBeforeEnd,
+                    adjusted
+                );
+            }
         }
 
         public void OnMapStart(string map)
