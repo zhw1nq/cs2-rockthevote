@@ -38,6 +38,7 @@
   "general.changing-map": "Changing map to {green}{0}",
   "general.changing-map-next-round": "The map will be changed to {green}{0}{default} in the next round...",
   "general.incorrect.permission": "You do not have the correct permission to execute this command.",
+  "general.chat-countdown": "Time left to vote: {lime}{0} {default}seconds",
   "rtv.rocked-the-vote": "{green}{0}{default} wants to rock the vote!",
   "rtv.already-rocked-the-vote": "You already rocked the vote",
   "rtv.votes-reached": "{green}Number of votes reached, starting vote...",
