@@ -3,6 +3,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Menu;
+using CounterStrikeSharp.API.Modules.Utils;
 using cs2_rockthevote.Core;
 using Microsoft.Extensions.Logging;
 
@@ -73,20 +74,21 @@ namespace cs2_rockthevote
 
         public void OnMapsLoaded(object? sender, Map[] maps)
         {
-            nominationMenu = new("Nomination");
+            nominationMenu = new(_localizer.Localize("nominate.title"));
             foreach (var map in _mapLister.Maps!.Where(x => !GetBaseMapName(x.Name).Equals(Server.MapName, StringComparison.OrdinalIgnoreCase)))
             {
-                nominationMenu.AddMenuOption(map.Name, (CCSPlayerController player, ChatMenuOption option) =>
+                nominationMenu.AddMenuOption(_mapCooldown.IsMapInCooldown(map.Name) ? $"{ChatColors.Grey}{map.Name}" : map.Name, (player, option) =>
                 {
                     Nominate(player, option.Text);
-                }, _mapCooldown.IsMapInCooldown(map.Name));
+                },
+                _mapCooldown.IsMapInCooldown(map.Name)
+            );
             }
         }
 
         public void OpenScreenMenu(CCSPlayerController player)
         {
             // Build the list of map names, skipping the current map and the ones on cool down
-
             var voteOptions = _mapLister.Maps!
                 .Where(m => !GetBaseMapName(m.Name)
                        .Equals(Server.MapName, StringComparison.OrdinalIgnoreCase)
@@ -101,7 +103,7 @@ namespace cs2_rockthevote
                     player,
                     voteOptions,
                     (p, mapName) => CommandHandler(p, mapName),
-                    _localizer.Localize("nominate.screenmenu-title")
+                    _localizer.Localize("nominate.title")
             ));
         }
 
