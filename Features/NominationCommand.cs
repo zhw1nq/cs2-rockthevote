@@ -74,7 +74,7 @@ namespace cs2_rockthevote
         public void OnMapsLoaded(object? sender, Map[] maps)
         {
             nominationMenu = new("Nomination");
-            foreach (var map in _mapLister.Maps!.Where(x => x.Name != Server.MapName))
+            foreach (var map in _mapLister.Maps!.Where(x => !GetBaseMapName(x.Name).Equals(Server.MapName, StringComparison.OrdinalIgnoreCase)))
             {
                 nominationMenu.AddMenuOption(map.Name, (CCSPlayerController player, ChatMenuOption option) =>
                 {
@@ -86,9 +86,11 @@ namespace cs2_rockthevote
         public void OpenScreenMenu(CCSPlayerController player)
         {
             // Build the list of map names, skipping the current map and the ones on cool down
+
             var voteOptions = _mapLister.Maps!
-                .Where(m => m.Name != Server.MapName 
-                        && !_mapCooldown.IsMapInCooldown(m.Name))
+                .Where(m => !GetBaseMapName(m.Name)
+                       .Equals(Server.MapName, StringComparison.OrdinalIgnoreCase)
+                    && !_mapCooldown.IsMapInCooldown(m.Name))
                 .Select(m => m.Name)
                 .ToList();
 
@@ -182,9 +184,10 @@ namespace cs2_rockthevote
         public void Nominate(CCSPlayerController player, string map)
         {
             var mapName = map.Trim();
+            var baseName = GetBaseMapName(mapName);
 
             // Can't nominate the current map
-            if (map.Equals(Server.MapName, StringComparison.OrdinalIgnoreCase))
+            if (baseName.Equals(Server.MapName, StringComparison.OrdinalIgnoreCase))
             {
                 player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.current-map"));
                 return;
@@ -253,6 +256,14 @@ namespace cs2_rockthevote
 
             // Exactly one
             return matches[0];
+        }
+
+        private string GetBaseMapName(string displayName)
+        {
+            var idx = displayName.IndexOf(" (", StringComparison.Ordinal);
+            return idx >= 0
+                ? displayName.Substring(0, idx)
+                : displayName;
         }
 
         public List<string> NominationWinners()
