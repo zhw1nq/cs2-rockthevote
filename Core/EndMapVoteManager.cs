@@ -44,7 +44,7 @@ namespace cs2_rockthevote
         Dictionary<string, int> Votes = new();
         int timeLeft = -1;
 
-        List<string> mapsEllected = new();
+        List<string> mapsElected = new();
 
         private IEndOfMapConfig? _config = null;
         private GeneralConfig _generalConfig = new();
@@ -92,7 +92,7 @@ namespace cs2_rockthevote
         {
             Votes.Clear();
             timeLeft = 0;
-            mapsEllected.Clear();
+            mapsElected.Clear();
             KillTimer();
         }
 
@@ -162,12 +162,26 @@ namespace cs2_rockthevote
                 }
             }
         }
+        
+        public void ChatCountdown(int secondsLeft)
+        {
+            if (!_pluginState.EofVoteHappening || !_endMapConfig.EnableCountdown || _endMapConfig.HudCountdown)
+                return;
+
+            string text = _localizer.LocalizeWithPrefix("general.chat-countdown", secondsLeft);
+            foreach (var player in ServerManager.ValidPlayers())
+                player.PrintToChat(text);
+
+            int next = secondsLeft - _generalConfig.ChatCountdownInterval;
+            if (next > 0)
+                _ = new Timer(_generalConfig.ChatCountdownInterval, () => ChatCountdown(next));
+        }
 
         public void StartVote(IEndOfMapConfig config, bool isRtv = false)
         {
             if (_pluginState.EofVoteHappening)
                 return;
-            
+
             if (_voteTypeConfig.EnablePanorama)
             {
                 Server.ExecuteCommand("sv_allow_votes 0");
@@ -175,15 +189,15 @@ namespace cs2_rockthevote
                 Server.ExecuteCommand("sv_vote_allow_spectators 0");
                 Server.ExecuteCommand("sv_vote_count_spectator_votes 0");
             }
-            
+
             Votes.Clear();
             _pluginState.EofVoteHappening = true;
             _config = config;
-            
+
             int mapsToShow = _config.MapsToShow == 0 ? MAX_OPTIONS_HUD_MENU : _config.MapsToShow;
             if (_voteTypeConfig.EnableHudMenu && mapsToShow > MAX_OPTIONS_HUD_MENU)
                 mapsToShow = MAX_OPTIONS_HUD_MENU;
-            
+
             int maxExt = _generalConfig.MaxMapExtensions;
             bool unlimited = maxExt <= 0;  // treat 0 or negative as unlimited
 
@@ -192,21 +206,21 @@ namespace cs2_rockthevote
                 && (unlimited || _pluginState.MapExtensionCount < maxExt);
 
             int mapOptionsCount = canShowExtendOption ? mapsToShow - 1 : mapsToShow;
-            
+
             // Get map list
             var mapsScrambled = Shuffle(new Random(), _mapLister.Maps!.Select(x => x.Name)
                 .Where(x => x != Server.MapName && !_mapCooldown.IsMapInCooldown(x)).ToList());
-            
-            mapsEllected = _nominationManager.NominationWinners().Concat(mapsScrambled).Distinct().ToList();
-            
+
+            mapsElected = _nominationManager.NominationWinners().Concat(mapsScrambled).Distinct().ToList();
+
             // Create vote list
             List<string> voteOptions = new();
-            foreach (var map in mapsEllected.Take(mapOptionsCount))
+            foreach (var map in mapsElected.Take(mapOptionsCount))
             {
                 Votes[map] = 0;
                 voteOptions.Add(map);
             }
-            
+
             if (canShowExtendOption)
             {
                 string extendOption = _localizer.Localize("extendtime.list-name");
@@ -244,6 +258,9 @@ namespace cs2_rockthevote
                 }
             }
             
+            if (!isRtv)
+                ChatCountdown(_endMapConfig.VoteDuration);
+
             timeLeft = _config.VoteDuration;
             Timer = _plugin!.AddTimer(1.0F, () =>
             {
