@@ -39,6 +39,7 @@ namespace cs2_rockthevote
         private readonly PluginState _pluginState;
         private RtvConfig _config = new();
         private VoteTypeConfig _voteTypeConfig = new();
+        private GeneralConfig _generalConfig = new();
         private AsyncVoteManager? _voteManager;
         private bool _isCooldownActive = false;
         private CCSPlayerController? _initiatingPlayer;
@@ -149,6 +150,10 @@ namespace cs2_rockthevote
                             break;
                     }
                 }
+                _ = new Timer(0.1f, () => {
+                    if (_config.EnableCountdown && !_config.HudCountdown)
+                        ChatCountdown(_config.RtvVoteDuration);
+                });
             }
             catch (Exception ex)
             {
@@ -264,6 +269,25 @@ namespace cs2_rockthevote
             }
         }
 
+        public void ChatCountdown(int secondsLeft)
+        {
+            if (!PanoramaVote.IsVoteInProgress())
+                return;
+
+            string text = _localizer.LocalizeWithPrefix("general.chat-countdown", secondsLeft);
+            foreach (var player in ServerManager.ValidPlayers())
+                player.PrintToChat(text);
+
+            int nextSecondsLeft = secondsLeft - _generalConfig.ChatCountdownInterval;
+            if (nextSecondsLeft <= 0)
+                return;
+
+            _ = new Timer(_generalConfig.ChatCountdownInterval, () =>
+            {
+                ChatCountdown(nextSecondsLeft);
+            });
+        }
+
         private void ActivateCooldown()
         {
             _isCooldownActive = true;
@@ -288,6 +312,7 @@ namespace cs2_rockthevote
         {
             _config = config.Rtv;
             _voteTypeConfig = config.VoteType;
+            _generalConfig = config.General;
             _voteManager = new AsyncVoteManager(_config);
         }
     }

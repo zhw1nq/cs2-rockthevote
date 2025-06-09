@@ -62,6 +62,8 @@ namespace cs2_rockthevote
         public int CooldownDuration { get; set; } = 180;
         public int MapStartDelay { get; set; } = 180;
         public int VotePercentage { get; set; } = 51;
+        public bool EnableCountdown { get; set; } = true;
+        public bool HudCountdown { get; set; } = false;
     }
 
     public class VotemapConfig : ICommandConfig, IVoteConfig
@@ -81,15 +83,15 @@ namespace cs2_rockthevote
         public int VoteDuration { get; set; } = 60;
         public int VotePercentage { get; set; } = 50;
         public int CooldownDuration { get; set; } = 180;
-        public bool EnableCountdown { get; set; } = false;
+        public bool EnableCountdown { get; set; } = true;
         public bool HudCountdown { get; set; } = false;
         public string Permission { get; set; } = "@css/vip";
     }
 
     public class ScreenMenuConfig
     {
-        public bool EnableResolutionOption { get; set; } = true;
-        public bool EnableExitOption { get; set; } = true;
+        public bool EnableResolutionOption { get; set; } = false;
+        public bool EnableExitOption { get; set; } = false;
         public string ScrollUpKey { get; set; } = "Attack";
         public string ScrollDownKey { get; set; } = "Attack2";
         public string SelectKey { get; set; } = "E";
@@ -97,8 +99,8 @@ namespace cs2_rockthevote
 
     public class VoteTypeConfig
     {
-        public bool EnableScreenMenu { get; set; } = true;
-        public bool EnableChatMenu { get; set; } = false;
+        public bool EnableScreenMenu { get; set; } = false;
+        public bool EnableChatMenu { get; set; } = true;
         public bool EnableHudMenu { get; set; } = false;
         public bool EnablePanorama { get; set; } = true;
     }
@@ -109,7 +111,7 @@ namespace cs2_rockthevote
         public int MaxMapExtensions { get; set; } = 2;
         public int RoundTimeExtension { get; set; } = 15;
         public int MapsInCoolDown { get; set; } = 3;
-        public int ChatCountdownInterval { get; set; } = 10;
+        public int ChatCountdownInterval { get; set; } = 20;
     }
 
     public class Config : BasePluginConfig, IBasePluginConfig
