@@ -194,7 +194,7 @@ namespace cs2_rockthevote
             }
 
             // Can't nominate a map on cooldown
-            if (_mapCooldown.IsMapInCooldown(map))
+            if (_mapCooldown.IsMapInCooldown(baseName))
             {
                 player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.map-played-recently"));
                 return;
