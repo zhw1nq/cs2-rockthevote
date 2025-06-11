@@ -8,6 +8,8 @@ using System.Data;
 using static CounterStrikeSharp.API.Core.Listeners;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 using Microsoft.Extensions.Logging;
+using System.Text;
+
 
 namespace cs2_rockthevote
 {
@@ -98,7 +100,7 @@ namespace cs2_rockthevote
 
         public void MapVoted(CCSPlayerController player, string mapName)
         {
-            if (_config!.HideHudAfterVote)
+            if (_generalConfig.HideHudAfterVote)
                 _voted.Add(player.UserId!.Value);
 
             Votes[mapName] += 1;
@@ -149,16 +151,38 @@ namespace cs2_rockthevote
         
         public void VoteDisplayTick()
         {
-            if (timeLeft < 0 || !_endMapConfig.EnableCountdown || !_pluginState.EofVoteHappening)
+            // Only shown while the vote is running
+            if (timeLeft < 0 || !_pluginState.EofVoteHappening)
                 return;
 
-            string countdown = _localizer.Localize("emv.hud.hud-timer", timeLeft);
-
-            foreach (CCSPlayerController player in ServerManager.ValidPlayers())
+            // HUD Countdown
+            if (_endMapConfig.EnableCountdown && _endMapConfig.HudCountdown)
             {
-                if (_endMapConfig.HudCountdown)
-                {
+                string countdown = _localizer.Localize("emv.hud.hud-timer", timeLeft);
+                foreach (var player in ServerManager.ValidPlayers())
                     player.PrintToCenter(countdown);
+            }
+
+            // HUD vote list
+            if (_voteTypeConfig.EnableHudMenu)
+            {
+                var sb = new StringBuilder();
+                sb.Append($"<b><font color='yellow'>{_localizer.Localize("nominate.title")}</font></b>");
+
+                int idx = 1;
+                foreach (var kv in Votes.OrderByDescending(x => x.Value).Take(MAX_OPTIONS_HUD_MENU))
+                {
+                    var header = "<br><font color='yellow'>!{0}</font> {1} <font color='lime'>({2})</font>";
+                    sb.AppendFormat(header, idx++, kv.Key, kv.Value);
+                }
+
+                foreach (var player in ServerManager.ValidPlayers())
+                {
+                    var userId = player.UserId!.Value;
+                    if (_generalConfig.HideHudAfterVote && _voted.Contains(userId))
+                        continue;
+
+                    player.PrintToCenterHtml(sb.ToString());
                 }
             }
         }
@@ -230,7 +254,7 @@ namespace cs2_rockthevote
 
             _canVote = ServerManager.ValidPlayerCount();
 
-            // Open Chat or Screen Menu (config dependant)
+            // Open Chat/Screen/Hud Menu (config dependant)
             foreach (var player in ServerManager.ValidPlayers())
             {
                 if (_voteTypeConfig.EnableScreenMenu)
@@ -239,7 +263,7 @@ namespace cs2_rockthevote
                         MapVoteScreenMenu.Open(_plugin!, player, voteOptions, MapVoted, _localizer.Localize("emv.screenmenu-title"))
                     );
                 }
-                if (!_voteTypeConfig.EnableScreenMenu)
+                if (_voteTypeConfig.EnableChatMenu)
                 {
                     ChatMenu chatMenu = new ChatMenu(_localizer.Localize("emv.hud.menu-title"));
                     foreach (var option in voteOptions)
@@ -251,6 +275,18 @@ namespace cs2_rockthevote
                         });
                     }
                     MenuManager.OpenChatMenu(player, chatMenu);
+                }
+                if (_voteTypeConfig.EnableHudMenu)
+                {
+                    // Console menu used to register the votes, without having to show anything in chat
+                    var consoleMenu = new ConsoleMenu("");
+                    for (int i = 0; i < voteOptions.Count; i++)
+                    {
+                        string mapToVote = voteOptions[i];
+                        const string blank = "\u200B";
+                        consoleMenu.AddMenuOption(blank, (p, opt) => MapVoted(p, mapToVote),false);
+                    } 
+                    MenuManager.OpenConsoleMenu(player, consoleMenu);
                 }
                 if (_config.SoundEnabled)
                 {
