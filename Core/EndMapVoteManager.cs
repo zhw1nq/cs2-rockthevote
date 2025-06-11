@@ -52,6 +52,7 @@ namespace cs2_rockthevote
         private GeneralConfig _generalConfig = new();
         private VoteTypeConfig _voteTypeConfig = new();
         private EndOfMapConfig _endMapConfig = new();
+        private RtvConfig _rtvConfig = new();
 
         private int _canVote = 0;
         private Plugin? _plugin;
@@ -72,6 +73,7 @@ namespace cs2_rockthevote
             _generalConfig = config.General;
             _voteTypeConfig = config.VoteType;
             _endMapConfig = config.EndOfMapVote;
+            _rtvConfig = config.Rtv;
 
             // Check to make sure VoteDuration isn't >= TriggerSecondsBeforeEnd, if it is, use a fallback
             if (_endMapConfig.VoteDuration >= _endMapConfig.TriggerSecondsBeforeEnd)
@@ -296,6 +298,8 @@ namespace cs2_rockthevote
             
             if (!isRtv)
                 ChatCountdown(_endMapConfig.VoteDuration);
+            if (isRtv)
+                ChatCountdown(_rtvConfig.VoteDuration);
 
             timeLeft = _config.VoteDuration;
             Timer = _plugin!.AddTimer(1.0F, () =>
