@@ -267,7 +267,7 @@ namespace cs2_rockthevote
                 }
                 if (_voteTypeConfig.EnableChatMenu)
                 {
-                    ChatMenu chatMenu = new ChatMenu(_localizer.Localize("emv.hud.menu-title"));
+                    ChatMenu chatMenu = new(_localizer.Localize("emv.hud.menu-title"));
                     foreach (var option in voteOptions)
                     {
                         chatMenu.AddMenuOption(option, (p, selectedOption) =>
@@ -281,12 +281,14 @@ namespace cs2_rockthevote
                 if (_voteTypeConfig.EnableHudMenu)
                 {
                     // Console menu used to register the votes, without having to show anything in chat
-                    var consoleMenu = new ConsoleMenu("");
-                    for (int i = 0; i < voteOptions.Count; i++)
+                    ConsoleMenu consoleMenu = new(_localizer.Localize("emv.hud.menu-title"));
+                    foreach (var option in voteOptions)
                     {
-                        string mapToVote = voteOptions[i];
-                        const string blank = "\u200B";
-                        consoleMenu.AddMenuOption(blank, (p, opt) => MapVoted(p, mapToVote),false);
+                        consoleMenu.AddMenuOption(option, (p, selectedOption) =>
+                        {
+                            MapVoted(p, option);
+                            MenuManager.CloseActiveMenu(p);
+                        });
                     } 
                     MenuManager.OpenConsoleMenu(player, consoleMenu);
                 }
