@@ -22,7 +22,6 @@ namespace cs2_rockthevote
         public int MapsToShow { get; set; }
         public bool ChangeMapImmediatly { get; set; }
         public int VoteDuration { get; set; }
-        public bool HideHudAfterVote { get; set; }
         public bool SoundEnabled { get; set; }
         public string SoundPath { get; set; }
     }
@@ -33,7 +32,6 @@ namespace cs2_rockthevote
         public int MapsToShow { get; set; } = 6;
         public bool ChangeMapImmediatly { get; set; } = false;
         public int VoteDuration { get; set; } = 150;
-        public bool HideHudAfterVote { get; set; } = true;
         public bool SoundEnabled { get; set; } = false;
         public string SoundPath { get; set; } = "sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c";
         public int TriggerSecondsBeforeEnd { get; set; } = 180;
@@ -53,7 +51,6 @@ namespace cs2_rockthevote
         public int MinPlayers { get; set; } = 0;
         public int MinRounds { get; set; } = 0;
         public bool ChangeMapImmediatly { get; set; } = true;
-        public bool HideHudAfterVote { get; set; } = true;
         public bool SoundEnabled { get; set; } = false;
         public string SoundPath { get; set; } = "sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c";
         public int MapsToShow { get; set; } = 6;
@@ -112,6 +109,7 @@ namespace cs2_rockthevote
         public int RoundTimeExtension { get; set; } = 15;
         public int MapsInCoolDown { get; set; } = 3;
         public int ChatCountdownInterval { get; set; } = 20;
+        public bool HideHudAfterVote { get; set; } = true;
     }
 
     public class Config : BasePluginConfig, IBasePluginConfig
