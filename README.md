@@ -1,14 +1,25 @@
 # CS2 RockTheVote (RTV)
 General purpose map voting plugin.
+
+# Features
+- Reads from a custom maplist
+- RTV Command
+- Nominate command
+- Supports workshop maps
+- Nextmap command
+- Translated by the community
+
 Features added since fork:
 - Better !nominate (partial name matching). Credits: [exd02](https://github.com/abnerfs/cs2-rockthevote/pull/31)
+- Clarify nomination if 2 maps with similar names (surf_beginner, surf_beginner2)
+- Limit players to 1 nomination per map
 - "VotePercentage" logic now works properly with 2 players on the server
 - Ability to add map info after name w/ capitalization
-- Add optional Extend Map feature for rtv/end of map votes
+- Add optional Extend Map feature for End of Map Vote
 - Add optional sound when map vote starts (configurable sound)
 - Add vote extend (!ve/!voteextend)
 - Add !extend {0}
-- Add panorama vote (F1 = Yes, F2 = No) for !rtv & !voteextend
+- Add Panorama Vote (F1 = Yes, F2 = No) for !rtv & !voteextend
 - Add ScreenMenu integration for end of map vote/nominate
 
 ![nextmap1](https://github.com/user-attachments/assets/87d34a7c-3333-4272-aba1-2dae6f9d5d3a)
@@ -27,19 +38,11 @@ v1.0.32 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/releases
 - Extract the .zip file into `addons/counterstrikesharp/plugins`
 - Update the maplist.example.txt to inlcude your desired maps and then rename it to maplist.txt
 
-# Features
-- Reads from a custom maplist
-- RTV Command
-- Nominate command
-- Supports workshop maps
-- Nextmap command
-- Fully configurable
-- Translated by the community
 
 # Roadmap
 - [x] Add time extension feature
+- [x] Fix !nominate name matching for conflicting names
 - [ ] Fix HudMenu voting
-- [ ] Fix !nominate name matching for conflicting names
 - [ ] Add vote percentage required for winning map (e.g. must receive 25% of the vote)
 - [ ] Add vote runnoff (e.g. 2nd stage of voting between 2 maps if minimum vote percentage not achieved for a map)
 
@@ -67,8 +70,8 @@ v1.0.32 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/releases
 | -------------- | -------------------------------------------------------------------------------- | ------------- | --- | --- |
 | MapsInCoolDown | Number of maps that can't be used in vote because they have been played recently | 3             | 0   |     |
 
-## RockTheVote
-Players can type rtv to request the map to be changed, once a number of votes is reached (by default 60% of players in the server) a vote will start for the next map, this vote lasts up to 30 seconds (hardcoded for now), in the end server changes to the winner map.
+## Rtv
+Players can type !rtv to request the map to be changed, once a number of votes is reached (set in cfg) a vote will start for the next map, the vote duration is defined in the config.
 
 | Config              | Description                                                                                                            | Default Value | Min   | Max                                  |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------- | ----- | ------------------------------------ |
@@ -78,11 +81,13 @@ Players can type rtv to request the map to be changed, once a number of votes is
 | MinPlayers          | Minimum amount of players to enable RTV/Nominate                                                                       | 0             | 0     |                                      |
 | MinRounds           | Minimum rounds to enable RTV/Nominate                                                                                  | 0             | 0     |                                      |
 | ChangeMapImmediatly | Whether to change the map immediatly when vote ends or not                                                             | true          | false | true                                 |
-| HudMenu             | Whether to use HudMenu or just the chat one, when false the hud only shows which map is winning instead of actual menu | true          | false | true                                 |
 | HideHudAfterVote    | Whether to hide vote status hud after vote or not, only matters when HudMenu is true                                   | false         | false | true                                 |
-| MapsToShow          | Amount of maps to show in vote,                                                                                        | 6             | 1     | 6 with HudMenu, unlimited without it |
-| VoteDuration        | Seconds the RTV should can last                                                                                        | 30            | 1     |                                      |
-| VotePercentage      | Percentage of players that should type RTV in order to start a vote                                                    | 60            | 0     | 100                                  |
+| SoundEnabled        | Whether to play a sound when the vote starts                                                                           | false         | false | true                                 |
+| SoundPath           | The file path of the sound that will be played                                                                         | "Pick 1 Map"  | blank | any sound file path                  |
+| MapsToShow          | Amount of maps to show in vote                                                                                         | 6             | 1     | 6 with HudMenu, unlimited without it |
+| VoteDuration        | Seconds the resulting map vote will last if the rtv vote passes                                                        | 30            | 1     |                                      |
+| RtvVoteDuration     | Seconds the RTV vote will last                                                                                         | 30            | 1     |                                      |
+| VotePercentage      | Percentage of players that should vote yes to RTV in order to start a map vote                                         | 60            | 0     | 100                                  |
 
 
 ## End of map vote
@@ -128,5 +133,6 @@ Players can type `nextmap` to see which map is going to be played next
 
 ```
 surf_beginner:3070321829
+surf_nyx (T1, Linear):3129698096
 de_dust2
 ```
