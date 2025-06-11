@@ -169,7 +169,7 @@ namespace cs2_rockthevote
             if (_voteTypeConfig.EnableHudMenu)
             {
                 var sb = new StringBuilder();
-                sb.Append($"<b><font color='yellow'>{_localizer.Localize("nominate.title")}</font></b>");
+                sb.Append($"<b><font color='yellow'>{_localizer.Localize("emv.hud.menu-title")}</font></b>");
 
                 int idx = 1;
                 foreach (var kv in Votes.OrderByDescending(x => x.Value).Take(MAX_OPTIONS_HUD_MENU))
