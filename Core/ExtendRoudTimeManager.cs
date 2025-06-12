@@ -13,7 +13,6 @@ namespace cs2_rockthevote
 {
     public class ExtendRoundTimeManager(IStringLocalizer stringLocalizer, PluginState pluginState, TimeLimitManager timeLimitManager, GameRules gameRules, ILogger<ExtendRoundTimeManager> logger) : IPluginDependency<Plugin, Config>
     {
-        const int MAX_OPTIONS_HUD_MENU = 6;
         private readonly StringLocalizer _localizer = new(stringLocalizer, "extendtime.prefix");
         private readonly ILogger<ExtendRoundTimeManager> _logger = logger;
 
@@ -23,14 +22,12 @@ namespace cs2_rockthevote
         private GameRules _gameRules = gameRules;
 
         Dictionary<string, int> Votes = new();
-        int timeLeft = -1;
+        public int TimeLeft { get; private set; } = -1;
 
         private IEndOfMapConfig? _config = null;
         private VoteExtendConfig _voteExtendConfig = new();
         private VoteTypeConfig _voteTypeConfig = new();
         private GeneralConfig _generalConfig = new();
-
-        private DateTime _lastChatPrintTime = DateTime.MinValue;
 
         private int _canVote = 0;
         private Plugin? _plugin;
@@ -47,7 +44,7 @@ namespace cs2_rockthevote
         public void OnMapStart(string map)
         {
             Votes.Clear();
-            timeLeft = 0;
+            TimeLeft = 0;
             KillTimer();
         }
 
@@ -71,7 +68,7 @@ namespace cs2_rockthevote
 
         public void KillTimer()
         {
-            timeLeft = -1;
+            TimeLeft = -1;
             if (Timer is not null)
             {
                 Timer!.Kill();
@@ -92,10 +89,10 @@ namespace cs2_rockthevote
 
         public void VoteDisplayTick()
         {
-            if (timeLeft < 0 || !_voteExtendConfig.EnableCountdown || !_pluginState.ExtendTimeVoteHappening)
+            if (TimeLeft < 0 || !_voteExtendConfig.EnableCountdown || !_pluginState.ExtendTimeVoteHappening)
                 return;
 
-            string text = _localizer.Localize("extendtime.hud.hud-timer", timeLeft);
+            string text = _localizer.Localize("extendtime.hud.hud-timer", TimeLeft);
 
             foreach (var player in ServerManager.ValidPlayers())
             {
@@ -203,16 +200,16 @@ namespace cs2_rockthevote
 
         public void VoteCountdown()
         {
-            timeLeft = _voteExtendConfig.VoteDuration;
+            TimeLeft = _voteExtendConfig.VoteDuration;
 
             Timer = _plugin!.AddTimer(
                 1.0f,
                 () =>
                 {
-                    if (timeLeft <= 0 && !_voteTypeConfig.EnablePanorama)
+                    if (TimeLeft <= 0 && !_voteTypeConfig.EnablePanorama)
                         ExtendTimeVote();
                     else
-                        timeLeft--;
+                        TimeLeft--;
                 },
                 TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE
             );
