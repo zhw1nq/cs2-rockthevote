@@ -82,7 +82,7 @@ namespace cs2_rockthevote
             }
             if (_pluginState.DisableCommands || !_voteExtendConfig.Enabled)
             {
-                player.PrintToChat(_localizer.LocalizeWithPrefix("rtv.disabled"));
+                player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.disabled"));
                 return;
             }
             if (_gameRules.WarmupRunning)
@@ -90,13 +90,18 @@ namespace cs2_rockthevote
                 player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.warmup"));
                 return;
             }
+            if (_pluginState.RtvVoteHappening || _pluginState.ExtendTimeVoteHappening)
+            {
+                player.PrintToChat(_localizer.LocalizeWithPrefix("general.vote-in-progress"));
+                return;
+            }
             if (!_timeLimitManager.UnlimitedTime)
             {
-                if (!_voteTypeConfig.EnablePanorama && !_pluginState.ExtendTimeVoteHappening)
+                if (!_voteTypeConfig.EnablePanorama)
                 {
                     _extendRoundTimeManager.StartExtendVote(_voteExtendConfig);
                 }
-                else if (_voteTypeConfig.EnablePanorama && !_pluginState.ExtendTimeVoteHappening && !PanoramaVote.IsVoteInProgress())
+                else if (_voteTypeConfig.EnablePanorama)
                 {
                     PanoramaVote.Init();
                     Server.ExecuteCommand("sv_allow_votes 1");
