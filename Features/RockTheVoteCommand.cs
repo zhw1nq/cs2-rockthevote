@@ -33,6 +33,7 @@ namespace cs2_rockthevote
 
     public class RockTheVoteCommand : IPluginDependency<Plugin, Config>
     {
+        private readonly ILogger<RockTheVoteCommand> _logger;
         private readonly StringLocalizer _localizer;
         private readonly GameRules _gameRules;
         private readonly EndMapVoteManager _endmapVoteManager;
@@ -43,16 +44,12 @@ namespace cs2_rockthevote
         private AsyncVoteManager? _voteManager;
         private bool _isCooldownActive = false;
         private CCSPlayerController? _initiatingPlayer;
-        private readonly ILogger<RockTheVoteCommand> _logger;
         private DateTime _cooldownEndTime;
+        private DateTime _rtvEndTime;
+        public int TimeLeft => (int)Math.Max(0, (_rtvEndTime - DateTime.UtcNow).TotalSeconds);
 
         
-        public RockTheVoteCommand(
-            GameRules gameRules, 
-            EndMapVoteManager endmapVoteManager, 
-            StringLocalizer localizer, 
-            PluginState pluginState,
-            ILogger<RockTheVoteCommand> logger)
+        public RockTheVoteCommand(GameRules gameRules, EndMapVoteManager endmapVoteManager, StringLocalizer localizer, PluginState pluginState, ILogger<RockTheVoteCommand> logger)
         {
             _localizer = localizer;
             _gameRules = gameRules;
@@ -131,6 +128,7 @@ namespace cs2_rockthevote
                 }
                 if (!_voteTypeConfig.EnablePanorama)
                 {
+                    _pluginState.RtvVoteHappening = true;
                     VoteResult result = _voteManager!.AddVote(player.UserId!.Value);
                     switch (result.Result)
                     {
@@ -141,15 +139,18 @@ namespace cs2_rockthevote
                             player.PrintToChat($"{_localizer.LocalizeWithPrefix("rtv.already-rocked-the-vote")} {_localizer.Localize("general.votes-needed", result.VoteCount, result.RequiredVotes)}");
                             break;
                         case VoteResultEnum.VotesAlreadyReached:
+                            _pluginState.RtvVoteHappening = false;
                             player.PrintToChat(_localizer.LocalizeWithPrefix("rtv.disabled"));
                             break;
                         case VoteResultEnum.VotesReached:
+                            _pluginState.RtvVoteHappening = false;
+                            _endmapVoteManager.StartVote(_config, isRtv: true);
                             Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.rocked-the-vote", player.PlayerName)} {_localizer.Localize("general.votes-needed", result.VoteCount, result.RequiredVotes)}");
                             Server.PrintToChatAll(_localizer.LocalizeWithPrefix("rtv.votes-reached"));
-                            _endmapVoteManager.StartVote(_config, isRtv: true);
                             break;
                     }
                 }
+                _rtvEndTime = DateTime.UtcNow.AddSeconds(_config.RtvVoteDuration);
                 _ = new Timer(0.1f, () => {
                     if (_config.EnableCountdown && !_config.HudCountdown)
                         ChatCountdown(_config.RtvVoteDuration);
@@ -199,6 +200,8 @@ namespace cs2_rockthevote
             switch (action)
             {
                 case YesNoVoteAction.VoteAction_Start:
+                    _rtvEndTime = DateTime.UtcNow.AddSeconds(_config.RtvVoteDuration);
+                    _pluginState.RtvVoteHappening = true;
                     Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.rocked-the-vote", _initiatingPlayer!.PlayerName)}");
                     break;
 
@@ -257,6 +260,7 @@ namespace cs2_rockthevote
                     break;
 
                 case YesNoVoteAction.VoteAction_End:
+                    _pluginState.RtvVoteHappening = false;
                     if ((YesNoVoteEndReason)param1 == YesNoVoteEndReason.VoteEnd_Cancelled)
                     {
                         Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.failed")}");
@@ -271,7 +275,7 @@ namespace cs2_rockthevote
 
         public void ChatCountdown(int secondsLeft)
         {
-            if (!PanoramaVote.IsVoteInProgress())
+            if (!_pluginState.RtvVoteHappening)
                 return;
 
             string text = _localizer.LocalizeWithPrefix("general.chat-countdown", secondsLeft);
