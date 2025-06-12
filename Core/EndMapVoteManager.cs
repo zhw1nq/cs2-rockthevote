@@ -5,7 +5,6 @@ using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Timers;
 using cs2_rockthevote.Core;
 using System.Data;
-using static CounterStrikeSharp.API.Core.Listeners;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 using Microsoft.Extensions.Logging;
 using System.Text;
@@ -17,11 +16,44 @@ namespace cs2_rockthevote
     {
         private readonly ILogger<EndMapVoteManager> _logger;
         private readonly ExtendRoundTimeManager _extendRoundTimeManager;
-        const int MAX_OPTIONS_HUD_MENU = 6;
         private readonly TimeLimitManager _timeLimitManager;
         private readonly GameRules _gameRules;
+        private readonly MapLister _mapLister;
+        private readonly ChangeMapManager _changeMapManager;
+        private readonly NominationCommand _nominationManager;
+        private readonly StringLocalizer _localizer;
+        private readonly PluginState _pluginState;
+        private readonly MapCooldown _mapCooldown;
+        private Timer? Timer;
+        List<string> mapsElected = new();
+        private int _canVote = 0;
+        private Plugin? _plugin;
 
-        public EndMapVoteManager(MapLister mapLister, ChangeMapManager changeMapManager, NominationCommand nominationManager, StringLocalizer localizer, PluginState pluginState, MapCooldown mapCooldown, ExtendRoundTimeManager extendRoundTimeManager, TimeLimitManager timeLimitManager, GameRules gameRules, ILogger<EndMapVoteManager> logger)
+        public int TimeLeft { get; private set; } = -1;
+        public int MaxOptionsHud { get; private set; } = 6;
+        public ISet<int> VotedPlayers { get; private set; } = new HashSet<int>();
+        public Dictionary<string,int> Votes { get; private set; } = new();
+        public IReadOnlyDictionary<string,int> CurrentVotes => Votes;
+
+        private IEndOfMapConfig? _config = null;
+        private GeneralConfig _generalConfig = new();
+        private VoteTypeConfig _voteTypeConfig = new();
+        private EndOfMapConfig _endMapConfig = new();
+        private RtvConfig _rtvConfig = new();
+
+        public EndMapVoteManager
+        (
+            MapLister mapLister,
+            ChangeMapManager changeMapManager,
+            NominationCommand nominationManager,
+            StringLocalizer localizer,
+            PluginState pluginState,
+            MapCooldown mapCooldown,
+            ExtendRoundTimeManager extendRoundTimeManager,
+            TimeLimitManager timeLimitManager,
+            GameRules gameRules,
+            ILogger<EndMapVoteManager> logger
+        )
         {
             _mapLister = mapLister;
             _changeMapManager = changeMapManager;
@@ -35,37 +67,9 @@ namespace cs2_rockthevote
             _logger = logger;
         }
 
-        private readonly MapLister _mapLister;
-        private readonly ChangeMapManager _changeMapManager;
-        private readonly NominationCommand _nominationManager;
-        private readonly StringLocalizer _localizer;
-        private PluginState _pluginState;
-        private MapCooldown _mapCooldown;
-        private Timer? Timer;
-
-        Dictionary<string, int> Votes = new();
-        int timeLeft = -1;
-
-        List<string> mapsElected = new();
-
-        private IEndOfMapConfig? _config = null;
-        private GeneralConfig _generalConfig = new();
-        private VoteTypeConfig _voteTypeConfig = new();
-        private EndOfMapConfig _endMapConfig = new();
-        private RtvConfig _rtvConfig = new();
-
-        private int _canVote = 0;
-        private Plugin? _plugin;
-        HashSet<int> _voted = new();
-        private DateTime _lastChatPrintTime = DateTime.MinValue;
-
         public void OnLoad(Plugin plugin)
         {
             _plugin = plugin;
-            if (_voteTypeConfig.EnableHudMenu || _endMapConfig.EnableCountdown)
-            {
-                plugin.RegisterListener<OnTick>(VoteDisplayTick);
-            }
         }
 
         public void OnConfigParsed(Config config)
@@ -95,7 +99,7 @@ namespace cs2_rockthevote
         public void OnMapStart(string map)
         {
             Votes.Clear();
-            timeLeft = 0;
+            TimeLeft = 0;
             mapsElected.Clear();
             KillTimer();
         }
@@ -103,7 +107,7 @@ namespace cs2_rockthevote
         public void MapVoted(CCSPlayerController player, string mapName)
         {
             if (_generalConfig.HideHudAfterVote)
-                _voted.Add(player.UserId!.Value);
+                VotedPlayers.Add(player.UserId!.Value);
 
             Votes[mapName] += 1;
             player.PrintToChat(_localizer.LocalizeWithPrefix("emv.you-voted", mapName));
@@ -121,7 +125,7 @@ namespace cs2_rockthevote
 
         public void KillTimer()
         {
-            timeLeft = -1;
+            TimeLeft = -1;
             if (Timer is not null)
             {
                 Timer!.Kill();
@@ -154,13 +158,13 @@ namespace cs2_rockthevote
         public void VoteDisplayTick()
         {
             // Only shown while the vote is running
-            if (timeLeft < 0 || !_pluginState.EofVoteHappening)
+            if (TimeLeft < 0 || !_pluginState.EofVoteHappening)
                 return;
 
             // HUD Countdown
             if (_endMapConfig.EnableCountdown && _endMapConfig.HudCountdown)
             {
-                string countdown = _localizer.Localize("emv.hud.hud-timer", timeLeft);
+                string countdown = _localizer.Localize("emv.hud.timer", TimeLeft);
                 foreach (var player in ServerManager.ValidPlayers())
                     player.PrintToCenter(countdown);
             }
@@ -172,7 +176,7 @@ namespace cs2_rockthevote
                 sb.Append($"<b><font color='yellow'>{_localizer.Localize("emv.hud.menu-title")}</font></b>");
 
                 int idx = 1;
-                foreach (var kv in Votes.OrderByDescending(x => x.Value).Take(MAX_OPTIONS_HUD_MENU))
+                foreach (var kv in Votes.OrderByDescending(x => x.Value).Take(MaxOptionsHud))
                 {
                     var header = "<br><font color='yellow'>!{0}</font> {1} <font color='lime'>({2})</font>";
                     sb.AppendFormat(header, idx++, kv.Key, kv.Value);
@@ -181,7 +185,7 @@ namespace cs2_rockthevote
                 foreach (var player in ServerManager.ValidPlayers())
                 {
                     var userId = player.UserId!.Value;
-                    if (_generalConfig.HideHudAfterVote && _voted.Contains(userId))
+                    if (_generalConfig.HideHudAfterVote && VotedPlayers.Contains(userId))
                         continue;
 
                     player.PrintToCenterHtml(sb.ToString());
@@ -220,9 +224,9 @@ namespace cs2_rockthevote
             _pluginState.EofVoteHappening = true;
             _config = config;
 
-            int mapsToShow = _config.MapsToShow == 0 ? MAX_OPTIONS_HUD_MENU : _config.MapsToShow;
-            if (_voteTypeConfig.EnableHudMenu && mapsToShow > MAX_OPTIONS_HUD_MENU)
-                mapsToShow = MAX_OPTIONS_HUD_MENU;
+            int mapsToShow = _config.MapsToShow == 0 ? MaxOptionsHud : _config.MapsToShow;
+            if (_voteTypeConfig.EnableHudMenu && mapsToShow > MaxOptionsHud)
+                mapsToShow = MaxOptionsHud;
 
             int maxExt = _generalConfig.MaxMapExtensions;
             bool unlimited = maxExt <= 0;  // treat 0 or negative as unlimited
@@ -303,16 +307,16 @@ namespace cs2_rockthevote
             if (isRtv)
                 ChatCountdown(_rtvConfig.VoteDuration);
 
-            timeLeft = _config.VoteDuration;
+            TimeLeft = _config.VoteDuration;
             Timer = _plugin!.AddTimer(1.0F, () =>
             {
-                if (timeLeft <= 0)
+                if (TimeLeft <= 0)
                 {
                     EndVote();
                 }
                 else
                 {
-                    timeLeft--;
+                    TimeLeft--;
                 }
             }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
         }
