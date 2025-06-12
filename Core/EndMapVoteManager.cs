@@ -351,9 +351,10 @@ namespace cs2_rockthevote
             }
             else
             {
-                decimal maxVotes = Votes.Select(x => x.Value).Max();
-                var potentialWinners = Votes.Where(x => x.Value == maxVotes);
-                winner = potentialWinners.ElementAt(rnd.Next(0, potentialWinners.Count()));
+                int maxVotes = Votes.Values.Max();
+                var tiedMaps = Votes.Where(kv => kv.Value == maxVotes).Select(kv => kv.Key).ToList();
+                string chosenKey = tiedMaps[rnd.Next(tiedMaps.Count)];
+                winner = new KeyValuePair<string,int>(chosenKey, maxVotes);
             }
             
             decimal percent = totalVotes > 0 ? winner.Value / totalVotes * 100M : 0;
