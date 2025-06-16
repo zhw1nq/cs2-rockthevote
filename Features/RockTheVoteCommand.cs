@@ -71,6 +71,7 @@ namespace cs2_rockthevote
                     return;
 
                 _initiatingPlayer = player;
+                bool otherVoteInProgress = _pluginState.MapChangeScheduled || _pluginState.EofVoteHappening || _pluginState.ExtendTimeVoteHappening;
 
                 double elapsed = Server.CurrentTime - _gameRules.GameStartTime;
                 if (elapsed < _config.MapStartDelay)
@@ -89,7 +90,7 @@ namespace cs2_rockthevote
                     player.PrintToChat(_localizer.LocalizeWithPrefix("rtv.cooldown", secondsInt));
                     return;
                 }
-                if (_pluginState.DisableCommands || !_config.Enabled)
+                if (!_config.Enabled || otherVoteInProgress)
                 {
                     player.PrintToChat(_localizer.LocalizeWithPrefix("rtv.disabled"));
                     return;
