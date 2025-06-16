@@ -69,7 +69,7 @@ v1.0.32 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/releases
 # Configs
 - A config file will be created in `addons/counterstrikesharp/configs/plugins/RockTheVote` the first time you load the plugin.
 - Changes in the config file will require you to reload the plugin or restart the server (changing the map won't work).
-- Maps that will be used in RTV/nominate/votemap/end of map vote are located in addons/counterstrikesharp/configs/plugins/RockTheVote/maplist.txt
+- Maps that will be used in RTV/nominate/votemap/end of map vote are located in addons/counterstrikesharp/plugins/RockTheVote/maplist.txt
 
 ## Rtv
 Players can type !rtv to request the map to be changed, once a number of votes is reached (set in cfg) a vote will start for the next map, the vote duration is defined in the config.
