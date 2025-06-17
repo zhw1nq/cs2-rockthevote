@@ -33,6 +33,7 @@ namespace cs2_rockthevote
 
     public class NominationCommand : IPluginDependency<Plugin, Config>
     {
+        private List<string> _cachedNominationOptions = new();
         Dictionary<int, List<string>> Nominations = new();
         ChatMenu? nominationMenu = null;
         CenterHtmlMenu? nominationMenuHud = null;
@@ -56,11 +57,6 @@ namespace cs2_rockthevote
             _mapCooldown.EventCooldownRefreshed += OnMapsLoaded;
         }
 
-
-        public void OnMapStart(string map)
-        {
-            Nominations.Clear();
-        }
         public void OnLoad(Plugin plugin)
         {
             _plugin = plugin;
@@ -70,6 +66,19 @@ namespace cs2_rockthevote
         {
             _config = config.Rtv;
             _voteTypeConfig = config.VoteType;
+        }
+
+        public void OnMapStart(string map)
+        {
+            Nominations.Clear();
+
+            // Build the list of map names, skipping the current map and the ones on cool down
+            var _cachedNominationOptions = _mapLister.Maps!
+                .Where(m => !GetBaseMapName(m.Name)
+                       .Equals(Server.MapName, StringComparison.OrdinalIgnoreCase)
+                    && !_mapCooldown.IsMapInCooldown(m.Name))
+                .Select(m => m.Name)
+                .ToList();
         }
 
         public void OnMapsLoaded(object? sender, Map[] maps)
@@ -88,23 +97,19 @@ namespace cs2_rockthevote
 
         public void OpenScreenMenu(CCSPlayerController player)
         {
-            // Build the list of map names, skipping the current map and the ones on cool down
-            var voteOptions = _mapLister.Maps!
-                .Where(m => !GetBaseMapName(m.Name)
-                       .Equals(Server.MapName, StringComparison.OrdinalIgnoreCase)
-                    && !_mapCooldown.IsMapInCooldown(m.Name))
-                .Select(m => m.Name)
-                .ToList();
-
-            // Once the list is built, we open the menu on the next frame
+            MapVoteScreenMenu.Primer(_plugin!, player);
             Server.NextFrame(() =>
-                MapVoteScreenMenu.Open(
-                    _plugin!,
-                    player,
-                    voteOptions,
-                    (p, mapName) => CommandHandler(p, mapName),
-                    _localizer.Localize("nominate.title")
-            ));
+            {
+                // Once the list is built, we open the menu on the next frame
+                Server.NextFrame(() =>
+                    MapVoteScreenMenu.Open(
+                        _plugin!,
+                        player,
+                        _cachedNominationOptions,
+                        (p, mapName) => CommandHandler(p, mapName),
+                        _localizer.Localize("nominate.title")
+                ));
+            });
         }
 
         public void CommandHandler(CCSPlayerController? player, string map)

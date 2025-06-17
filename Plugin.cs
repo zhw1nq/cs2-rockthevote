@@ -60,7 +60,6 @@ namespace cs2_rockthevote
         {
             _dependencyManager.OnPluginLoad(this);
             RegisterListener<OnMapStart>(_dependencyManager.OnMapStart);
-
             RegisterEventHandler<EventVoteCast>((ev, info) =>
             {
                 PanoramaVote.VoteCast(ev);
@@ -73,7 +72,7 @@ namespace cs2_rockthevote
             Config = config;
             _dependencyManager.OnConfigParsed(config);
 
-            if (Config.Version < 12)
+            if (Config.Version < 13)
             {
                 _logger.LogError("Your config file is too old, please delete it from addons/counterstrikesharp/configs/plugins/RockTheVote and let the plugin recreate it on load.");
             }

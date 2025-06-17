@@ -265,6 +265,7 @@ namespace cs2_rockthevote
             {
                 if (_voteTypeConfig.EnableScreenMenu)
                 {
+                    MapVoteScreenMenu.Primer(_plugin!, player);
                     Server.NextFrame(() =>
                         MapVoteScreenMenu.Open(_plugin!, player, voteOptions, MapVoted, _localizer.Localize("emv.screenmenu-title"))
                     );

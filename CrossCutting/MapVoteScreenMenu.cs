@@ -1,6 +1,6 @@
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CS2MenuManager.API.Class;
-using CS2MenuManager.API.Menu;
+using CS2ScreenMenuAPI;
 
 namespace cs2_rockthevote
 {
@@ -8,32 +8,44 @@ namespace cs2_rockthevote
     {
         public static void Open(Plugin plugin, CCSPlayerController player, List<string> voteOptions, Action<CCSPlayerController, string> onOptionSelected, string title)
         {
-            var screenCfg = plugin.Config.ScreenMenu;
+            var cfg = plugin.Config.ScreenMenu;
 
-            var menu = new ScreenMenu(title, plugin)
+            var menu = new Menu(player, plugin)
             {
-                ScreenMenu_ShowResolutionsOption = screenCfg.EnableResolutionOption,
-                ExitButton = screenCfg.EnableExitOption,
-                ScreenMenu_ScrollUpKey = screenCfg.ScrollUpKey,
-                ScreenMenu_ScrollDownKey = screenCfg.ScrollDownKey,
-                ScreenMenu_SelectKey = screenCfg.SelectKey
+                Title = title,
+                ShowResolutionOption = cfg.EnableResolutionOption,
+                HasExitButon = cfg.EnableExitOption,
+                PostSelect = PostSelect.Close,
+                MenuType = MenuType.Both,
+                ShowDisabledOptionNum = false,
+                ShowControlsInfo = true,
             };
 
             for (int i = 0; i < voteOptions.Count; i++)
             {
-                int idx = i; 
-                menu.AddItem(
-                    voteOptions[i],
-                    (p, _) => onOptionSelected(p, voteOptions[idx])
-                );
+                int idx = i;
+                menu.AddItem(voteOptions[idx], (p, _) => onOptionSelected(p, voteOptions[idx]));
             }
 
-            menu.Display(player, 0);
+            menu.Display();
+        }
+
+
+        public static void Primer(Plugin plugin, CCSPlayerController player)
+        {
+
+            var menu = new Menu(player, plugin)
+            {
+                HasExitButon = false,
+                ShowResolutionOption = false,
+            };
+            menu.AddItem(" ", (p, o) => { });
+            menu.Close(player);
         }
 
         public static void Close(CCSPlayerController player)
         {
-            MenuManager.CloseActiveMenu(player);
+            MenuAPI.CloseActiveMenu(player);
         }
     }
 }
