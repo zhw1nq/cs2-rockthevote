@@ -111,6 +111,8 @@ namespace cs2_rockthevote
         public int ChatCountdownInterval { get; set; } = 20;
         public bool HideHudAfterVote { get; set; } = true;
         public bool RandomStartMap { get; set; } = false;
+        public bool RemoveInvalidMaps { get; set; } = false;
+        public string DiscordWebhook { get; set; } = "";
     }
 
     public class Config : BasePluginConfig, IBasePluginConfig
