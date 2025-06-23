@@ -31,6 +31,19 @@ namespace cs2_rockthevote
             menu.Display(player, 0);
         }
 
+        public static void Primer(Plugin plugin, CCSPlayerController player)
+        {
+            var menu = new ScreenMenu(" ", plugin)
+            {
+                ScreenMenu_ShowResolutionsOption = false,
+                ExitButton = false,
+                ScreenMenu_Size = 1,
+            };
+            menu.AddItem("", null!);
+            menu.Display(player, 0);
+            Close(player);
+        }
+
         public static void Close(CCSPlayerController player)
         {
             MenuManager.CloseActiveMenu(player);
