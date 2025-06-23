@@ -110,12 +110,13 @@ namespace cs2_rockthevote
         public int MapsInCoolDown { get; set; } = 3;
         public int ChatCountdownInterval { get; set; } = 20;
         public bool HideHudAfterVote { get; set; } = true;
+        public bool RandomStartMap { get; set; } = false;
     }
 
     public class Config : BasePluginConfig, IBasePluginConfig
     {
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 13;
+        public override int Version { get; set; } = 14;
         public RtvConfig Rtv { get; set; } = new();
         public VotemapConfig Votemap { get; set; } = new();
         public VoteExtendConfig VoteExtend { get; set; } = new();
