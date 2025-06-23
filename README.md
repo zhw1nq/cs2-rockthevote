@@ -48,6 +48,9 @@ v1.0.32 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/releases
 - [x] Add time extension feature
 - [x] Fix !nominate name matching for conflicting names
 - [X] Fix HudMenu voting
+- [ ] Add !maps command that lists all available maps
+- [ ] Add check for invalid workshop maps
+- [ ] Add ability to set a random starting map on server first start
 - [ ] Add vote percentage required for winning map (e.g. must receive 25% of the vote)
 - [ ] Add vote runnoff (e.g. 2nd stage of voting between 2 maps if minimum vote percentage not achieved for a map)
 
