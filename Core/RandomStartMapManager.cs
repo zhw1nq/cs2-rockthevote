@@ -2,7 +2,7 @@ using CounterStrikeSharp.API;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 using Microsoft.Extensions.Logging;
 
-namespace cs2_rockthevote.Core
+namespace cs2_rockthevote
 {
     public class RandomStartMapManager(MapLister mapLister, ILogger<RandomStartMapManager> logger) : IPluginDependency<Plugin, Config>
     {
