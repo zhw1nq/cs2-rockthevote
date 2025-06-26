@@ -16,7 +16,6 @@ namespace cs2_rockthevote
         public void ConfigureServices(IServiceCollection serviceCollection)
         {
             serviceCollection.AddLogging();
-            
             var di = new DependencyManager<Plugin, Config>();
             di.LoadDependencies(typeof(Plugin).Assembly);
             di.AddIt(serviceCollection);
@@ -32,6 +31,8 @@ namespace cs2_rockthevote
         NextMapCommand nextMap,
         ExtendRoundTimeCommand extendRoundTime,
         VoteExtendRoundTimeCommand voteExtendRoundTime,
+        TimeLeftCommand timeLeft,
+        WorkshopMapValidator mapValidator,
         ILogger<Plugin> logger) : BasePlugin, IPluginConfig<Config>
     {
         public override string ModuleName => "RockTheVote";
@@ -46,6 +47,8 @@ namespace cs2_rockthevote
         private readonly NextMapCommand _nextMap = nextMap;
         private readonly ExtendRoundTimeCommand _extendRoundTime = extendRoundTime;
         private readonly VoteExtendRoundTimeCommand _voteExtendRoundTime = voteExtendRoundTime;
+        private readonly TimeLeftCommand _timeLeft = timeLeft;
+        private readonly WorkshopMapValidator _mapValidator = mapValidator;
         private readonly ILogger<Plugin> _logger = logger;
 
 
