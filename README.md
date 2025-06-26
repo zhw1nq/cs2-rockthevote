@@ -3,24 +3,20 @@ General purpose map voting plugin.
 
 # Features
 - Reads from a custom maplist
-- RTV Command
-- Nominate command
-- Supports workshop maps
-- Nextmap command
-- Translated by the community
+- RTV Command (Using !rtv in chat, or with Panorama system that is built into CS2 [F1 = Yes, F2 = No])
+- End of Map Vote. Supports map cooldown, map extension option.
+- Nominate command (nominate a map to appear in the map vote). Partial name matching, and conflicting map name resolution (surf_beginner, surf_beginner2). Limit 1 per player.
+- Supports workshop maps, and custom map names. E.g. "surf_beginner (T1, Staged)"
+- Nextmap command. Prints the next map to chat.
+- Translated (Google Translate, ymmv)
+- Extend command. !extend 10 extends map by 10 minutes (flag restricted)
+- Vote Extend command. !ve/!votextend starts a vote to extend the current map (flag restricted)
+  
+- Optional sound alert when map vote or !rtv starts (configurable sound)
+- Optional chat/hud vote countdown 
 
-Features added since fork:
-- Better !nominate (partial name matching). Credits: [exd02](https://github.com/abnerfs/cs2-rockthevote/pull/31)
-- Clarify nomination if 2 maps with similar names (surf_beginner, surf_beginner2)
-- Limit players to 1 nomination per map
-- "VotePercentage" logic now works properly with 2 players on the server
-- Ability to add map info after name w/ capitalization
-- Add optional Extend Map feature for End of Map Vote
-- Add optional sound when map vote starts (configurable sound)
-- Add vote extend (!ve/!voteextend)
-- Add !extend {0}
-- Add Panorama Vote (F1 = Yes, F2 = No) for !rtv & !voteextend
-- Add ScreenMenu integration for end of map vote/nominate
+- Panorama Vote (F1 = Yes, F2 = No) for !rtv & !voteextend
+- ScreenMenu/HudMenu/ChatMenu for EndOfMapVote/!nominate/!votemap
 
 ![nextmap1](https://github.com/user-attachments/assets/87d34a7c-3333-4272-aba1-2dae6f9d5d3a)
 ![nextmap2](https://github.com/user-attachments/assets/4f536075-2b9d-4be1-9572-7c728d79ef4c)
@@ -36,7 +32,7 @@ Features added since fork:
 ## Requirements
 v315+ of [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp/releases)
 
-v1.0.32 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/releases/tag/v1.0.32)
+v1.0.34 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/releases/tag/v1.0.34)
 
 # Installation
 - Download the latest release from https://github.com/M-archand/cs2-rockthevote/releases
@@ -45,12 +41,10 @@ v1.0.32 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/releases
 
 
 # Roadmap
-- [x] Add time extension feature
-- [x] Fix !nominate name matching for conflicting names
-- [X] Fix HudMenu voting
 - [ ] Add !maps command that lists all available maps
-- [ ] Add check for invalid workshop maps
+- [ ] Add check for invalid workshop maps (with optional discord webhook/auto removal)
 - [ ] Add ability to set a random starting map on server first start
+- [ ] !extend max extension value
 - [ ] Add vote percentage required for winning map (e.g. must receive 25% of the vote)
 - [ ] Add vote runnoff (e.g. 2nd stage of voting between 2 maps if minimum vote percentage not achieved for a map)
 
@@ -75,7 +69,7 @@ v1.0.32 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/releases
 - Maps that will be used in RTV/nominate/votemap/end of map vote are located in addons/counterstrikesharp/plugins/RockTheVote/maplist.txt
 
 ## Rtv
-Players can type !rtv to request the map to be changed, once a number of votes is reached (set in cfg) a vote will start for the next map, the vote duration is defined in the config.
+Players can type !rtv to request the map to be changed, once a number of votes is reached (VotePercentage in cfg) a vote will start for the next map, the vote duration is defined in the config.
 
 | Config              | Description                                                                                                            | Default Value | Min   | Max                                  |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------- | ----- | ------------------------------------ |
@@ -98,7 +92,7 @@ Players can type !rtv to request the map to be changed, once a number of votes i
 | Permission          | The permission required to use this command                                                                            | @css/vip      |       |                                      |
 
 ## Votemap
-Players can vote to change to an specific map by using the votemap <mapname> command
+Players can vote to change to a specific map by using the votemap <mapname> command
 
 | Config              | Description                                                              | Default Value | Min   | Max  |
 | ------------------- | ------------------------------------------------------------------------ | ------------- | ----- | ---- |
@@ -111,7 +105,7 @@ Players can vote to change to an specific map by using the votemap <mapname> com
 | Permission          | The permission required to use this command                              | @css/vip      |       |      |
 
 ## VoteExtend
-Players can vote to change to an specific map by using the votemap <mapname> command
+Players can start a vote to extend the map by an amount set in the config. Uses either Chat or Panorama Vote
 
 | Config              | Description                                                              | Default Value | Min   | Max  |
 | ------------------- | ------------------------------------------------------------------------ | ------------- | ----- | ---- |
@@ -124,7 +118,7 @@ Players can vote to change to an specific map by using the votemap <mapname> com
 | Permission          | The permission required to use this command                              | @css/vip      |       |      |
 
 ## End of Map Vote
-Based on mp_timelimit and mp_maxrounds cvar before the map ends a RTV like vote will start to define the next map, it can be configured to change immediatly or only when the map actually ends
+When the map is about to end, or when trigger by an !rtv, a random list of maps from your maplist.txt file be shown to choose from to decide the next map to be played
 
 | Config                  | Description                                                                                                            | Default Value | Min   | Max                                  |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------- | ----- | ------------------------------------ |
@@ -137,6 +131,21 @@ Based on mp_timelimit and mp_maxrounds cvar before the map ends a RTV like vote 
 | TriggerSecondsBeforeEnd | Amount of seconds before end of the map that should trigger the vote, only used when mp_timelimit is greater than 0    | 120           | 1     |                                      |
 | TriggerRoundsBeforEnd   | Amount of rounds before end of map that should trigger the vote, only used when mp_maxrounds is set                    | 2             | 1     |                                      |
 | DelayToChangeInTheEnd   | Delay in seconds that plugin will take to change the map after the win panel is shown to the players                   | 6             | 3     |                                      |
+
+## ScreenMenu
+Used if `EnableScreenMenu` = `true`. Extra settings to override your CS2MenuManager Shared API settings if desired
+| Config                  | Description                                                                                 | Default Value | Min      | Max           |
+| ----------------------- | --------------------------------------------------------------------------------------------| ------------- | -------- | ------------- |
+| EnabledResolutionOption | Whether to show the resolution option or not in your map vote ScreenMenu                    | false         | false    | true          |
+| EnabledExitOption       | Whether to show the exit option or not in your map vote/nominate ScreenMenu                 | false         | false    | true          |
+
+## VoteType
+| Config                | Description                                                                                 | Default Value | Min      | Max           |
+| --------------------- | --------------------------------------------------------------------------------------------| ------------- | -------- | ------------- |
+| EnableScreenMenu      | Use Screen Menu for EndMapVote/Nominate/Votemap                                             | false         | false    | true          |
+| EnableChatMenu        | Use Chat Menu for EndMapVote/Nominate/Votemap                                               | true          | false    | true          |
+| EnableHudMenu         | Use HUD Menu for EndMapVote/Nominate/Votemap                                                | false         | false    | true          |
+| EnablePanorama        | Use Panorama vote for !rtv/!voteextend   false = uses chat (like original)                  | true          | false    | true          |
 
 ## General
 | Config                | Description                                                                                 | Default Value | Min      | Max           |
