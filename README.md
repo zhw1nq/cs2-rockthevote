@@ -4,10 +4,11 @@ General purpose map voting plugin.
 # Features
 - Reads from a custom maplist
 - RTV Command (Using !rtv in chat, or with Panorama system that is built into CS2 [F1 = Yes, F2 = No])
-- Nominate command (nominate a map to appear in the map vote). Partial name matching, and conflicting map name resolution (surf_beginner, surf_beginner2).
+- End of Map Vote. Supports map cooldown, map extension option.
+- Nominate command (nominate a map to appear in the map vote). Partial name matching, and conflicting map name resolution (surf_beginner, surf_beginner2). Limit 1 per player.
 - Supports workshop maps, and custom map names. E.g. "surf_beginner (T1, Staged)"
 - Nextmap command. Prints the next map to chat.
-- Translated
+- Translated (Google Translate, ymmv)
 - Extend command. !extend 10 extends map by 10 minutes (flag restricted)
 - Vote Extend command. !ve/!votextend starts a vote to extend the current map (flag restricted)
   
@@ -40,12 +41,10 @@ v1.0.34 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/releases
 
 
 # Roadmap
-- [x] Add time extension feature
-- [x] Fix !nominate name matching for conflicting names
-- [X] Fix HudMenu voting
 - [ ] Add !maps command that lists all available maps
-- [ ] Add check for invalid workshop maps
+- [ ] Add check for invalid workshop maps (with optional discord webhook/auto removal)
 - [ ] Add ability to set a random starting map on server first start
+- [ ] !extend max extension value
 - [ ] Add vote percentage required for winning map (e.g. must receive 25% of the vote)
 - [ ] Add vote runnoff (e.g. 2nd stage of voting between 2 maps if minimum vote percentage not achieved for a map)
 
