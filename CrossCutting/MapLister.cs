@@ -67,5 +67,12 @@
                 .Select(m => m.Name)
                 .Where(n => n.Contains(partial, StringComparison.OrdinalIgnoreCase))];
         }
+
+        // Remove maps no longer available on the workshop
+        public void PruneMaps(IEnumerable<Map> toRemove)
+        {
+            if (Maps is null) return;
+            Maps = [.. Maps.Where(m => !toRemove.Contains(m))];
+        }
     }
 }
