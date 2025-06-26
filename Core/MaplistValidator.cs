@@ -5,17 +5,20 @@ namespace cs2_rockthevote
     public class WorkshopMapValidator(MapLister mapLister, ILogger<WorkshopMapValidator> logger) : IPluginDependency<Plugin, Config>
     {
         private readonly ILogger<WorkshopMapValidator> _logger = logger;
-        private GeneralConfig _generalConfig = new();
+        private GeneralConfig _config = new();
         private readonly MapLister _mapLister = mapLister;
+        private bool validated = false;
 
         public void OnConfigParsed(Config config)
         {
-            _generalConfig = config.General;
+            _config = config.General;
         }
 
-        public void PruneNow()
+        public void OnMapStart(string map)
         {
-            ValidateAllMapsAsync().GetAwaiter().GetResult();
+            if (!validated)
+                _ = ValidateAllMapsAsync();
+            validated = true;
         }
 
         private static readonly HttpClient _httpClient = new HttpClient(new HttpClientHandler())
@@ -59,13 +62,15 @@ namespace cs2_rockthevote
 
                 try
                 {
-                    bool exists = await DoesWorkshopItemExistAsync(publishedFileId);
-                    await Task.Delay(100); // Limits us to 10 map checks per second, should keep us from hammering Steam and getting limited...?
+                    bool exists = await DoesWorkshopItemExistAsync(publishedFileId).ConfigureAwait(false);
+                    await Task.Delay(100).ConfigureAwait(false); // Limits us to 10 map checks per second, should keep us from hammering Steam and getting limited...?
                     if (!exists)
                     {
                         _logger.LogWarning($"[Map-Checker] ✘ {map.Name} (ID {publishedFileId}) does not exist!");
+                        /*
                         if (_generalConfig.RemoveInvalidMaps)
                             toRemove.Add(map);
+                        */
                     }
 
                 }
@@ -74,19 +79,21 @@ namespace cs2_rockthevote
                     _logger.LogError($"[Map-Checker] ERROR checking {map.Name}: {ex.Message}");
                 }
             }
+            /*
             if (_generalConfig.RemoveInvalidMaps && toRemove.Count > 0)
             {
                 _mapLister.PruneMaps(toRemove);
                 foreach (var badMap in toRemove)
                     _logger.LogInformation($"[Map-Checker] Removed invalid map: `{badMap.Name}`");
             }
+            */
         }
 
         private static async Task<bool> DoesWorkshopItemExistAsync(ulong publishedFileId)
         {
             // Fetches the map page HTML
             var url = $"https://steamcommunity.com/sharedfiles/filedetails/?id={publishedFileId}";
-            var html = await _httpClient.GetStringAsync(url);
+            var html = await _httpClient.GetStringAsync(url).ConfigureAwait(false);
 
             // If Steam shows its error banner, we'll assume it doesn’t exist
             return !html.Contains("There was a problem accessing the item");
