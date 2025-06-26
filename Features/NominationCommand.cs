@@ -44,10 +44,9 @@ namespace cs2_rockthevote
         private PluginState _pluginState;
         private MapCooldown _mapCooldown;
         private MapLister _mapLister;
-        private readonly WorkshopMapValidator _mapValidator;
         private Plugin? _plugin;
 
-        public NominationCommand(MapLister mapLister, GameRules gamerules, StringLocalizer localizer, PluginState pluginState, MapCooldown mapCooldown, WorkshopMapValidator mapValidator)
+        public NominationCommand(MapLister mapLister, GameRules gamerules, StringLocalizer localizer, PluginState pluginState, MapCooldown mapCooldown)
         {
             _mapLister = mapLister;
             _mapLister.EventMapsLoaded += OnMapsLoaded;
@@ -55,7 +54,6 @@ namespace cs2_rockthevote
             _localizer = localizer;
             _pluginState = pluginState;
             _mapCooldown = mapCooldown;
-            _mapValidator = mapValidator;
             _mapCooldown.EventCooldownRefreshed += OnMapsLoaded;
         }
 
@@ -78,9 +76,6 @@ namespace cs2_rockthevote
 
         public void OnMapsLoaded(object? sender, Map[] maps)
         {
-            if (_generalConfig.RemoveInvalidMaps)
-                _mapValidator.PruneNow();
-
             nominationMenu = new(_localizer.Localize("nominate.title"));
             foreach (var map in _mapLister.Maps!.Where(x => !GetBaseMapName(x.Name).Equals(Server.MapName, StringComparison.OrdinalIgnoreCase)))
             {
