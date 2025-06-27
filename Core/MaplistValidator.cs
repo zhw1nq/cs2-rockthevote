@@ -17,7 +17,6 @@ namespace cs2_rockthevote
         public void OnConfigParsed(Config config)
         {
             _config = config.General;
-
         }
 
         public void OnMapStart(string map)
@@ -82,7 +81,7 @@ namespace cs2_rockthevote
                         {
                             var discordMessage = new
                             {
-                                content = $"⚠️ [RockTheVote] ⚠️\n{map.Name}\nWorkshopID: {publishedFileId})\ndoes not exist on the workshop!"
+                                content = $"⚠️ [RockTheVote] ⚠️\n{map.Name}\nWorkshopID: {publishedFileId}\ndoes not exist on the workshop!"
                             };
                             
                             string json = JsonSerializer.Serialize(discordMessage);
@@ -106,7 +105,7 @@ namespace cs2_rockthevote
                 }
             }
             /*
-            if (_generalConfig.RemoveInvalidMaps && toRemove.Count > 0)
+            if (toRemove.Count > 0)
             {
                 _mapLister.PruneMaps(toRemove);
                 foreach (var badMap in toRemove)
