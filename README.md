@@ -6,33 +6,35 @@ General purpose map voting plugin.
 - RTV Command (Using !rtv in chat, or with Panorama system that is built into CS2 [F1 = Yes, F2 = No])
 - End of Map Vote. Supports map cooldown, map extension option.
 - Nominate command (nominate a map to appear in the map vote). Partial name matching, and conflicting map name resolution (surf_beginner, surf_beginner2). Limit 1 per player.
+
+  ![nominate](https://github.com/user-attachments/assets/6ac056bc-9842-4422-ac0d-c7cd814b3ba6)
+  
 - Supports workshop maps, and custom map names. E.g. "surf_beginner (T1, Staged)"
 - Nextmap command. Prints the next map to chat.
 - Translated (Google Translate, ymmv)
 - Extend command. !extend 10 extends map by 10 minutes (flag restricted)
 - Vote Extend command. !ve/!votextend starts a vote to extend the current map (flag restricted)
-  
 - Optional sound alert when map vote or !rtv starts (configurable sound)
-- Optional chat/hud vote countdown 
+- Optional chat/hud vote countdown
+
+ ![hudcountdown](https://github.com/user-attachments/assets/e1034f3c-340a-4d88-8d8a-96526f333fad)
+ ![chatcountdown](https://github.com/user-attachments/assets/803826a1-665b-4ab7-9e38-fbb0e8d702be)
 
 - Panorama Vote (F1 = Yes, F2 = No) for !rtv & !voteextend
-- ScreenMenu/HudMenu/ChatMenu for EndOfMapVote/!nominate/!votemap
-
-![nextmap1](https://github.com/user-attachments/assets/87d34a7c-3333-4272-aba1-2dae6f9d5d3a)
-![nextmap2](https://github.com/user-attachments/assets/4f536075-2b9d-4be1-9572-7c728d79ef4c)
-![screenmenu](https://github.com/user-attachments/assets/10bfa73e-2ea3-4c49-b874-f87b85211136)
 
 ![panoramavote](https://github.com/user-attachments/assets/31ebe223-225f-4cef-812e-3bf6c56e590d)
 ![voteextend](https://github.com/user-attachments/assets/5cfd9a5f-36a5-4a11-ae26-3e74d5387251)
+- ScreenMenu/HudMenu/ChatMenu for EndOfMapVote/!nominate/!votemap
 
-![nominate](https://github.com/user-attachments/assets/6ac056bc-9842-4422-ac0d-c7cd814b3ba6)
-
+![screenmenu](https://github.com/user-attachments/assets/374a7899-f887-4425-a01e-decae1a203b0)
+![chatmenu](https://github.com/user-attachments/assets/8d7e9ee8-b26e-47b1-89d8-ced96b13a392)
+![hudmenu](https://github.com/user-attachments/assets/0fd37e45-bf7f-4f97-9b7b-7fab92352392)
 
 
 ## Requirements
 v315+ of [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp/releases)
 
-v1.0.34 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/releases/tag/v1.0.34)
+v1.0.35 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/releases/tag/v1.0.35)
 
 # Installation
 - Download the latest release from https://github.com/M-archand/cs2-rockthevote/releases
@@ -160,9 +162,6 @@ Used if `EnableScreenMenu` = `true`. Extra settings to override your CS2MenuMana
 
   
 # Adding workshop maps
-- If you are not hosting a workshop map collection you need to know the maps ID and put in the maplist.txt file in the following format: `<mapname>:<workshop-id>`.
-- If you are already hosting a collection and can change to workshop maps using the command `ds_workshop_changelevel <map-name>` you don't need the ID, just put the actual map name and it will work.
-
 ```
 surf_beginner:3070321829
 surf_nyx (T1, Linear):3129698096
