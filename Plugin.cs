@@ -32,6 +32,7 @@ namespace cs2_rockthevote
         ExtendRoundTimeCommand extendRoundTime,
         VoteExtendRoundTimeCommand voteExtendRoundTime,
         TimeLeftCommand timeLeft,
+        MaplistCommand maplistManager,
         WorkshopMapValidator mapValidator,
         ILogger<Plugin> logger) : BasePlugin, IPluginConfig<Config>
     {
@@ -48,6 +49,7 @@ namespace cs2_rockthevote
         private readonly ExtendRoundTimeCommand _extendRoundTime = extendRoundTime;
         private readonly VoteExtendRoundTimeCommand _voteExtendRoundTime = voteExtendRoundTime;
         private readonly TimeLeftCommand _timeLeft = timeLeft;
+        private readonly MaplistCommand _maplistManager = maplistManager;
         private readonly WorkshopMapValidator _mapValidator = mapValidator;
         private readonly ILogger<Plugin> _logger = logger;
 
@@ -76,9 +78,9 @@ namespace cs2_rockthevote
             Config = config;
             _dependencyManager.OnConfigParsed(config);
 
-            if (Config.Version < 12)
+            if (Config.Version < 13)
             {
-                _logger.LogError("Your config file is too old, please delete it from addons/counterstrikesharp/configs/plugins/RockTheVote and let the plugin recreate it on load.");
+                _logger.LogError("Your config file is too old, please backup your current config and let the plugin recreate it on load.");
             }
         }
 
