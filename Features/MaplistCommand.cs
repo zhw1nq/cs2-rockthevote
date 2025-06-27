@@ -1,86 +1,68 @@
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
+using Microsoft.Extensions.Logging;
 
 namespace cs2_rockthevote
 {
-    public class MaplistCommand : IPluginDependency<Plugin, Config>
+    public partial class Plugin
     {
-        private readonly MapLister _mapLister;
-        private Dictionary<ulong, DateTime> _lastCommandUse = new Dictionary<ulong, DateTime>();
-        private const int CommandCooldown = 5;
-
-        public MaplistCommand(MapLister mapLister)
-        {
-            _mapLister = mapLister;
-        }
-
-
-        [ConsoleCommand("css_maps", "Displays the available maps in console")]
-        [ConsoleCommand("css_maplist", "Displays the available maps in console")]
+        [ConsoleCommand("css_maps",   "Displays the available maps in console")]
+        [ConsoleCommand("css_maplist","Displays the available maps in console")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void OnMaplistCommand(CCSPlayerController? player, CommandInfo command)
         {
+            if (player == null) return;
+            _maplistManager.CommandHandler(player);
+        }
+    }
+
+    public class MaplistCommand : IPluginDependency<Plugin, Config>
+    {
+        private readonly ILogger<RockTheVoteCommand> _logger;
+        private readonly StringLocalizer _localizer;
+        private readonly MapLister _mapLister;
+
+        public MaplistCommand(MapLister mapLister, StringLocalizer localizer, ILogger<RockTheVoteCommand> logger)
+        {
+            _mapLister = mapLister;
+            _localizer = localizer;
+            _logger = logger;
+        }
+
+        public void CommandHandler(CCSPlayerController? player)
+        {
+            if (player != null)
             try
             {
-                if (player != null)
-                {
-                    ulong steamId = player.SteamID;
-                    if (_lastCommandUse.TryGetValue(steamId, out DateTime lastUse))
-                    {
-                        int secondsLeft = CommandCooldown - (int)(DateTime.Now - lastUse).TotalSeconds;
-                        if (secondsLeft > 0)
-                        {
-                            player.PrintToChat($"{ChatColors.Blue}[MapList]{ChatColors.Default} Please wait {secondsLeft} seconds before using this command again");
-                            return;
-                        }
-                    }
-                    _lastCommandUse[steamId] = DateTime.Now;
-                }
-
                 var maps = _mapLister.Maps;
                 if (maps == null || maps.Length == 0)
                 {
-                    ReplyToCommand(player, "The map list is empty!");
+                    player.PrintToChat($" {ChatColors.LightRed}[MapList]{ChatColors.Default} The map list is empty!");
                     return;
                 }
 
-                string breaker = "====================================";
+                // Tell them to check console
+                player.PrintToChat($" {ChatColors.LightRed}[MapList]{ChatColors.Default} Maps have been printed to the console.");
 
-                // If called by player, tell them to check console
-                player?.PrintToChat($" {ChatColors.LightRed}[MapList]{ChatColors.Default} Maps have been printed to the console.");
-
-                // Pick how to send
-                Action<string> printLine = player != null
-                    ? new Action<string>(player.PrintToConsole)
-                    : Console.WriteLine;
-
-                printLine(breaker);
-                printLine("             Server Map List");
-                printLine($"             Total Maps: {maps.Length}");
-                printLine(breaker);
+                player.PrintToConsole("====================================");
+                player.PrintToConsole("             Server Map List");
+                player.PrintToConsole($"             Total Maps: {maps.Length}");
+                player.PrintToConsole("====================================");
 
                 foreach (var map in maps)
                 {
                     if (string.IsNullOrWhiteSpace(map.Name)) continue;
-                    printLine(map.Name);
+                    player.PrintToConsole(map.Name);
                 }
 
-                printLine(breaker);
+                player.PrintToConsole("====================================");
             }
             catch (Exception ex)
             {
-                ReplyToCommand(player, $"An error occurred while reading the map list: {ex.Message}");
+                _logger.LogError($"[MapList ]An error occurred while reading the map list: {ex.Message}");
             }
-        }
-
-        private void ReplyToCommand(CCSPlayerController? player, string message)
-        {
-            if (player == null)
-                Console.WriteLine(message);
-            else
-                player.PrintToChat($" {ChatColors.LightRed}[MapList]{ChatColors.Default} {message}");
         }
     }
 }
