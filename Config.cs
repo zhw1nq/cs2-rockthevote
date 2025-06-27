@@ -104,14 +104,12 @@ namespace cs2_rockthevote
 
     public class GeneralConfig
     {
-        public bool ShowNextMapToAll { get; set; } = false;
         public int MaxMapExtensions { get; set; } = 2;
         public int RoundTimeExtension { get; set; } = 15;
         public int MapsInCoolDown { get; set; } = 3;
         public int ChatCountdownInterval { get; set; } = 20;
         public bool HideHudAfterVote { get; set; } = true;
         public bool RandomStartMap { get; set; } = false;
-        public bool RemoveInvalidMaps { get; set; } = false;
         public string DiscordWebhook { get; set; } = "";
     }
 
