@@ -1,4 +1,9 @@
+using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Cvars;
 using Microsoft.Extensions.Logging;
+using System.Text;
+using System.Text.Json;
 
 namespace cs2_rockthevote
 {
@@ -12,6 +17,7 @@ namespace cs2_rockthevote
         public void OnConfigParsed(Config config)
         {
             _config = config.General;
+
         }
 
         public void OnMapStart(string map)
@@ -40,6 +46,7 @@ namespace cs2_rockthevote
 
         private async Task ValidateAllMapsAsync()
         {
+            string serverHostname = ConVar.Find("hostname")!.StringValue;
             var toRemove = new List<Map>();
             // Grab our maps
             var maps = _mapLister.Maps
@@ -66,11 +73,30 @@ namespace cs2_rockthevote
                     await Task.Delay(100).ConfigureAwait(false); // Limits us to 10 map checks per second, should keep us from hammering Steam and getting limited...?
                     if (!exists)
                     {
-                        _logger.LogWarning($"[Map-Checker] ✘ {map.Name} (ID {publishedFileId}) does not exist!");
+                        _logger.LogWarning($"[Map-Checker] ⚠️ {map.Name} (WorkshopID {publishedFileId}) does not exist!");
                         /*
                         if (_generalConfig.RemoveInvalidMaps)
                             toRemove.Add(map);
                         */
+                        if (!string.IsNullOrEmpty(_config.DiscordWebhook))
+                        {
+                            var discordMessage = new
+                            {
+                                content = $"⚠️ [RockTheVote] ⚠️\n{map.Name}\nWorkshopID: {publishedFileId})\ndoes not exist on the workshop!"
+                            };
+                            
+                            string json = JsonSerializer.Serialize(discordMessage);
+                            var discordContent = new StringContent(json,Encoding.UTF8,"application/json");
+
+                            try
+                            {
+                                await _httpClient.PostAsync(_config.DiscordWebhook, discordContent).ConfigureAwait(false);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError($"[Map-Checker] Failed to send Discord webhook: {ex.Message}");
+                            }
+                        }
                     }
 
                 }
