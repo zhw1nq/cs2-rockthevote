@@ -94,11 +94,13 @@ namespace cs2_rockthevote
         /// Initializes the vote controller if a vote is not already in progress.
         public static void Init()
         {
-            if (m_bIsVoteInProgress) return;
+            if (m_bIsVoteInProgress)
+                return;
 
-            CVoteController pVoteController = Utilities.FindAllEntitiesByDesignerName<CVoteController>("vote_controller").Last();
-
-            if (pVoteController == null) return;
+            var controllers = Utilities.FindAllEntitiesByDesignerName<CVoteController>("vote_controller");
+            var pVoteController = controllers.LastOrDefault();
+            if (pVoteController == null)
+                return;
 
             VoteController = pVoteController;
         }
