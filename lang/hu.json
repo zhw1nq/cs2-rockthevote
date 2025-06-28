@@ -1,12 +1,14 @@
 ﻿{
+  // Hungarian
   "rtv.prefix": "{red}[RTV]{default}",
-  "votemap.prefix": "{red}[Votemap]{default}",
+  "votemap.prefix": "{red}[VoteMap]{default}",
+  "extendtime.prefix": "{red}[VoteExtend]{default}",
+
   "extendtime.hud.finished": "A szavazás befejeződött, a térkép {0}",
   "extendtime.hud.hud-timer": "Szavazás a térkép meghosszabbítására: {0}s",
   "extendtime.hud.menu-title": "Szavazás a térkép meghosszabbítására:",
   "extendtime.notapplicable": "A hosszabbításról szavazás jelenleg nem lehetséges.",
   "extendtime.disbled": "A hosszabbításról szavazás jelenleg le van tiltva.",
-  "extendtime.prefix": "{red}[VoteExtend]{default}",
   "extendtime.vote-started": "{green}{0}{default} meg akarja hosszabbítani az aktuális térképet!",
   "extendtime.vote-ended.failed": "A szavazás befejeződött, a térkép nem lesz meghosszabbítva ({0:N2}% a {1} szavazatból)",
   "extendtime.vote-ended.failed2": "A szavazás véget ért, a térkép nem lesz meghosszabbítva.",
@@ -17,16 +19,19 @@
   "extendtime.list-name": "Jelenlegi térkép meghosszabbítása",
   "extendtime.ui-question": "{0} perccel?",
   "extendtime.max-extensions-reached": "A térkép elérte a kiterjesztési korlátját ({0} bővítmény).",
+
   "votemap.player-voted": "{green}{0}{default} játékos szavazott a {green}{1}{default}-ben",
   "votemap.already-voted": "Már szavaztál a {green}{0}{default}-ben",
   "votemap.in-the-map": "a {0} térképen",
   "votemap.changing-map": "A térkép módosítása {green}{0}-ra",
   "votemap.changing-map-next-round": "A térkép a következő körben {green}{0}{default}-re változik...",
+
   "nominate.nominated": "{green}{0}{default} jelölt térkép {green}{1}{default}, most {2} szavazata van",
   "nominate.already-nominated": "Már jelölted a {green}{0}{default} térképet, {1} szavazata van",
   "nominate.limit": "{lightred}Térképenként csak egyszer jelölhetsz.",
   "nominate.title": "Jelölj egyet Térkép:",
   "nominate.multiple-maps": "Melyik térképre gondoltál:",
+
   "general.votes-needed": "({0} szavazat, {1} szükséges)",
   "general.invalid-map": "{lightred}Érvénytelen térkép",
   "general.validation.map-played-recently": "A térképet nemrég játszották",
@@ -41,6 +46,8 @@
   "general.chat-countdown": "Hátralévő idő a szavazáshoz: {lime}{0} {default}másodperc",
   "general.hud-countdown": "Hátralévő idő a szavazáshoz: {0} másodperc",
   "general.vote-in-progress": "{lightred} Már folyamatban van egy szavazás, kérjük, várja meg, amíg befejeződik.",
+  "general.timeleft": "Hátralévő idő: {lime}{0} {default}(óó/pp/mm)",
+
   "rtv.rocked-the-vote": "{green}{0}{default} szavazást akar indítani!",
   "rtv.already-rocked-the-vote": "Már szavaztál",
   "rtv.votes-reached": "{green}Elért szavazatok száma, szavazás indítása...",
@@ -50,6 +57,7 @@
   "rtv.cooldown": "{lightred}A parancs lehűlési időn van. ({white}{0}{red} másodperc van hátra)",
   "rtv.time-up": "{lightred}Nem szavazott elég játékos az időkorlát alatt.",
   "rtv.ui-question": "egy másik pálya",
+
   "emv.you-voted": "A következőre szavaztál: {0}",
   "emv.vote-ended": "A szavazás véget ért, a következő pálya {green}{0}{default} lesz ({1:N2}% a {2} szavazatból)",
   "emv.vote-ended-no-votes": "Nincsenek szavazatok, a következő pálya {green}{0} lesz",
@@ -57,6 +65,7 @@
   "emv.hud.menu-title": "Szavazz a következő pályára:",
   "emv.hud.timer": "Szavazás a következő pályára: {0}",
   "emv.hud.finished": "Szavazás befejezve, következő pálya: {0}",
+
   "nextmap": "A következő pálya {zöld}{0} lesz",
   "nextmap.decided-by-vote": "A következő pályáról szavazással döntünk"
 }

@@ -1,13 +1,15 @@
 {
-  "rtv.prefix": "{red}[RTV]{domyślne}",
-  "votemap.prefix": "{red}[Votemap]{domyślne}",
+  // Polish
+  "rtv.prefix": "{red}[RTV]{default}}",
+  "votemap.prefix": "{red}[Votemap]{default}}",
+  "extendtime.prefix": "{red}[VoteExtend]{default}}",
+
   "extendtime.hud.finished": "Głosowanie zakończone, mapa zostanie {0}",
   "extendtime.hud.hud-timer": "Głosowanie za rozszerzeniem mapy: {0}s",
   "extendtime.hud.menu-title": "Głosowanie za rozszerzeniem mapy:",
   "extendtime.notapplicable": "Głosowanie za rozszerzeniem nie jest obecnie możliwe.",
   "extendtime.disbled": "Głosowanie za rozszerzeniem jest obecnie wyłączone.",
-  "extendtime.prefix": "{red}[VoteExtend]{domyślne}",
-  "extendtime.vote-started": "{green}{0}{domyślne} chce rozszerzyć bieżącą mapę!",
+  "extendtime.vote-started": "{green}{0}{default}} chce rozszerzyć bieżącą mapę!",
   "extendtime.vote-ended.failed": "Głosowanie zakończone, mapa nie zostanie przedłużona ({0:N2}% z {1} głosów))",
   "extendtime.vote-ended.failed2": "Głosowanie zakończone, mapa nie zostanie przedłużona.",
   "extendtime.vote-ended.passed": "Głosowanie zakończone, mapa zostanie przedłużona na {green}{0}{default} minut ({1:N2}% z {2} głosów))",
@@ -17,16 +19,19 @@
   "extendtime.list-name": "Rozszerz bieżącą mapę",
   "extendtime.ui-question": "o {0} minut?",
   "extendtime.max-extensions-reached": "Mapa osiągnęła limit rozszerzeń ({0} rozszerzeń).",
+
   "votemap.player-voted": "Gracz {green}{0}{default} zagłosował w {green}{1}{default}",
   "votemap.already-voted": "Już głosujesz w {green}{0}{default}",
   "votemap.in-the-map": "na mapie {0}",
   "votemap.changing-map": "Zmieniam mapę na {green}{0}",
   "votemap.changing-map-next-round": "Mapa zostanie zmieniona na {green}{0}{default} w następnej rundzie...",
+
   "nominate.nominated": "{green}{0}{default} nominowana mapa {green}{1}{default}, teraz ma {2} vote(s)",
   "nominate.already-nominated": "Już nominowałeś mapę {green}{0}{default}, ma {1} głosów",
   "nominate.limit": "{lightred}Możesz nominować tylko raz na mapę.",
   "nominate.title": "Nominuj mapę:",
   "nominate.multiple-maps": "Którą mapę miałeś na myśli:",
+
   "general.votes-needed": "({0} zagłosowano, {1} potrzeba)",
   "general.invalid-map": "{lightred}Nieprawidłowa mapa",
   "general.validation.map-played-recently": "Mapa została niedawno rozegrana",
@@ -41,6 +46,8 @@
   "general.chat-countdown": "Czas pozostały do ​​głosowania: {lime}{0} {default}sekund",
   "general.hud-countdown": "Czas pozostały do ​​głosowania: {0} sekund",
   "general.vote-in-progress": "{lightred} Trwa już głosowanie, proszę czekać na jego zakończenie.",
+  "general.timeleft": "Pozostały czas: {lime}{0} {default}(gg/mm/ss)",
+
   "rtv.rocked-the-vote": "{green}{0}{default} chce wygrać głosowanie!",
   "rtv.already-rocked-the-vote": "Już wygrałeś głosowanie",
   "rtv.votes-reached": "{green}Liczba głosów osiągnięta, rozpoczynamy głosowanie…",
@@ -50,6 +57,7 @@
   "rtv.cooldown": "{lightred}Polecenie jest w trakcie odnawiania. (pozostało {white}{0}{red} sekund)",
   "rtv.time-up": "{lightred}Za mało graczy zagłosowało w limicie czasu.",
   "rtv.ui-question": "inna mapa",
+
   "emv.you-voted": "Zagłosowałeś na {0}",
   "emv.vote-ended": "Głosowanie zakończone, następna mapa będzie {zielona}{0}{domyślna} ({1:N2}% z {2} głosów))",
   "emv.vote-ended-no-votes": "Brak głosów, następna mapa będzie {zielona}{0}",
@@ -57,6 +65,7 @@
   "emv.hud.menu-title": "Głosuj na następną mapę:",
   "emv.hud.timer": "Głosuj na następną mapę: {0}s",
   "emv.hud.finished": "Głosowanie zakończone, następna mapa: {0}",
+
   "nextmap": "Następna mapa będzie {zielona}{0}",
   "nextmap.decided-by-vote": "Następna mapa zostanie wybrana w głosowaniu"
 }

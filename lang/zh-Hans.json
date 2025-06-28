@@ -1,12 +1,14 @@
 {
+  // Chinese (Simplified)
   "rtv.prefix": "{red}[RTV]{default}",
-  "votemap.prefix": "{red}[Votemap]{default}",
+  "votemap.prefix": "{red}[VoteMap]{default}",
+  "extendtime.prefix": "{red}[VoteExtend]{default}",
+
   "extendtime.hud.finished": "投票完成，地图将 {0}",
   "extendtime.hud.hud-timer": "投票扩展地图：{0} 秒",
   "extendtime.hud.menu-title": "投票扩展地图：",
   "extendtime.notapplicable": "目前不适用扩展投票。",
   "extendtime.disbled": "扩展投票目前已禁用。",
-  "extendtime.prefix": "{red}[VoteExtend]{default}",
   "extendtime.vote-started": "{green}{0}{default} 想要扩展当前地图！",
   "extendtime.vote-ended.failed": "投票结束，地图将不会扩展。 ({0:N2}% 的 {1} 票)",
   "extendtime.vote-ended.failed2": "投票结束，地图将不会延长。",
@@ -17,16 +19,19 @@
   "extendtime.list-name": "延长当前地图",
   "extendtime.ui-question": "延长 {0} 分钟？",
   "extendtime.max-extensions-reached": "地图已达到延长限制({0} 个扩展程序)。",
+
   "votemap.player-voted": "玩家 {green}{0}{default} 已为 {green}{1}{default} 投票",
   "votemap.already-voted": "您已为 {green}{0}{default} 投票",
   "votemap.in-the-map": "在地图 {0} 中",
   "votemap.changing-map": "正在将地图更改为 {green}{0}",
   "votemap.changing-map-next-round": "该地图将在下一轮更改为 {green}{0}{default}...",
+
   "nominate.nominated": "{green}{0}{default} 已提名地图 {green}{1}{default}，目前已获得 {2} 票",
   "nominate.already-nominated": "您已提名地图 {green}{0}{default}，目前已获得 {1} 票",
   "nominate.limit": "{lightred}您每张地图只能提名一次。",
   "nominate.title": "提名地图：",
   "nominate.multiple-maps": "您指的是哪张地图：",
+
   "general.votes-needed": "(已投票 {0}，需要 {1})",
   "general.invalid-map": "{lightred}地图无效",
   "general.validation.map-played-recently": "地图最近已玩过",
@@ -41,6 +46,8 @@
   "general.chat-c​​ountdown": "投票剩余时间：{lime}{0}{default}秒",
   "general.hud-countdown": "投票剩余时间：{0} 秒",
   "general.vote-in-progress": "{lightred} 已进行投票，请等待投票完成。",
+  "general.timeleft": "剩余时间：{lime}{0} {default}(hh/mm/ss)",
+
   "rtv.rocked-the-vote": "{green}{0}{default} 想要在投票中大放异彩！",
   "rtv.already-rocked-the-vote": "您已经大放异彩！",
   "rtv.votes-reached": "{green} 已达到投票数，正在开始投票...",
@@ -50,6 +57,7 @@
   "rtv.cooldown": "{lightred}命令正在冷却。（剩余 {white}{0}{red} 秒）",
   "rtv.time-up": "{lightred}在规定时间内投票的玩家不足。",
   "rtv.ui-question": "其他地图",
+
   "emv.you-voted": "您投票支持 {0}",
   "emv.vote-ended": "投票已结束，下一张地图将为 {green}{0}{default} ({2} 票中的 {1:N2}%)",
   "emv.vote-ended-no-votes": "无人投票，下一张地图将为 {green}{0}",
@@ -57,6 +65,7 @@
   "emv.hud.menu-title": "投票支持下一张地图：",
   "emv.hud.timer": "投票决定下一张地图：{0}s",
   "emv.hud.finished": "投票完成，下一张地图：{0}",
+
   "nextmap": "下一张地图将为{绿色}{0}",
   "nextmap.decided-by-vote": "下一张地图将通过投票决定"
 }
