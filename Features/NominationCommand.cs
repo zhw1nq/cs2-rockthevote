@@ -33,11 +33,11 @@ namespace cs2_rockthevote
 
     public class NominationCommand : IPluginDependency<Plugin, Config>
     {
+        private readonly ILogger<NominationCommand> _logger;
         Dictionary<int, List<string>> Nominations = new();
         ChatMenu? nominationMenu = null;
         CenterHtmlMenu? nominationMenuHud = null;
         private RtvConfig _config = new();
-        private GeneralConfig _generalConfig = new();
         private VoteTypeConfig _voteTypeConfig = new();
         private GameRules _gamerules;
         private StringLocalizer _localizer;
@@ -46,7 +46,7 @@ namespace cs2_rockthevote
         private MapLister _mapLister;
         private Plugin? _plugin;
 
-        public NominationCommand(MapLister mapLister, GameRules gamerules, StringLocalizer localizer, PluginState pluginState, MapCooldown mapCooldown)
+        public NominationCommand(MapLister mapLister, GameRules gamerules, StringLocalizer localizer, PluginState pluginState, MapCooldown mapCooldown, ILogger<NominationCommand> logger)
         {
             _mapLister = mapLister;
             _mapLister.EventMapsLoaded += OnMapsLoaded;
@@ -54,9 +54,9 @@ namespace cs2_rockthevote
             _localizer = localizer;
             _pluginState = pluginState;
             _mapCooldown = mapCooldown;
+            _logger = logger;
             _mapCooldown.EventCooldownRefreshed += OnMapsLoaded;
         }
-
 
         public void OnMapStart(string map)
         {
@@ -71,7 +71,6 @@ namespace cs2_rockthevote
         {
             _config = config.Rtv;
             _voteTypeConfig = config.VoteType;
-            _generalConfig = config.General;
         }
 
         public void OnMapsLoaded(object? sender, Map[] maps)
@@ -97,6 +96,14 @@ namespace cs2_rockthevote
                     && !_mapCooldown.IsMapInCooldown(m.Name))
                 .Select(m => m.Name)
                 .ToList();
+
+            // Guard: nothing to nominate
+            if (voteOptions.Count == 0)
+            {
+                player.PrintToChat(_localizer.LocalizeWithPrefix("An error occured."));
+                _logger.LogError("[Nominate] An error occured while using the !nominate command with ScreenMenu, no maps could be found.");
+                return;
+            }
 
             // Once the list is built, we open the menu on the next frame
             Server.NextFrame(() =>

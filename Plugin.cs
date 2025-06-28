@@ -8,6 +8,7 @@ using CounterStrikeSharp.API.Modules.Extensions;
 using cs2_rockthevote.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics.Tracing;
 
 namespace cs2_rockthevote
 {
@@ -71,6 +72,11 @@ namespace cs2_rockthevote
                 PanoramaVote.VoteCast(ev);
                 return HookResult.Continue;
             });
+        }
+        
+        public override void Unload(bool hotReload)
+        {
+            RemoveListener<OnMapStart>(_dependencyManager.OnMapStart);
         }
 
         public void OnConfigParsed(Config config)

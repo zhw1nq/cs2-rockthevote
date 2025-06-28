@@ -42,6 +42,11 @@ namespace cs2_rockthevote.CrossCutting
             }
         }
 
+        public void Unload(Plugin plugin)
+        {
+            plugin.RemoveListener<OnTick>(PlayerOnTick);
+        }
+
         public void PlayerOnTick()
         {
             // Only shown while a vote is running
