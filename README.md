@@ -30,6 +30,13 @@ General purpose map voting plugin.
 ![chatmenu](https://github.com/user-attachments/assets/8d7e9ee8-b26e-47b1-89d8-ced96b13a392)
 ![hudmenu](https://github.com/user-attachments/assets/0fd37e45-bf7f-4f97-9b7b-7fab92352392)
 
+- Maplist Validator. Send to error log or Discord when a map is no longer available on the workshop.
+
+  ![DiscordWebhook](https://github.com/user-attachments/assets/eaf8d706-abd1-4258-a7a3-b9cb44500802)
+  ![Log](https://github.com/user-attachments/assets/2f65dd9d-1ee9-4217-a753-81358973df2e)
+
+
+
 
 ## Requirements
 v315+ of [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp/releases)
