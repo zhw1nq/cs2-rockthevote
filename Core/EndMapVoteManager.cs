@@ -106,15 +106,26 @@ namespace cs2_rockthevote
 
         public void MapVoted(CCSPlayerController player, string mapName)
         {
-            if (_generalConfig.HideHudAfterVote)
-                VotedPlayers.Add(player.UserId!.Value);
-
+            var userId = player.UserId!.Value;
+            
+            // Block multiple votes if more than 1 VoteType is enabled
+            if (VotedPlayers.Contains(userId))
+                return;
+            
+            // Record the players vote
+            VotedPlayers.Add(userId);
+            
+            // Count their vote towards the map
             Votes[mapName] += 1;
             player.PrintToChat(_localizer.LocalizeWithPrefix("emv.you-voted", mapName));
-            if (Votes.Select(x => x.Value).Sum() >= _canVote)
-            {
+
+            // Make sure to close ScreenMenu if they voted via ChatMenu
+            if (_voteTypeConfig.EnableScreenMenu)
+                MapVoteScreenMenu.Close(player);
+            
+            // If we’ve reached the vote threshold, end the vote early
+            if (Votes.Values.Sum() >= _canVote)
                 EndVote();
-            }
         }
 
         public void PlaySound(CCSPlayerController player)
