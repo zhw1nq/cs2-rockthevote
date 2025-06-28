@@ -2,12 +2,14 @@
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Timers;
 using cs2_rockthevote.Core;
+using Microsoft.Extensions.Logging;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace cs2_rockthevote
 {
-    public class EndOfMapVote(TimeLimitManager timeLimit, MaxRoundsManager maxRounds, PluginState pluginState, GameRules gameRules, EndMapVoteManager voteManager) : IPluginDependency<Plugin, Config>
+    public class EndOfMapVote(TimeLimitManager timeLimit, MaxRoundsManager maxRounds, PluginState pluginState, GameRules gameRules, EndMapVoteManager voteManager, ILogger<EndOfMapVote> logger) : IPluginDependency<Plugin, Config>
     {
+        private readonly ILogger<EndOfMapVote> _logger = logger;
         private TimeLimitManager _timeLimit = timeLimit;
         private MaxRoundsManager _maxRounds = maxRounds;
         private PluginState _pluginState = pluginState;
@@ -19,6 +21,7 @@ namespace cs2_rockthevote
         private bool DeathMatch => _gameMode?.GetPrimitiveValue<int>() == 2 && _gameType?.GetPrimitiveValue<int>() == 1;
         private ConVar? _gameType;
         private ConVar? _gameMode;
+        private Plugin? _plugin;
         private bool _hasInitializedTimer = false;
 
         bool CheckMaxRounds()
@@ -48,10 +51,19 @@ namespace cs2_rockthevote
                 if (_voteTypeConfig.EnableScreenMenu && PanoramaVote.IsVoteInProgress())
                 {
                     PanoramaVote.EndVote(YesNoVoteEndReason.VoteEnd_Cancelled, overrideFailCode: 0);
-                    _ = new Timer(3.5F, () =>
-                    {
-                        _voteManager.StartVote(_config);
-                    });
+                    _plugin?.AddTimer(
+                        3.5f, () =>
+                        {
+                            try
+                            {
+                                _voteManager.StartVote(_config);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Vote start timer callback failed");
+                            }
+                        }, TimerFlags.STOP_ON_MAPCHANGE
+                    );
                 }
                 else
                 {
@@ -73,6 +85,7 @@ namespace cs2_rockthevote
 
         public void OnLoad(Plugin plugin)
         {
+            _plugin = plugin;
             _gameMode = ConVar.Find("game_mode");
             _gameType = ConVar.Find("game_type");
 

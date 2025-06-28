@@ -2,8 +2,8 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Timers;
 using Microsoft.Extensions.Logging;
-using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace cs2_rockthevote
 {
@@ -46,9 +46,10 @@ namespace cs2_rockthevote
         private CCSPlayerController? _initiatingPlayer;
         private DateTime _cooldownEndTime;
         private DateTime _rtvEndTime;
+        private Plugin? _plugin;
         public int TimeLeft => (int)Math.Max(0, (_rtvEndTime - DateTime.UtcNow).TotalSeconds);
 
-        
+
         public RockTheVoteCommand(GameRules gameRules, EndMapVoteManager endmapVoteManager, StringLocalizer localizer, PluginState pluginState, ILogger<RockTheVoteCommand> logger)
         {
             _localizer = localizer;
@@ -57,7 +58,7 @@ namespace cs2_rockthevote
             _pluginState = pluginState;
             _logger = logger;
         }
-        
+
         public void OnMapStart(string map)
         {
             _voteManager?.OnMapStart(map);
@@ -152,14 +153,17 @@ namespace cs2_rockthevote
                     }
                 }
                 _rtvEndTime = DateTime.UtcNow.AddSeconds(_config.RtvVoteDuration);
-                _ = new Timer(0.1f, () => {
-                    if (_config.EnableCountdown && !_config.HudCountdown)
-                        ChatCountdown(_config.RtvVoteDuration);
-                });
+
+                _plugin?.AddTimer(0.1f, () =>
+                    {
+                        if (_config.EnableCountdown && !_config.HudCountdown)
+                            ChatCountdown(_config.RtvVoteDuration);
+                    }, TimerFlags.STOP_ON_MAPCHANGE
+                );
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("Something went wrong with the rtv command: {message}", ex.Message);
+                _logger.LogWarning($"Something went wrong with the rtv command: {ex.Message}");
             }
         }
 
@@ -170,19 +174,27 @@ namespace cs2_rockthevote
             if (info.yes_votes >= requiredYesVotes)
             {
                 Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.votes-reached")}");
-                
+
                 if (_voteTypeConfig.EnableScreenMenu)
                 {
-                    _ = new Timer(3.5F, () =>
-                    {
-                        _endmapVoteManager.StartVote(_config, isRtv: true);
-                    });
+                    _plugin?.AddTimer(3.5f, () =>
+                        {
+                            try
+                            {
+                                _endmapVoteManager.StartVote(_config, isRtv: true);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogWarning($"Something went wrong during the VoteResultCallback: {ex.Message}");
+                            }
+                        }, TimerFlags.STOP_ON_MAPCHANGE
+                    );
                 }
                 else
                 {
                     _endmapVoteManager.StartVote(_config, isRtv: true);
                 }
-                
+
                 return true;
             }
             else
@@ -227,13 +239,16 @@ namespace cs2_rockthevote
                             // Early cancel if the vote can no longer pass
                             if ((potentialVotes - noVotes) < requiredYesVotes)
                             {
-                                Server.NextFrame(() => {
-                                    try {
+                                Server.NextFrame(() =>
+                                {
+                                    try
+                                    {
                                         PanoramaVote.EndVote(YesNoVoteEndReason.VoteEnd_Cancelled, overrideFailCode: 0);
                                         ActivateCooldown();
                                     }
-                                    catch (Exception ex) {
-                                        _logger.LogError(ex, "Error during vote cancellation: {Message}", ex.Message);
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError($"Error during vote cancellation: {ex.Message}");
                                     }
                                 });
                                 return;
@@ -242,12 +257,15 @@ namespace cs2_rockthevote
                             // Early pass if enough yes votes are already in
                             if (yesVotes >= requiredYesVotes)
                             {
-                                Server.NextFrame(() => {
-                                    try {
+                                Server.NextFrame(() =>
+                                {
+                                    try
+                                    {
                                         PanoramaVote.EndVote(YesNoVoteEndReason.VoteEnd_AllVotes);
                                     }
-                                    catch (Exception ex) {
-                                        _logger.LogError(ex, "Error during early vote pass: {Message}", ex.Message);
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError($"Error during early vote pass: {ex.Message}");
                                     }
                                 });
                                 return;
@@ -256,7 +274,7 @@ namespace cs2_rockthevote
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error processing vote: {Message}", ex.Message);
+                        _logger.LogError($"Error processing vote: {ex.Message}");
                     }
                     break;
 
@@ -287,20 +305,38 @@ namespace cs2_rockthevote
             if (nextSecondsLeft <= 0)
                 return;
 
-            _ = new Timer(_generalConfig.ChatCountdownInterval, () =>
-            {
-                ChatCountdown(nextSecondsLeft);
-            });
+            _plugin?.AddTimer(
+                _generalConfig.ChatCountdownInterval, () =>
+                {
+                    try
+                    {
+                        ChatCountdown(nextSecondsLeft);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"ChatCountdown timer callback failed: {ex.Message}");
+                    }
+                }, TimerFlags.STOP_ON_MAPCHANGE
+            );
         }
 
         private void ActivateCooldown()
         {
             _isCooldownActive = true;
 
-            _ = new Timer(_config.CooldownDuration, () =>
-            {
-                _isCooldownActive = false;
-            });
+            _plugin?.AddTimer(
+                _config.CooldownDuration, () =>
+                {
+                    try
+                    {
+                        _isCooldownActive = false;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"Cooldown timer callback failed: {ex.Message}");
+                    }
+                }, TimerFlags.STOP_ON_MAPCHANGE
+            );
 
             _cooldownEndTime = DateTime.UtcNow.AddSeconds(_config.CooldownDuration);
         }
@@ -319,6 +355,10 @@ namespace cs2_rockthevote
             _voteTypeConfig = config.VoteType;
             _generalConfig = config.General;
             _voteManager = new AsyncVoteManager(_config);
+        }
+        public void OnLoad(Plugin plugin)
+        {
+            _plugin = plugin;
         }
     }
 }

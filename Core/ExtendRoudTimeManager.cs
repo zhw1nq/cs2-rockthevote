@@ -116,10 +116,19 @@ namespace cs2_rockthevote
             if (nextSecondsLeft <= 0)
                 return;
 
-            _ = new Timer(_generalConfig.ChatCountdownInterval, () =>
-            {
-                ChatCountdown(nextSecondsLeft);
-            });
+            _plugin?.AddTimer(
+                _generalConfig.ChatCountdownInterval, () =>
+                {
+                    try
+                    {
+                        ChatCountdown(nextSecondsLeft);
+                    }
+                    catch (Exception ex)
+                    {
+                        _plugin.Logger.LogError(ex, "Extend-time ChatCountdown timer callback failed");
+                    }
+                }, TimerFlags.STOP_ON_MAPCHANGE
+            );
         }
 
         public void ExtendTimeVote()

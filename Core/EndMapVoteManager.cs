@@ -204,7 +204,21 @@ namespace cs2_rockthevote
 
             int next = secondsLeft - _generalConfig.ChatCountdownInterval;
             if (next > 0)
-                _ = new Timer(_generalConfig.ChatCountdownInterval, () => ChatCountdown(next));
+            {
+                _plugin?.AddTimer(
+                    _generalConfig.ChatCountdownInterval, () =>
+                    {
+                        try
+                        {
+                            ChatCountdown(next);
+                        }
+                        catch (Exception ex)
+                        {
+                            _plugin.Logger.LogError($"ChatCountdown timer callback failed: {ex.Message}");
+                        }
+                    }, TimerFlags.STOP_ON_MAPCHANGE
+                );
+            }
         }
 
         public void StartVote(IEndOfMapConfig config, bool isRtv = false)
@@ -308,7 +322,7 @@ namespace cs2_rockthevote
                 ChatCountdown(_rtvConfig.VoteDuration);
 
             TimeLeft = _config.VoteDuration;
-            Timer = _plugin!.AddTimer(1.0F, () =>
+            Timer = _plugin?.AddTimer(1.0F, () =>
             {
                 if (TimeLeft <= 0)
                 {
@@ -408,7 +422,7 @@ namespace cs2_rockthevote
                     if (ignoreRoundWinConditions != null && ignoreRoundWinConditions.GetPrimitiveValue<bool>())
                     {
                         Timer? checkTimer = null;
-                        checkTimer = _plugin!.AddTimer(1.0F, () =>
+                        checkTimer = _plugin?.AddTimer(1.0F, () =>
                         {
                             int remainingSeconds = (int)(_gameRules.RoundTime - (Server.CurrentTime - _gameRules.GameStartTime));
                             if (remainingSeconds <= 3)

@@ -3,10 +3,10 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Timers;
 using cs2_rockthevote.Core;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
-using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace cs2_rockthevote
 {
@@ -57,11 +57,12 @@ namespace cs2_rockthevote
         private CCSPlayerController? _initiatingPlayer;
         private bool _isCooldownActive = false;
         private DateTime _cooldownEndTime;
+        private Plugin? _plugin;
 
         public void CommandHandler(CCSPlayerController player, CommandInfo commandInfo)
         {
             _initiatingPlayer = player;
-            
+
             if (!_voteExtendConfig.Enabled)
             {
                 player.PrintToChat(_localizer.LocalizeWithPrefix("extendtime.disbled"));
@@ -163,7 +164,7 @@ namespace cs2_rockthevote
             switch (action)
             {
                 case YesNoVoteAction.VoteAction_Start:
-                    Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("extendtime.vote-started", _initiatingPlayer!.PlayerName)}"); 
+                    Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("extendtime.vote-started", _initiatingPlayer!.PlayerName)}");
                     break;
 
                 case YesNoVoteAction.VoteAction_Vote:
@@ -187,14 +188,17 @@ namespace cs2_rockthevote
                             // Early cancel if the vote can no longer pass
                             if ((potentialVotes - noVotes) < requiredYesVotes)
                             {
-                                Server.NextFrame(() => {
-                                    try {
+                                Server.NextFrame(() =>
+                                {
+                                    try
+                                    {
                                         PanoramaVote.EndVote(YesNoVoteEndReason.VoteEnd_Cancelled, overrideFailCode: 0);
                                         _pluginState.ExtendTimeVoteHappening = false;
                                         ActivateCooldown();
                                     }
-                                    catch (Exception ex) {
-                                        _logger.LogError(ex, "Error during vote cancellation: {Message}", ex.Message);
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError($"Error during vote cancellation: {ex.Message}");
                                     }
                                 });
                                 return;
@@ -203,12 +207,15 @@ namespace cs2_rockthevote
                             // Early pass if enough yes votes are already in
                             if (yesVotes >= requiredYesVotes)
                             {
-                                Server.NextFrame(() => {
-                                    try {
+                                Server.NextFrame(() =>
+                                {
+                                    try
+                                    {
                                         PanoramaVote.EndVote(YesNoVoteEndReason.VoteEnd_AllVotes);
                                     }
-                                    catch (Exception ex) {
-                                        _logger.LogError(ex, "Error during early vote pass: {Message}", ex.Message);
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError($"Error during early vote pass: {ex.Message}");
                                     }
                                 });
                                 return;
@@ -238,10 +245,19 @@ namespace cs2_rockthevote
         {
             _isCooldownActive = true;
 
-            _ = new Timer(_voteExtendConfig.CooldownDuration, () =>
-            {
-                _isCooldownActive = false;
-            });
+            _plugin?.AddTimer(
+                _voteExtendConfig.CooldownDuration, () =>
+                {
+                    try
+                    {
+                        _isCooldownActive = false;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"ActivateCooldown timer callback failed: {ex.Message}");
+                    }
+                }, TimerFlags.STOP_ON_MAPCHANGE
+            );
 
             _cooldownEndTime = DateTime.UtcNow.AddSeconds(_voteExtendConfig.CooldownDuration);
         }
@@ -258,7 +274,12 @@ namespace cs2_rockthevote
         {
             _voteExtendConfig = config.VoteExtend;
             _voteTypeConfig = config.VoteType;
-            _generalConfig = config.General; 
+            _generalConfig = config.General;
+        }
+        
+        public void OnLoad(Plugin plugin)
+        {
+            _plugin = plugin;
         }
     }
 }
