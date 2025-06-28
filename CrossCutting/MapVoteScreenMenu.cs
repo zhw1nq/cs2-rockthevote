@@ -14,6 +14,7 @@ namespace cs2_rockthevote
             {
                 ScreenMenu_ShowResolutionsOption = screenCfg.EnableResolutionOption,
                 ExitButton = screenCfg.EnableExitOption,
+                ScreenMenu_FreezePlayer = screenCfg.FreezePlayer,
                 ScreenMenu_ScrollUpKey = screenCfg.ScrollUpKey,
                 ScreenMenu_ScrollDownKey = screenCfg.ScrollDownKey,
                 ScreenMenu_SelectKey = screenCfg.SelectKey

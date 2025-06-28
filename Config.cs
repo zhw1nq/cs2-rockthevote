@@ -89,6 +89,7 @@ namespace cs2_rockthevote
     {
         public bool EnableResolutionOption { get; set; } = false;
         public bool EnableExitOption { get; set; } = false;
+        public bool FreezePlayer { get; set; } = false;
         public string ScrollUpKey { get; set; } = "Attack";
         public string ScrollDownKey { get; set; } = "Attack2";
         public string SelectKey { get; set; } = "E";
