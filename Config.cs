@@ -35,7 +35,7 @@ namespace cs2_rockthevote
         public bool SoundEnabled { get; set; } = false;
         public string SoundPath { get; set; } = "sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c";
         public int TriggerSecondsBeforeEnd { get; set; } = 180;
-        public int TriggerRoundsBeforEnd { get; set; } = 0;
+        public int TriggerRoundsBeforeEnd { get; set; } = 0;
         public float DelayToChangeInTheEnd { get; set; } = 0F;
         public bool IncludeExtendCurrentMap { get; set; } = true;
         public bool EnableCountdown { get; set; } = false;
