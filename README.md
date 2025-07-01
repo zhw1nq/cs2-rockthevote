@@ -32,16 +32,18 @@ General purpose map voting plugin.
 
 - Maplist Validator. Send to error log or Discord when a map is no longer available on the workshop.
 
-  ![DiscordWebhook](https://github.com/user-attachments/assets/eaf8d706-abd1-4258-a7a3-b9cb44500802)
-  ![Log](https://github.com/user-attachments/assets/2f65dd9d-1ee9-4217-a753-81358973df2e)
-
+  ![MapDiscordWebhook](https://github.com/user-attachments/assets/eaf8d706-abd1-4258-a7a3-b9cb44500802)
+  ![WorkshopMapLog](https://github.com/user-attachments/assets/2f65dd9d-1ee9-4217-a753-81358973df2e)
+- !maps command. List all maps available in the console.
+  
+![mapscommand](https://github.com/user-attachments/assets/d4ab1377-0b29-45b6-bdaa-06b6a7664751)
 
 
 
 ## Requirements
 v315+ of [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp/releases)
 
-v1.0.35 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/releases/tag/v1.0.35)
+v1.0.36 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/)
 
 # Installation
 - Download the latest release from https://github.com/M-archand/cs2-rockthevote/releases
@@ -50,9 +52,7 @@ v1.0.35 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/releases
 
 
 # Roadmap
-- [ ] Add !maps command that lists all available maps
-- [ ] Add check for invalid workshop maps (with optional discord webhook/auto removal)
-- [ ] Add ability to set a random starting map on server first start
+- [ ] Automatically remove invalid workshop maps (currently only sends notification)
 - [ ] !extend max extension value
 - [ ] Add vote percentage required for winning map (e.g. must receive 25% of the vote)
 - [ ] Add vote runnoff (e.g. 2nd stage of voting between 2 maps if minimum vote percentage not achieved for a map)
@@ -147,6 +147,11 @@ Used if `EnableScreenMenu` = `true`. Extra settings to override your CS2MenuMana
 | ----------------------- | --------------------------------------------------------------------------------------------| ------------- | -------- | ------------- |
 | EnabledResolutionOption | Whether to show the resolution option or not in your map vote ScreenMenu                    | false         | false    | true          |
 | EnabledExitOption       | Whether to show the exit option or not in your map vote/nominate ScreenMenu                 | false         | false    | true          |
+| FreezePlayer            | Whether to show the exit option or not in your map vote/nominate ScreenMenu                 | Attack        | false    | true          |
+| ScrollDownKey           | Whether to show the exit option or not in your map vote/nominate ScreenMenu                 | Attack2       | false    | true          |
+| SelectKey               | The key used to make a selection while on the map row                                       | E             | false    | true          |
+
+**Available keys**: Alt1, Alt2, Attack, Attack2, Attack3, Bullrush, Cancel, Duck, Grenade1, Grenade2, Space, Left, W, A, S, D, E, R, F, Shift, Right, Run, Walk, Weapon1, Weapon2, Zoom, Tab
 
 ## VoteType
 | Config                | Description                                                                                 | Default Value | Min      | Max           |
@@ -154,17 +159,18 @@ Used if `EnableScreenMenu` = `true`. Extra settings to override your CS2MenuMana
 | EnableScreenMenu      | Use Screen Menu for EndMapVote/Nominate/Votemap                                             | false         | false    | true          |
 | EnableChatMenu        | Use Chat Menu for EndMapVote/Nominate/Votemap                                               | true          | false    | true          |
 | EnableHudMenu         | Use HUD Menu for EndMapVote/Nominate/Votemap                                                | false         | false    | true          |
-| EnablePanorama        | Use Panorama vote for !rtv/!voteextend   false = uses chat (like original)                  | true          | false    | true          |
+| EnablePanorama        | Use Panorama vote for !rtv/!voteextend.  false = uses chat (like original)                  | true          | false    | true          |
 
 ## General
 | Config                | Description                                                                                 | Default Value | Min      | Max           |
 | --------------------- | --------------------------------------------------------------------------------------------| ------------- | -------- | ------------- |
-| ShowNextMapToAll      | Show the next map to everyone in chat when the !nextmap command is used                     | false         | false    | true          |
 | MaxMapExtensions      | How many extensions are allowed per map. Includes end of map votes, and !voteextend         | 2             | 1        | 0 (unlimited) |
 | RoundTimeExtension    | The number of minutes the map will be extended by                                           | 15            | 1        | 999           |
 | MapsInCoolDown        | Number of maps that can't be used in vote because they have been played recently            | 3             | 0        | 999           |
 | ChatCountdownInterval | How often the time left in the vote is printed to chat (in seconds)                         | 20            | 1        | 999           |
 | HideHudAfterVote      | Whether the HUD should be hidden after voting if the "HudMenu" is enabled as a voting type  | true          | false    | true          |
+| RandomStartMap        | Whether a random map will be chosen when the server is restarted                            | true          | false    | true          |
+| DiscordWebhook        | Add a Discord Webshook link if you want to receive a message when an invalid map is found   | ""            | ""       |               |
 
 
   
@@ -174,3 +180,4 @@ surf_beginner:3070321829
 surf_nyx (T1, Linear):3129698096
 de_dust2
 ```
+![GitHub Downloads](https://img.shields.io/github/downloads/M-archand/cs2-rockthevote/total?style=for-the-badge)
