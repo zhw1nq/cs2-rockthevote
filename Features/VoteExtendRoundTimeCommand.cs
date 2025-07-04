@@ -55,7 +55,6 @@ namespace cs2_rockthevote
         private PluginState _pluginState = pluginState;
         private VoteExtendConfig _voteExtendConfig = new();
         private GeneralConfig _generalConfig = new();
-        private VoteTypeConfig _voteTypeConfig = new();
         private CCSPlayerController? _initiatingPlayer;
         private bool _isCooldownActive = false;
         private DateTime _cooldownEndTime;
@@ -275,7 +274,6 @@ namespace cs2_rockthevote
         public void OnConfigParsed(Config config)
         {
             _voteExtendConfig = config.VoteExtend;
-            _voteTypeConfig = config.VoteType;
             _generalConfig = config.General;
         }
         
