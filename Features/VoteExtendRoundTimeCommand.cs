@@ -20,11 +20,13 @@ namespace cs2_rockthevote
             if (player == null || command == null)
                 return;
 
-            bool hasPerm = AdminManager.PlayerHasPermissions(player, Config.VoteExtend.Permission);
+            // If "Permission" is blank or whitespace, allow everyone. Otherwise enforce it
+            string perm = Config.VoteExtend.Permission;
+            bool hasPerm = string.IsNullOrWhiteSpace(perm) || AdminManager.PlayerHasPermissions(player, perm);
 
             if (!hasPerm)
             {
-                command.ReplyToCommand("You do not have the correct permission to execute this command.");
+                command.ReplyToCommand(_localizer.LocalizeWithPrefix("general.incorrect.permission"));
                 return;
             }
 
@@ -98,11 +100,11 @@ namespace cs2_rockthevote
             }
             if (!_timeLimitManager.UnlimitedTime)
             {
-                if (!_voteTypeConfig.EnablePanorama)
+                if (!_voteExtendConfig.EnablePanorama)
                 {
                     _extendRoundTimeManager.StartExtendVote(_voteExtendConfig);
                 }
-                else if (_voteTypeConfig.EnablePanorama)
+                else if (_voteExtendConfig.EnablePanorama)
                 {
                     PanoramaVote.Init();
                     Server.ExecuteCommand("sv_allow_votes 1");
@@ -110,7 +112,7 @@ namespace cs2_rockthevote
                     Server.ExecuteCommand("sv_vote_allow_spectators 1");
                     Server.ExecuteCommand("sv_vote_count_spectator_votes 1");
                     _pluginState.ExtendTimeVoteHappening = true;
-                    if (_voteExtendConfig.EnableCountdown && !_voteExtendConfig.HudCountdown)
+                    if (_voteExtendConfig.EnableCountdown && _voteExtendConfig.CountdownType == "chat")
                     {
                         _extendRoundTimeManager.ChatCountdown(_voteExtendConfig.VoteDuration);
                     }
