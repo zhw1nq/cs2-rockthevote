@@ -36,7 +36,7 @@ namespace cs2_rockthevote.CrossCutting
 
         public void OnLoad(Plugin plugin)
         {
-            if (_voteTypeConfig.EnableHudMenu || _endMapConfig.HudCountdown || _rtvConfig.HudCountdown || _voteExtendConfig.HudCountdown)
+            if (_voteTypeConfig.EnableHudMenu || _endMapConfig.CountdownType == "hud" || _rtvConfig.CountdownType == "hud" || _voteExtendConfig.CountdownType == "hud")
             {
                 plugin.RegisterListener<OnTick>(PlayerOnTick);
             }
@@ -54,7 +54,7 @@ namespace cs2_rockthevote.CrossCutting
                 return;
 
             // EndMapVote HUD Countdown. Don't show if EnabledHudMenu true, otherwise this would be covered by the map list
-            if (_endMapConfig.EnableCountdown && _endMapConfig.HudCountdown && _pluginState.EofVoteHappening && !_voteTypeConfig.EnableHudMenu)
+            if (_endMapConfig.EnableCountdown && _endMapConfig.CountdownType == "hud" && _pluginState.EofVoteHappening && !_voteTypeConfig.EnableHudMenu)
             {
                 string countdown = _localizer.Localize("emv.hud.timer", _endMap.TimeLeft);
                 foreach (var player in ServerManager.ValidPlayers())
@@ -62,7 +62,7 @@ namespace cs2_rockthevote.CrossCutting
             }
 
             // RTV HUD Countdown
-            if (_rtvConfig.EnableCountdown && _rtvConfig.HudCountdown && _pluginState.RtvVoteHappening)
+            if (_rtvConfig.EnableCountdown && _rtvConfig.CountdownType == "hud" && _pluginState.RtvVoteHappening)
             {
                 string countdown = _localizer.Localize("general.hud-countdown", _rtv.TimeLeft);
                 foreach (var player in ServerManager.ValidPlayers())
@@ -70,7 +70,7 @@ namespace cs2_rockthevote.CrossCutting
             }
 
             // VoteExtend HUD Countdown
-            if (_voteExtendConfig.EnableCountdown && _voteExtendConfig.HudCountdown && _pluginState.ExtendTimeVoteHappening)
+            if (_voteExtendConfig.EnableCountdown && _voteExtendConfig.CountdownType == "hud" && _pluginState.ExtendTimeVoteHappening)
             {
                 string countdown = _localizer.Localize("general.hud-countdown", _voteExtend.TimeLeft);
                 foreach (var player in ServerManager.ValidPlayers())
