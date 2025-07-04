@@ -39,8 +39,7 @@ namespace cs2_rockthevote
         private readonly EndMapVoteManager _endmapVoteManager;
         private readonly PluginState _pluginState;
         private RtvConfig _config = new();
-        private VoteTypeConfig _voteTypeConfig = new();
-        private GeneralConfig _generalConfig = new();
+        private EndOfMapConfig _endMapConfig = new();
         private AsyncVoteManager? _voteManager;
         private bool _isCooldownActive = false;
         private CCSPlayerController? _initiatingPlayer;
@@ -175,7 +174,7 @@ namespace cs2_rockthevote
             {
                 Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.votes-reached")}");
 
-                if (_voteTypeConfig.EnableScreenMenu)
+                if (_endMapConfig.MenuType == "ScreenMenu")
                 {
                     _plugin?.AddTimer(3.5f, () =>
                         {
@@ -352,8 +351,7 @@ namespace cs2_rockthevote
         public void OnConfigParsed(Config config)
         {
             _config = config.Rtv;
-            _voteTypeConfig = config.VoteType;
-            _generalConfig = config.General;
+            _endMapConfig = config.EndOfMapVote;
             _voteManager = new AsyncVoteManager(_config);
         }
         public void OnLoad(Plugin plugin)
