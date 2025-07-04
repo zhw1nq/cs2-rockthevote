@@ -111,7 +111,7 @@ namespace cs2_rockthevote
                     player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.minimum-players", _config.MinPlayers));
                     return;
                 }
-                if (_voteTypeConfig.EnablePanorama)
+                if (_config.EnablePanorama)
                 {
                     PanoramaVote.Init();
                     Server.ExecuteCommand("sv_allow_votes 1");
@@ -128,7 +128,7 @@ namespace cs2_rockthevote
                         VoteHandlerCallback
                     );
                 }
-                if (!_voteTypeConfig.EnablePanorama)
+                if (!_config.EnablePanorama)
                 {
                     _pluginState.RtvVoteHappening = true;
                     VoteResult result = _voteManager!.AddVote(player.UserId!.Value);
@@ -146,7 +146,7 @@ namespace cs2_rockthevote
                             break;
                         case VoteResultEnum.VotesReached:
                             _pluginState.RtvVoteHappening = false;
-                            _endmapVoteManager.StartVote(_config, isRtv: true);
+                            _endmapVoteManager.StartVote(isRtv: true);
                             Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.rocked-the-vote", player.PlayerName)} {_localizer.Localize("general.votes-needed", result.VoteCount, result.RequiredVotes)}");
                             Server.PrintToChatAll(_localizer.LocalizeWithPrefix("rtv.votes-reached"));
                             break;
@@ -156,7 +156,7 @@ namespace cs2_rockthevote
 
                 _plugin?.AddTimer(0.1f, () =>
                     {
-                        if (_config.EnableCountdown && !_config.HudCountdown)
+                        if (_config.EnableCountdown && _config.CountdownType == "chat")
                             ChatCountdown(_config.RtvVoteDuration);
                     }, TimerFlags.STOP_ON_MAPCHANGE
                 );
@@ -181,7 +181,7 @@ namespace cs2_rockthevote
                         {
                             try
                             {
-                                _endmapVoteManager.StartVote(_config, isRtv: true);
+                                _endmapVoteManager.StartVote(isRtv: true);
                             }
                             catch (Exception ex)
                             {
@@ -192,7 +192,7 @@ namespace cs2_rockthevote
                 }
                 else
                 {
-                    _endmapVoteManager.StartVote(_config, isRtv: true);
+                    _endmapVoteManager.StartVote(isRtv: true);
                 }
 
                 return true;
@@ -301,12 +301,12 @@ namespace cs2_rockthevote
             foreach (var player in ServerManager.ValidPlayers())
                 player.PrintToChat(text);
 
-            int nextSecondsLeft = secondsLeft - _generalConfig.ChatCountdownInterval;
+            int nextSecondsLeft = secondsLeft - _config.ChatCountdownInterval;
             if (nextSecondsLeft <= 0)
                 return;
 
             _plugin?.AddTimer(
-                _generalConfig.ChatCountdownInterval, () =>
+                _config.ChatCountdownInterval, () =>
                 {
                     try
                     {
