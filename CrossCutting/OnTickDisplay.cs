@@ -11,9 +11,9 @@ namespace cs2_rockthevote.CrossCutting
         private readonly ExtendRoundTimeManager _voteExtend;
         private readonly StringLocalizer _localizer;
         private GeneralConfig _generalConfig = new();
-        private VoteTypeConfig _voteTypeConfig = new();
         private EndOfMapConfig _endMapConfig = new();
         private VoteExtendConfig _voteExtendConfig = new();
+        private NominateConfig _nomConfig = new();
         private RtvConfig _rtvConfig = new();
 
         public OnTickDisplay(PluginState pluginState, StringLocalizer localizer, EndMapVoteManager endMap, RockTheVoteCommand rtv, ExtendRoundTimeManager voteExtend)
@@ -28,7 +28,6 @@ namespace cs2_rockthevote.CrossCutting
         public void OnConfigParsed(Config config)
         {
             _generalConfig = config.General;
-            _voteTypeConfig = config.VoteType;
             _endMapConfig = config.EndOfMapVote;
             _voteExtendConfig = config.VoteExtend;
             _rtvConfig = config.Rtv;
@@ -36,7 +35,7 @@ namespace cs2_rockthevote.CrossCutting
 
         public void OnLoad(Plugin plugin)
         {
-            if (_voteTypeConfig.EnableHudMenu || _endMapConfig.CountdownType == "hud" || _rtvConfig.CountdownType == "hud" || _voteExtendConfig.CountdownType == "hud")
+            if (_endMapConfig.CountdownType == "hud" || _rtvConfig.CountdownType == "hud" || _voteExtendConfig.CountdownType == "hud" || _endMapConfig.MenuType == "HudMenu" || _nomConfig.MenuType == "HudMenu")
             {
                 plugin.RegisterListener<OnTick>(PlayerOnTick);
             }
@@ -54,7 +53,7 @@ namespace cs2_rockthevote.CrossCutting
                 return;
 
             // EndMapVote HUD Countdown. Don't show if EnabledHudMenu true, otherwise this would be covered by the map list
-            if (_endMapConfig.EnableCountdown && _endMapConfig.CountdownType == "hud" && _pluginState.EofVoteHappening && !_voteTypeConfig.EnableHudMenu)
+            if (_endMapConfig.EnableCountdown && _endMapConfig.CountdownType == "hud" && _pluginState.EofVoteHappening && _endMapConfig.MenuType != "HudMenu")
             {
                 string countdown = _localizer.Localize("emv.hud.timer", _endMap.TimeLeft);
                 foreach (var player in ServerManager.ValidPlayers())
@@ -78,7 +77,7 @@ namespace cs2_rockthevote.CrossCutting
             }
 
             // HUD map vote list
-            if (_voteTypeConfig.EnableHudMenu && _pluginState.EofVoteHappening)
+            if (_endMapConfig.MenuType == "HudMenu" && _pluginState.EofVoteHappening)
             {
                 var sb = new StringBuilder();
                 sb.Append($"<b><font color='yellow'>{_localizer.Localize("emv.hud.timer", _endMap.TimeLeft)}</font></b>");
