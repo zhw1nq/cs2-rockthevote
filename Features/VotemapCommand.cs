@@ -16,16 +16,21 @@ namespace cs2_rockthevote
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
         public void OnVotemap(CCSPlayerController? player, CommandInfo command)
         {
-            if (player == null || command == null) return;
+            if (player == null || command == null)
+                return;
 
-            if (!AdminManager.PlayerHasPermissions(player, Config.Votemap.Permission))
+            // If "Permission" is blank or whitespace, allow everyone. Otherwise enforce it
+            string perm = Config.Votemap.Permission;
+            bool hasPerm = string.IsNullOrWhiteSpace(perm) || AdminManager.PlayerHasPermissions(player, perm);
+
+            if (!hasPerm)
             {
-                command.ReplyToCommand("You do not have the correct permission to execute this command.");
+                command.ReplyToCommand(_localizer.LocalizeWithPrefix("general.incorrect.permission"));
                 return;
             }
             
             string map = command.GetArg(1).Trim().ToLower();
-            _votemapManager.CommandHandler(player!, map);
+            _votemapManager.CommandHandler(player, map);
         }
 
         [GameEventHandler(HookMode.Pre)]
