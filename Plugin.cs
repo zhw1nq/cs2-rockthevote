@@ -8,7 +8,7 @@ using CounterStrikeSharp.API.Modules.Extensions;
 using cs2_rockthevote.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics.Tracing;
+using Microsoft.Extensions.Localization;
 
 namespace cs2_rockthevote
 {
@@ -35,10 +35,11 @@ namespace cs2_rockthevote
         TimeLeftCommand timeLeft,
         MaplistCommand maplistManager,
         WorkshopMapValidator mapValidator,
+        IStringLocalizer stringLocalizer,
         ILogger<Plugin> logger) : BasePlugin, IPluginConfig<Config>
     {
         public override string ModuleName => "RockTheVote";
-        public override string ModuleVersion => "2.0.5";
+        public override string ModuleVersion => "2.0.6-dev";
         public override string ModuleAuthor => "abnerfs (Updated by Marchand)";
 
         private readonly DependencyManager<Plugin, Config> _dependencyManager = dependencyManager;
@@ -52,6 +53,7 @@ namespace cs2_rockthevote
         private readonly TimeLeftCommand _timeLeft = timeLeft;
         private readonly MaplistCommand _maplistManager = maplistManager;
         private readonly WorkshopMapValidator _mapValidator = mapValidator;
+        private StringLocalizer _localizer = new(stringLocalizer, "rtv.prefix");
         private readonly ILogger<Plugin> _logger = logger;
 
 
