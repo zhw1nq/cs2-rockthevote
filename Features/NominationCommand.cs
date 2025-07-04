@@ -11,7 +11,8 @@ namespace cs2_rockthevote
 {
     public partial class Plugin
     {
-        [ConsoleCommand("nominate", "Nominate a map to appear in the vote.")]
+        [ConsoleCommand("css_nom", "Nominate a map to appear in the vote.")]
+        [ConsoleCommand("css_nominate", "Nominate a map to appear in the vote.")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void OnNominateCommand(CCSPlayerController? player, CommandInfo command)
         {
@@ -37,8 +38,7 @@ namespace cs2_rockthevote
         Dictionary<int, List<string>> Nominations = new();
         ChatMenu? nominationMenu = null;
         CenterHtmlMenu? nominationMenuHud = null;
-        private RtvConfig _config = new();
-        private VoteTypeConfig _voteTypeConfig = new();
+        private NominateConfig _nomConfig = new();
         private GameRules _gamerules;
         private StringLocalizer _localizer;
         private PluginState _pluginState;
@@ -69,8 +69,7 @@ namespace cs2_rockthevote
 
         public void OnConfigParsed(Config config)
         {
-            _config = config.Rtv;
-            _voteTypeConfig = config.VoteType;
+            _nomConfig = config.Nominate;
         }
 
         public void OnMapsLoaded(object? sender, Map[] maps)
@@ -87,6 +86,66 @@ namespace cs2_rockthevote
             }
         }
 
+        public void CommandHandler(CCSPlayerController? player, string map)
+        {
+            if (player == null)
+                return;
+            
+            var userId = player.UserId!.Value;
+            var mapName = map.Trim().ToLower();
+
+            if (_pluginState.DisableCommands || !_nomConfig.Enabled || _pluginState.EofVoteHappening)
+            {
+                player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.disabled"));
+                return;
+            }
+
+            // Can't nominate more than once per map
+            if (Nominations.ContainsKey(userId))
+            {
+                player.PrintToChat(_localizer.LocalizeWithPrefix("nominate.limit"));
+                return;
+            }
+
+            if (_gamerules.WarmupRunning)
+            {
+                if (!_nomConfig.EnabledInWarmup)
+                {
+                    player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.warmup"));
+                    return;
+                }
+            }
+
+            if (string.IsNullOrEmpty(mapName))
+            {
+                if (_nomConfig.MenuType == "ScreenMenu")
+                    OpenScreenMenu(player);
+
+                if (_nomConfig.MenuType == "HudMenu" && nominationMenuHud != null)
+                    MenuManager.OpenCenterHtmlMenu(_plugin!, player, nominationMenuHud);
+
+                if (_nomConfig.MenuType == "ChatMenu")
+                    OpenChatMenu(player);
+
+                else
+                    OpenChatMenu(player);
+                    _logger.LogError("Incorrect MenuType set in the Nominate config. Please choose either ScreenMenu/ChatMenu/HudMenu. Falling back to ChatMenu.");
+                
+                return;
+            }
+
+            var resolved = ResolveMapNameOrPrompt(player, mapName, _localizer);
+            if (resolved == null)
+                return;
+
+            // Now there is exactly one map name to nominate
+            Nominate(player, resolved);
+        }
+
+        public void OpenChatMenu(CCSPlayerController player)
+        {
+            MenuManager.OpenChatMenu(player, nominationMenu!);
+        }
         public void OpenScreenMenu(CCSPlayerController player)
         {
             // Build the list of map names, skipping the current map and the ones on cool down
@@ -114,82 +173,6 @@ namespace cs2_rockthevote
                     (p, mapName) => CommandHandler(p, mapName),
                     _localizer.Localize("nominate.title")
             ));
-        }
-
-        public void CommandHandler(CCSPlayerController? player, string map)
-        {
-            if (player == null)
-                return;
-            
-            var userId = player.UserId!.Value;
-            var mapName = map.Trim().ToLower();
-
-            if (_pluginState.DisableCommands || !_config.NominationEnabled || _pluginState.EofVoteHappening)
-            {
-                player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.disabled"));
-                return;
-            }
-
-            // Can't nominate more than once per map
-            if (Nominations.ContainsKey(userId))
-            {
-                player.PrintToChat(_localizer.LocalizeWithPrefix("nominate.limit"));
-                return;
-            }
-
-            if (_gamerules.WarmupRunning)
-            {
-                if (!_config.EnabledInWarmup)
-                {
-                    player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.warmup"));
-                    return;
-                }
-            }
-            else if (_config.MinRounds > 0 && _config.MinRounds > _gamerules.TotalRoundsPlayed)
-            {
-                player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.minimum-rounds", _config.MinRounds));
-                return;
-            }
-
-            if (ServerManager.ValidPlayerCount() < _config.MinPlayers)
-            {
-                player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.minimum-players", _config!.MinPlayers));
-                return;
-            }
-
-            if (string.IsNullOrEmpty(mapName))
-            {
-                // All 3 menu types can be used. However, if none are enabled for some reason, throw an error and fall back to chat menu
-                if (!(_voteTypeConfig.EnableScreenMenu || _voteTypeConfig.EnableHudMenu || _voteTypeConfig.EnableChatMenu))
-                {
-                    _plugin!.Logger.LogError("No menu types enabled in VoteType section of the config, please enable at least one. Falling back to chat menu.");
-                    OpenChatNomination(player);
-                    return;
-                }
-
-                if (_voteTypeConfig.EnableScreenMenu)
-                    OpenScreenMenu(player);
-
-                if (_voteTypeConfig.EnableHudMenu && nominationMenuHud != null)
-                    MenuManager.OpenCenterHtmlMenu(_plugin!, player, nominationMenuHud);
-
-                if (_voteTypeConfig.EnableChatMenu)
-                    OpenChatNomination(player);
-                
-                return;
-            }
-
-            var resolved = ResolveMapNameOrPrompt(player, mapName, _localizer);
-            if (resolved == null)
-                return;
-
-            // Now there is exactly one map name to nominate
-            Nominate(player, resolved);
-        }
-
-        public void OpenChatNomination(CCSPlayerController player)
-        {
-            MenuManager.OpenChatMenu(player, nominationMenu!);
         }
 
         public void Nominate(CCSPlayerController player, string map)
