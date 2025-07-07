@@ -58,6 +58,7 @@ namespace cs2_rockthevote
     public class VotemapConfig : ICommandConfig, IVoteConfig
     {
         public bool Enabled { get; set; } = false;
+        public string MenuType { get; set; } = "ScreenMenu";
         public int VotePercentage { get; set; } = 50;
         public bool ChangeMapImmediatly { get; set; } = true;
         public bool EnabledInWarmup { get; set; } = false;
@@ -96,6 +97,7 @@ namespace cs2_rockthevote
         public string ScrollUpKey { get; set; } = "Attack";
         public string ScrollDownKey { get; set; } = "Attack2";
         public string SelectKey { get; set; } = "E";
+        public bool EnableChatHelper { get; set; } = true;
     }
 
     public class GeneralConfig
