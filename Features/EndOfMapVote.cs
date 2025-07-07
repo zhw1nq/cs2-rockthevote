@@ -16,7 +16,6 @@ namespace cs2_rockthevote
         private GameRules _gameRules = gameRules;
         private EndMapVoteManager _voteManager = voteManager;
         private EndOfMapConfig _config = new();
-        private VoteTypeConfig _voteTypeConfig = new();
         private Timer? _timer;
         private bool DeathMatch => _gameMode?.GetPrimitiveValue<int>() == 2 && _gameType?.GetPrimitiveValue<int>() == 1;
         private ConVar? _gameType;
@@ -48,7 +47,7 @@ namespace cs2_rockthevote
 
             if (_config.Enabled)
             {
-                if (_voteTypeConfig.EnableScreenMenu && PanoramaVote.IsVoteInProgress())
+                if (_config.MenuType == "ScreenMenu" && PanoramaVote.IsVoteInProgress())
                 {
                     PanoramaVote.EndVote(YesNoVoteEndReason.VoteEnd_Cancelled, overrideFailCode: 0);
                     _plugin?.AddTimer(
@@ -56,7 +55,7 @@ namespace cs2_rockthevote
                         {
                             try
                             {
-                                _voteManager.StartVote(_config);
+                                _voteManager.StartVote(isRtv: false);
                             }
                             catch (Exception ex)
                             {
@@ -67,7 +66,7 @@ namespace cs2_rockthevote
                 }
                 else
                 {
-                    _voteManager.StartVote(_config);
+                    _voteManager.StartVote(isRtv: false);
                 }
             }
         }

@@ -9,7 +9,7 @@ namespace cs2_rockthevote
 {
     public partial class Plugin
     {
-        [ConsoleCommand("timeleft", "Prints in the chat the timeleft in the current map")]
+        [ConsoleCommand("css_timeleft", "Prints in the chat the timeleft in the current map")]
         public void OnTimeLeft(CCSPlayerController? player, CommandInfo? command)
         {
             _timeLeft.CommandHandler(player);

@@ -24,9 +24,8 @@ namespace cs2_rockthevote
         Dictionary<string, int> Votes = new();
         public int TimeLeft { get; private set; } = -1;
 
-        private IEndOfMapConfig? _config = null;
+        private EndOfMapConfig _config = new();
         private VoteExtendConfig _voteExtendConfig = new();
-        private VoteTypeConfig _voteTypeConfig = new();
         private GeneralConfig _generalConfig = new();
 
         private int _canVote = 0;
@@ -35,10 +34,6 @@ namespace cs2_rockthevote
         public void OnLoad(Plugin plugin)
         {
             _plugin = plugin;
-            if (_voteTypeConfig.EnableHudMenu || (_voteExtendConfig.EnableCountdown && _voteExtendConfig.HudCountdown))
-            {
-                plugin.RegisterListener<OnTick>(VoteDisplayTick);
-            }
         }
 
         public void OnMapStart(string map)
@@ -51,7 +46,6 @@ namespace cs2_rockthevote
         public void OnConfigParsed(Config config)
         {
             _config = config.EndOfMapVote;
-            _voteTypeConfig = config.VoteType;
             _voteExtendConfig = config.VoteExtend;
             _generalConfig = config.General;
         }
@@ -87,37 +81,21 @@ namespace cs2_rockthevote
             }
         }
 
-        public void VoteDisplayTick()
-        {
-            if (TimeLeft < 0 || !_voteExtendConfig.EnableCountdown || !_pluginState.ExtendTimeVoteHappening)
-                return;
-
-            string text = _localizer.Localize("extendtime.hud.hud-timer", TimeLeft);
-
-            foreach (var player in ServerManager.ValidPlayers())
-            {
-                if (_voteExtendConfig.HudCountdown)
-                {
-                    player.PrintToCenter(text);
-                }
-            }
-        }
-
         public void ChatCountdown(int secondsLeft)
         {
-            if (!_pluginState.ExtendTimeVoteHappening || !_voteExtendConfig.EnableCountdown || _voteExtendConfig.HudCountdown)
+            if (!_pluginState.ExtendTimeVoteHappening || !_voteExtendConfig.EnableCountdown || _voteExtendConfig.CountdownType != "chat")
                 return;
 
             string text = _localizer.LocalizeWithPrefix("general.chat-countdown", secondsLeft);
             foreach (var player in ServerManager.ValidPlayers())
                 player.PrintToChat(text);
 
-            int nextSecondsLeft = secondsLeft - _generalConfig.ChatCountdownInterval;
+            int nextSecondsLeft = secondsLeft - _voteExtendConfig.ChatCountdownInterval;
             if (nextSecondsLeft <= 0)
                 return;
 
             _plugin?.AddTimer(
-                _generalConfig.ChatCountdownInterval, () =>
+                _voteExtendConfig.ChatCountdownInterval, () =>
                 {
                     try
                     {
@@ -125,7 +103,7 @@ namespace cs2_rockthevote
                     }
                     catch (Exception ex)
                     {
-                        _plugin.Logger.LogError(ex, "Extend-time ChatCountdown timer callback failed");
+                        _logger.LogError($"Extend-time ChatCountdown timer callback failed: {ex.Message}");
                     }
                 }, TimerFlags.STOP_ON_MAPCHANGE
             );
@@ -181,7 +159,7 @@ namespace cs2_rockthevote
             _pluginState.ExtendTimeVoteHappening = true;
             _voteExtendConfig = config;
             
-            if (_voteExtendConfig.EnableCountdown && !_voteExtendConfig.HudCountdown)
+            if (_voteExtendConfig.EnableCountdown && _voteExtendConfig.CountdownType == "chat")
             {
                 ChatCountdown(_voteExtendConfig.VoteDuration);
             }
@@ -211,11 +189,9 @@ namespace cs2_rockthevote
         {
             TimeLeft = _voteExtendConfig.VoteDuration;
 
-            Timer = _plugin!.AddTimer(
-                1.0f,
-                () =>
+            Timer = _plugin!.AddTimer(1.0f, () =>
                 {
-                    if (TimeLeft <= 0 && !_voteTypeConfig.EnablePanorama)
+                    if (TimeLeft <= 0 && !_voteExtendConfig.EnablePanorama)
                         ExtendTimeVote();
                     else
                         TimeLeft--;
@@ -250,7 +226,7 @@ namespace cs2_rockthevote
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("Something went wrong when updating the round time: {message}", ex.Message);
+                _logger.LogWarning($"Something went wrong when updating the round time: {ex.Message}");
                 return false;
             }
         }

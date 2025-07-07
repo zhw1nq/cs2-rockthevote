@@ -12,7 +12,7 @@ namespace cs2_rockthevote
 {
     public partial class Plugin
     {
-        [ConsoleCommand("votemap", "Vote to change to a map")]
+        [ConsoleCommand("css_votemap", "Vote to change to a map")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
         public void OnVotemap(CCSPlayerController? player, CommandInfo command)
         {
@@ -47,11 +47,11 @@ namespace cs2_rockthevote
 
     public class VotemapCommand : IPluginDependency<Plugin, Config>
     {
-        private EndOfMapVote _endOfMapVote;
-        private VotemapConfig _config = new VotemapConfig();
-        private VoteTypeConfig _voteTypeConfig = new VoteTypeConfig();
-        private GameRules _gamerules;
+        private readonly ILogger<VotemapCommand> _logger;
         private StringLocalizer _localizer;
+        private VotemapConfig _config = new();
+        private EndOfMapVote _endOfMapVote;
+        private GameRules _gamerules;
         private ChangeMapManager _changeMapManager;
         private PluginState _pluginState;
         private MapCooldown _mapCooldown;
@@ -61,7 +61,7 @@ namespace cs2_rockthevote
         private Plugin? _plugin;
         private Dictionary<string, AsyncVoteManager> VotedMaps = new Dictionary<string, AsyncVoteManager>();
 
-        public VotemapCommand(MapLister mapLister, GameRules gamerules, IStringLocalizer stringLocalizer, ChangeMapManager changeMapManager, PluginState pluginState, MapCooldown mapCooldown, EndOfMapVote endOfMapVote)
+        public VotemapCommand(MapLister mapLister, GameRules gamerules, IStringLocalizer stringLocalizer, ChangeMapManager changeMapManager, PluginState pluginState, MapCooldown mapCooldown, EndOfMapVote endOfMapVote, ILogger<VotemapCommand> logger)
         {
             _mapLister = mapLister;
             _gamerules = gamerules;
@@ -70,6 +70,7 @@ namespace cs2_rockthevote
             _pluginState = pluginState;
             _mapCooldown = mapCooldown;
             _endOfMapVote = endOfMapVote;
+            _logger = logger;
             _mapCooldown.EventCooldownRefreshed += OnMapsLoaded;
         }
 
@@ -81,7 +82,6 @@ namespace cs2_rockthevote
         public void OnConfigParsed(Config config)
         {
             _config = config.Votemap;
-            _voteTypeConfig = config.VoteType;
         }
 
         public void PlayerDisconnected(CCSPlayerController player)
@@ -98,8 +98,8 @@ namespace cs2_rockthevote
 
         public void OnMapsLoaded(object? sender, Map[] maps)
         {
-            votemapMenu = new("Votemap");
-            votemapMenuHud = new CenterHtmlMenu("VoteMap", _plugin!);
+            votemapMenu = new(_localizer.Localize("emv.screenmenu-title"));
+            votemapMenuHud = new CenterHtmlMenu(_localizer.Localize("emv.screenmenu-title"), _plugin!);
             foreach (var map in _mapLister.Maps!.Where(x => x.Name != Server.MapName))
             {
                 votemapMenu.AddMenuOption(map.Name, (CCSPlayerController player, ChatMenuOption option) =>
@@ -158,22 +158,18 @@ namespace cs2_rockthevote
 
         public void OpenVotemapMenu(CCSPlayerController player)
         {
-            // All 3 menu types can be used. However, if none are enabled for some reason, throw an error and fall back to chat menu
-            if (!(_voteTypeConfig.EnableScreenMenu || _voteTypeConfig.EnableHudMenu || _voteTypeConfig.EnableChatMenu))
-            {
-                _plugin!.Logger.LogError("No vote‐menu types enabled in config please enable at least one. Falling back to chat menu.");
-                MenuManager.OpenChatMenu(player, votemapMenu!);
-                return;
-            }
-
-            if (_voteTypeConfig.EnableScreenMenu)
+            if (_config.MenuType == "ScreenMenu")
                 _endOfMapVote.StartVote();
 
-            if (_voteTypeConfig.EnableHudMenu)
+            if (_config.MenuType == "HudMenu")
                 MenuManager.OpenCenterHtmlMenu(_plugin!, player, votemapMenuHud!);
 
-            if (_voteTypeConfig.EnableChatMenu)
+            if (_config.MenuType == "ChatMenu")
                 MenuManager.OpenChatMenu(player, votemapMenu!);
+            
+            else
+                MenuManager.OpenChatMenu(player, votemapMenu!);
+                _logger.LogError("Incorrect MenuType set in the EndOfMapVote config (for use with Votemap). Please choose either ScreenMenu/ChatMenu/HudMenu. Falling back to ChatMenu.");
         }
 
         void AddVote(CCSPlayerController player, string map)
