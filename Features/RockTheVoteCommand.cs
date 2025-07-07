@@ -151,6 +151,12 @@ namespace cs2_rockthevote
                             break;
                     }
                 }
+
+                if (_config.SoundEnabled)
+                {
+                    player.ExecuteClientCommand($"play {_config.SoundPath}");
+                }
+                
                 _rtvEndTime = DateTime.UtcNow.AddSeconds(_config.RtvVoteDuration);
 
                 _plugin?.AddTimer(0.1f, () =>
