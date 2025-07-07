@@ -1,6 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -16,7 +17,19 @@ namespace cs2_rockthevote
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void OnNominateCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (player == null) return;
+            if (player == null)
+                return;
+            
+            // If "Permission" is blank or whitespace, allow everyone. Otherwise enforce it
+            string perm = Config.Nominate.Permission;
+            bool hasPerm = string.IsNullOrWhiteSpace(perm) || AdminManager.PlayerHasPermissions(player, perm);
+
+            if (!hasPerm)
+            {
+                command.ReplyToCommand(_localizer.LocalizeWithPrefix("general.incorrect.permission"));
+                return;
+            }
+
             _nominationManager.CommandHandler(player, command.GetArg(1)?.Trim().ToLower() ?? "");
         }
 
@@ -92,7 +105,7 @@ namespace cs2_rockthevote
                 return;
             
             var userId = player.UserId!.Value;
-            var mapName = map.Trim().ToLower();
+            var mapName = map.Trim();
 
             if (_pluginState.DisableCommands || !_nomConfig.Enabled || _pluginState.EofVoteHappening)
             {
@@ -100,10 +113,25 @@ namespace cs2_rockthevote
                 return;
             }
 
-            // Can't nominate more than once per map
-            if (Nominations.ContainsKey(userId))
+            // Get or init this players noms
+            if (!Nominations.TryGetValue(userId, out var userNominations))
             {
-                player.PrintToChat(_localizer.LocalizeWithPrefix("nominate.limit"));
+                userNominations = new List<string>();
+                Nominations[userId] = userNominations;
+            }
+
+            // Enforce per‐player nomination limit
+            if (userNominations.Count >= _nomConfig.NominateLimit)
+            {
+                player.PrintToChat(_localizer.LocalizeWithPrefix("nominate.limit", _nomConfig.NominateLimit));
+                return;
+            }
+
+            // Prevent nominating the same map multiple times
+            if (userNominations.Contains(mapName, StringComparer.OrdinalIgnoreCase))
+            {
+                int voteCount = Nominations.Values.SelectMany(v => v).Count(m => m.Equals(mapName, StringComparison.OrdinalIgnoreCase));
+                player.PrintToChat( _localizer.LocalizeWithPrefix("nominate.already-nominated", mapName, voteCount));
                 return;
             }
 
@@ -119,17 +147,22 @@ namespace cs2_rockthevote
             if (string.IsNullOrEmpty(mapName))
             {
                 if (_nomConfig.MenuType == "ScreenMenu")
+                {
                     OpenScreenMenu(player);
-
-                if (_nomConfig.MenuType == "HudMenu" && nominationMenuHud != null)
+                }
+                else if (_nomConfig.MenuType == "HudMenu" && nominationMenuHud != null)
+                {
                     MenuManager.OpenCenterHtmlMenu(_plugin!, player, nominationMenuHud);
-
-                if (_nomConfig.MenuType == "ChatMenu")
+                }
+                else if (_nomConfig.MenuType == "ChatMenu")
+                {
                     OpenChatMenu(player);
-
+                }
                 else
+                {
                     OpenChatMenu(player);
                     _logger.LogError("Incorrect MenuType set in the Nominate config. Please choose either ScreenMenu/ChatMenu/HudMenu. Falling back to ChatMenu.");
+                }
                 
                 return;
             }
@@ -137,6 +170,9 @@ namespace cs2_rockthevote
             var resolved = ResolveMapNameOrPrompt(player, mapName, _localizer);
             if (resolved == null)
                 return;
+            
+            // Save the nom count per-player
+            userNominations.Add(resolved);
 
             // Now there is exactly one map name to nominate
             Nominate(player, resolved);
@@ -194,16 +230,6 @@ namespace cs2_rockthevote
                 return;
             }
 
-            var userId = player.UserId!.Value;
-
-            if (Nominations.ContainsKey(userId))
-            {
-                player.PrintToChat(_localizer.LocalizeWithPrefix("nominate.limit"));
-                return;
-            }
-
-            Nominations[userId] = new List<string> { map };
-
             int totalVotes = Nominations.Values.Count(list => list.Contains(map));
 
             Server.PrintToChatAll(_localizer.LocalizeWithPrefix("nominate.nominated", player.PlayerName, map, totalVotes));
@@ -223,8 +249,8 @@ namespace cs2_rockthevote
             MenuManager.OpenChatMenu(player, menu);
         }
 
-        // Attempt to resolve the user’s text into exactly one map. If 0 matches → send "invalid" and return null.
-        // If > 1 matches → show the mini‐menu and return null. Otherwise → return the single map name.
+        // Attempt to resolve the user's text into exactly one map. If 0 matches -> send "invalid" and return null.
+        // If > 1 matches -> show the chat based menu and return null. Otherwise -> return the single map name.
         private string? ResolveMapNameOrPrompt(CCSPlayerController player, string input, StringLocalizer localizer)
         {
             // Exact match
