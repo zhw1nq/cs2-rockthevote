@@ -26,9 +26,9 @@
   "votemap.changing-map": "Changing map to {green}{0}",
   "votemap.changing-map-next-round": "The map will be changed to {green}{0}{default} in the next round...",
 
-  "nominate.nominated": "{green}{0}{default} nominated map {green}{1}{default}, now it has {2} vote(s)",
+  "nominate.nominated": "{green}{0}{default} nominated the map {green}{1}{default}, now it has {2} vote(s)",
   "nominate.already-nominated": "You already nominated the map {green}{0}{default}, it has {1} vote(s)",
-  "nominate.limit": "{lightred}You can only nominate once per map.",
+  "nominate.limit": "{lightred}You can only nominate {0} map(s).",
   "nominate.title": "Nominate a Map:",
   "nominate.multiple-maps": "Which map did you mean:",
 
