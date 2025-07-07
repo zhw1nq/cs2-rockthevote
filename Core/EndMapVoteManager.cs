@@ -8,6 +8,7 @@ using System.Data;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 using Microsoft.Extensions.Logging;
 using System.Text;
+using static CounterStrikeSharp.API.Modules.Commands.CommandInfo;
 
 
 namespace cs2_rockthevote
@@ -33,11 +34,10 @@ namespace cs2_rockthevote
         public int MaxOptionsHud { get; private set; } = 6;
         public ISet<int> VotedPlayers { get; private set; } = new HashSet<int>();
         public Dictionary<string,int> Votes { get; private set; } = new();
-        public IReadOnlyDictionary<string,int> CurrentVotes => Votes;
+        private readonly Dictionary<string, CommandCallback> _chatCallbacks = new();
+        public IReadOnlyDictionary<string, int> CurrentVotes => Votes;
 
-        private IEndOfMapConfig? _config = null;
         private GeneralConfig _generalConfig = new();
-        private VoteTypeConfig _voteTypeConfig = new();
         private EndOfMapConfig _endMapConfig = new();
         private RtvConfig _rtvConfig = new();
 
@@ -75,7 +75,6 @@ namespace cs2_rockthevote
         public void OnConfigParsed(Config config)
         {
             _generalConfig = config.General;
-            _voteTypeConfig = config.VoteType;
             _endMapConfig = config.EndOfMapVote;
             _rtvConfig = config.Rtv;
 
@@ -120,18 +119,12 @@ namespace cs2_rockthevote
             player.PrintToChat(_localizer.LocalizeWithPrefix("emv.you-voted", mapName));
 
             // Make sure to close ScreenMenu if they voted via ChatMenu
-            if (_voteTypeConfig.EnableScreenMenu)
+            if (_endMapConfig.MenuType == "ScreenMenu")
                 MapVoteScreenMenu.Close(player);
             
             // If we’ve reached the vote threshold, end the vote early
             if (Votes.Values.Sum() >= _canVote)
                 EndVote();
-        }
-
-        public void PlaySound(CCSPlayerController player)
-        {
-            string soundPath = _config != null ? _config.SoundPath : "sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c";
-            player.ExecuteClientCommand($"play {soundPath}");
         }
 
         public void KillTimer()
@@ -166,58 +159,20 @@ namespace cs2_rockthevote
             }
         }
         
-        public void VoteDisplayTick()
-        {
-            // Only shown while the vote is running
-            if (TimeLeft < 0 || !_pluginState.EofVoteHappening)
-                return;
-
-            // HUD Countdown
-            if (_endMapConfig.EnableCountdown && _endMapConfig.HudCountdown)
-            {
-                string countdown = _localizer.Localize("emv.hud.timer", TimeLeft);
-                foreach (var player in ServerManager.ValidPlayers())
-                    player.PrintToCenter(countdown);
-            }
-
-            // HUD vote list
-            if (_voteTypeConfig.EnableHudMenu)
-            {
-                var sb = new StringBuilder();
-                sb.Append($"<b><font color='yellow'>{_localizer.Localize("emv.hud.menu-title")}</font></b>");
-
-                int idx = 1;
-                foreach (var kv in Votes.OrderByDescending(x => x.Value).Take(MaxOptionsHud))
-                {
-                    var header = "<br><font color='yellow'>!{0}</font> {1} <font color='lime'>({2})</font>";
-                    sb.AppendFormat(header, idx++, kv.Key, kv.Value);
-                }
-
-                foreach (var player in ServerManager.ValidPlayers())
-                {
-                    var userId = player.UserId!.Value;
-                    if (_generalConfig.HideHudAfterVote && VotedPlayers.Contains(userId))
-                        continue;
-
-                    player.PrintToCenterHtml(sb.ToString());
-                }
-            }
-        }
-        
         public void ChatCountdown(int secondsLeft)
         {
-            if (!_pluginState.EofVoteHappening || !_endMapConfig.EnableCountdown || _endMapConfig.HudCountdown)
+            if (!_pluginState.EofVoteHappening || !_endMapConfig.EnableCountdown || _endMapConfig.CountdownType != "chat")
                 return;
 
             string text = _localizer.LocalizeWithPrefix("general.chat-countdown", secondsLeft);
             foreach (var player in ServerManager.ValidPlayers())
                 player.PrintToChat(text);
 
-            int next = secondsLeft - _generalConfig.ChatCountdownInterval;
+            int next = secondsLeft - _endMapConfig.ChatCountdownInterval;
             if (next > 0)
             {
                 _plugin?.AddTimer(
-                    _generalConfig.ChatCountdownInterval, () =>
+                    _endMapConfig.ChatCountdownInterval, () =>
                     {
                         try
                         {
@@ -232,12 +187,12 @@ namespace cs2_rockthevote
             }
         }
 
-        public void StartVote(IEndOfMapConfig config, bool isRtv = false)
+        public void StartVote(bool isRtv = false)
         {
             if (_pluginState.EofVoteHappening)
                 return;
 
-            if (_voteTypeConfig.EnablePanorama)
+            if (_rtvConfig.EnablePanorama)
             {
                 Server.ExecuteCommand("sv_allow_votes 0");
                 Server.ExecuteCommand("sv_vote_allow_in_warmup 0");
@@ -247,11 +202,6 @@ namespace cs2_rockthevote
 
             Votes.Clear();
             _pluginState.EofVoteHappening = true;
-            _config = config;
-
-            int mapsToShow = _config.MapsToShow == 0 ? MaxOptionsHud : _config.MapsToShow;
-            if (_voteTypeConfig.EnableHudMenu && mapsToShow > MaxOptionsHud)
-                mapsToShow = MaxOptionsHud;
 
             int maxExt = _generalConfig.MaxMapExtensions;
             bool unlimited = maxExt <= 0;  // treat 0 or negative as unlimited
@@ -260,7 +210,15 @@ namespace cs2_rockthevote
                 && _endMapConfig.IncludeExtendCurrentMap
                 && (unlimited || _pluginState.MapExtensionCount < maxExt);
 
-            int mapOptionsCount = canShowExtendOption ? mapsToShow - 1 : mapsToShow;
+            int mapsToShow = !isRtv
+                ? (_endMapConfig.MapsToShow == 0 ? MaxOptionsHud : _endMapConfig.MapsToShow)
+                : (_rtvConfig.MapsToShow    == 0 ? MaxOptionsHud : _rtvConfig.MapsToShow);
+            if (_endMapConfig.MenuType == "HudMenu" && mapsToShow > MaxOptionsHud)
+                mapsToShow = MaxOptionsHud;
+
+            int mapOptionsCount = canShowExtendOption
+                ? mapsToShow - 1
+                : mapsToShow;
 
             // Get map list
             var mapsScrambled = Shuffle(new Random(), _mapLister.Maps!.Select(x => x.Name)
@@ -288,13 +246,13 @@ namespace cs2_rockthevote
             // Open Chat/Screen/Hud Menu (config dependant)
             foreach (var player in ServerManager.ValidPlayers())
             {
-                if (_voteTypeConfig.EnableScreenMenu)
+                if (_endMapConfig.MenuType == "ScreenMenu")
                 {
                     Server.NextFrame(() =>
                         MapVoteScreenMenu.Open(_plugin!, player, voteOptions, MapVoted, _localizer.Localize("emv.screenmenu-title"))
                     );
                 }
-                if (_voteTypeConfig.EnableChatMenu)
+                if (_endMapConfig.MenuType == "ChatMenu")
                 {
                     ChatMenu chatMenu = new(_localizer.Localize("emv.hud.menu-title"));
                     foreach (var option in voteOptions)
@@ -307,7 +265,7 @@ namespace cs2_rockthevote
                     }
                     MenuManager.OpenChatMenu(player, chatMenu);
                 }
-                if (_voteTypeConfig.EnableHudMenu)
+                if (_endMapConfig.MenuType == "HudMenu")
                 {
                     // Console menu used to register the votes, without having to show anything in chat
                     ConsoleMenu consoleMenu = new(_localizer.Localize("emv.hud.menu-title"));
@@ -321,18 +279,22 @@ namespace cs2_rockthevote
                     } 
                     MenuManager.OpenConsoleMenu(player, consoleMenu);
                 }
-                if (_config.SoundEnabled)
+                if (_endMapConfig.SoundEnabled)
                 {
-                    PlaySound(player);
+                    player.ExecuteClientCommand($"play {_endMapConfig.SoundPath}");
                 }
             }
             
             if (!isRtv)
                 ChatCountdown(_endMapConfig.VoteDuration);
             if (isRtv)
-                ChatCountdown(_rtvConfig.VoteDuration);
+                ChatCountdown(_rtvConfig.MapVoteDuration);
 
-            TimeLeft = _config.VoteDuration;
+            if (!isRtv)
+                TimeLeft = _endMapConfig.VoteDuration;
+            if (isRtv)
+                TimeLeft = _rtvConfig.MapVoteDuration;
+
             Timer = _plugin?.AddTimer(1.0F, () =>
             {
                 if (TimeLeft <= 0)
@@ -358,7 +320,7 @@ namespace cs2_rockthevote
             
             KillTimer();
             
-            bool mapEnd = _config is EndOfMapConfig;
+            bool mapEnd = _endMapConfig is EndOfMapConfig;
             string extendOption = _localizer.Localize("extendtime.list-name");
             
             decimal totalVotes = Votes.Select(x => x.Value).Sum();
@@ -406,21 +368,21 @@ namespace cs2_rockthevote
                 }
                 
                 int newRemainingSeconds = (int)(_gameRules.RoundTime - (Server.CurrentTime - _gameRules.GameStartTime));
-                int triggerSeconds = ((EndOfMapConfig)_config!).TriggerSecondsBeforeEnd;
+                int triggerSeconds = _endMapConfig.TriggerSecondsBeforeEnd;
                 int delay = Math.Max(newRemainingSeconds - triggerSeconds, 0);
                 
                 _plugin?.AddTimer(delay, () =>
                 {
                     _pluginState.EofVoteHappening = false;
                     _changeMapManager.OnMapStart(Server.MapName);
-                    StartVote(_config);
+                    StartVote(isRtv: false);
                 }, TimerFlags.STOP_ON_MAPCHANGE);
             }
             else
             {
                 _changeMapManager.ScheduleMapChange(winner.Key, mapEnd: mapEnd);
                 
-                if (_config!.ChangeMapImmediatly)
+                if (!_endMapConfig.ChangeMapImmediatly)
                 {
                     _changeMapManager.ChangeNextMap(mapEnd);
                 }
