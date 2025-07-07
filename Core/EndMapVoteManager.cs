@@ -252,7 +252,7 @@ namespace cs2_rockthevote
                         MapVoteScreenMenu.Open(_plugin!, player, voteOptions, MapVoted, _localizer.Localize("emv.screenmenu-title"))
                     );
                 }
-                if (_endMapConfig.MenuType == "ChatMenu")
+                else if (_endMapConfig.MenuType == "ChatMenu")
                 {
                     ChatMenu chatMenu = new(_localizer.Localize("emv.hud.menu-title"));
                     foreach (var option in voteOptions)
@@ -265,7 +265,7 @@ namespace cs2_rockthevote
                     }
                     MenuManager.OpenChatMenu(player, chatMenu);
                 }
-                if (_endMapConfig.MenuType == "HudMenu")
+                else if (_endMapConfig.MenuType == "HudMenu")
                 {
                     // Console menu used to register the votes, without having to show anything in chat
                     ConsoleMenu consoleMenu = new(_localizer.Localize("emv.hud.menu-title"));
@@ -276,8 +276,22 @@ namespace cs2_rockthevote
                             MapVoted(p, option);
                             MenuManager.CloseActiveMenu(p);
                         });
-                    } 
+                    }
                     MenuManager.OpenConsoleMenu(player, consoleMenu);
+                }
+                else
+                {
+                    ChatMenu chatMenu = new(_localizer.Localize("emv.hud.menu-title"));
+                    foreach (var option in voteOptions)
+                    {
+                        chatMenu.AddMenuOption(option, (p, selectedOption) =>
+                        {
+                            MapVoted(p, option);
+                            MenuManager.CloseActiveMenu(p);
+                        });
+                    }
+                    MenuManager.OpenChatMenu(player, chatMenu);
+                    _logger.LogError("Incorrect MenuType set in the EndOfMapVote config. Please choose either ScreenMenu/ChatMenu/HudMenu. Falling back to ChatMenu.");
                 }
                 if (_endMapConfig.SoundEnabled)
                 {
