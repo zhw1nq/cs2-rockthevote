@@ -161,15 +161,17 @@ namespace cs2_rockthevote
             if (_config.MenuType == "ScreenMenu")
                 _endOfMapVote.StartVote();
 
-            if (_config.MenuType == "HudMenu")
+            else if (_config.MenuType == "HudMenu")
                 MenuManager.OpenCenterHtmlMenu(_plugin!, player, votemapMenuHud!);
 
-            if (_config.MenuType == "ChatMenu")
+            else if (_config.MenuType == "ChatMenu")
                 MenuManager.OpenChatMenu(player, votemapMenu!);
-            
+
             else
+            {
                 MenuManager.OpenChatMenu(player, votemapMenu!);
                 _logger.LogError("Incorrect MenuType set in the EndOfMapVote config (for use with Votemap). Please choose either ScreenMenu/ChatMenu/HudMenu. Falling back to ChatMenu.");
+            }
         }
 
         void AddVote(CCSPlayerController player, string map)
