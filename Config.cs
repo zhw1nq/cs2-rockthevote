@@ -91,6 +91,7 @@ namespace cs2_rockthevote
 
     public class ScreenMenuConfig
     {
+        public string MenuType { get; set; } = "Both";
         public bool EnableResolutionOption { get; set; } = false;
         public bool EnableExitOption { get; set; } = false;
         public bool FreezePlayer { get; set; } = false;
