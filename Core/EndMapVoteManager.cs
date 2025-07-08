@@ -7,9 +7,8 @@ using cs2_rockthevote.Core;
 using System.Data;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 using Microsoft.Extensions.Logging;
-using System.Text;
 using static CounterStrikeSharp.API.Modules.Commands.CommandInfo;
-
+using CounterStrikeSharp.API.Modules.Utils;
 
 namespace cs2_rockthevote
 {
@@ -40,6 +39,7 @@ namespace cs2_rockthevote
         private GeneralConfig _generalConfig = new();
         private EndOfMapConfig _endMapConfig = new();
         private RtvConfig _rtvConfig = new();
+        private ScreenMenuConfig _screenConfig = new();
 
         public EndMapVoteManager
         (
@@ -77,6 +77,7 @@ namespace cs2_rockthevote
             _generalConfig = config.General;
             _endMapConfig = config.EndOfMapVote;
             _rtvConfig = config.Rtv;
+            _screenConfig = config.ScreenMenu;
 
             // Check to make sure VoteDuration isn't >= TriggerSecondsBeforeEnd, if it is, use a fallback
             if (_endMapConfig.VoteDuration >= _endMapConfig.TriggerSecondsBeforeEnd)
@@ -251,6 +252,18 @@ namespace cs2_rockthevote
                     Server.NextFrame(() =>
                         MapVoteScreenMenu.Open(_plugin!, player, voteOptions, MapVoted, _localizer.Localize("emv.screenmenu-title"))
                     );
+
+                    // Chat helper in case people cant see the ScreenMenu for some reason
+                    if (_screenConfig.EnableChatHelper)
+                    {
+                        player.PrintToChat(_localizer.Localize("emv.hud.menu-title"));
+                        player.PrintToChat($" {ChatColors.Orange}-----");
+                        for (int i = 0; i < voteOptions.Count; i++)
+                        {
+                            var option = voteOptions[i];
+                            player.PrintToChat($" {ChatColors.Lime}!{i + 1} {ChatColors.White}{option}");
+                        }
+                    }
                 }
                 else if (_endMapConfig.MenuType == "ChatMenu")
                 {
