@@ -53,10 +53,17 @@ namespace cs2_rockthevote.Core
             var baseName = map;
             var idx = map.IndexOf(' ');
             if (idx > 0)
-                baseName = map.Substring(0, idx);
+                baseName = map[..idx];
 
             // Compare lowercase
-            return mapsOnCoolDown.Contains(baseName.Trim().ToLowerInvariant());
+            var lowerName = baseName.Trim().ToLowerInvariant();
+
+            // Always exclude the current map
+            var current = Server.MapName?.Trim().ToLowerInvariant();
+            if (!string.IsNullOrEmpty(current) && lowerName == current)
+                return true;
+
+            return mapsOnCoolDown.Contains(lowerName);
         }
     }
 }
