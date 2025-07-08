@@ -1,10 +1,12 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using static CounterStrikeSharp.API.Core.Listeners;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Extensions;
+using CounterStrikeSharp.API.Modules.Events;
 using cs2_rockthevote.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -35,11 +37,12 @@ namespace cs2_rockthevote
         TimeLeftCommand timeLeft,
         MaplistCommand maplistManager,
         WorkshopMapValidator mapValidator,
+        PluginState pluginState,
         IStringLocalizer stringLocalizer,
         ILogger<Plugin> logger) : BasePlugin, IPluginConfig<Config>
     {
         public override string ModuleName => "RockTheVote";
-        public override string ModuleVersion => "2.0.6-dev";
+        public override string ModuleVersion => "2.0.6";
         public override string ModuleAuthor => "abnerfs (Updated by Marchand)";
 
         private readonly DependencyManager<Plugin, Config> _dependencyManager = dependencyManager;
@@ -55,6 +58,7 @@ namespace cs2_rockthevote
         private readonly WorkshopMapValidator _mapValidator = mapValidator;
         private StringLocalizer _localizer = new(stringLocalizer, "rtv.prefix");
         private readonly ILogger<Plugin> _logger = logger;
+        private readonly PluginState _pluginState = pluginState;
 
 
         public Config Config { get; set; } = new Config();
@@ -86,10 +90,35 @@ namespace cs2_rockthevote
             Config = config;
             _dependencyManager.OnConfigParsed(config);
 
-            if (Config.Version < 14)
+            if (Config.Version < 15)
             {
                 _logger.LogError("Your config file is too old, please backup your current config and let the plugin recreate it on load.");
             }
+        }
+
+        [GameEventHandler]
+        public HookResult OnClientSay(EventPlayerChat @event, GameEventInfo info)
+        {
+            var player = Utilities.GetPlayerFromUserid(@event.Userid);
+
+            if (player == null || !player.IsValid || player.IsBot || string.IsNullOrEmpty(@event.Text))
+                return HookResult.Continue;
+
+            string message = @event.Text.Trim();
+
+            if (message.StartsWith("!") && message.Length == 2 && char.IsDigit(message[1]))
+            {
+                int key = message[1] - '0';
+
+                var menu = CS2MenuManager.API.Class.MenuManager.GetActiveMenu(player);
+                if (menu != null && _pluginState.EofVoteHappening && Config.ScreenMenu.EnableChatHelper == true)
+                {
+                    CS2MenuManager.API.Class.MenuManager.OnKeyPress(player, key);
+                    return HookResult.Handled;
+                }
+            }
+
+            return HookResult.Continue;
         }
 
         [ConsoleCommand("css_reloadrtv", "Reloads the RTV config.")]
