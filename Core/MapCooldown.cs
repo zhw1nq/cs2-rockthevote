@@ -19,10 +19,11 @@ namespace cs2_rockthevote.Core
 
                 int maxEntries = _generalConfig.MapsInCoolDown;
 
-                // If cooldown is disabled, clear everything
+                // If cooldown is disabled, clear everything except current map
                 if (maxEntries <= 0)
                 {
                     mapsOnCoolDown.Clear();
+                    mapsOnCoolDown.Add(current.ToLowerInvariant());
                 }
                 else
                 {
