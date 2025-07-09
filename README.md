@@ -41,21 +41,121 @@ General purpose map voting plugin.
 
 
 ## Requirements
-v315+ of [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp/releases)
+v315+ of [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp/releases) (Minimum, but tested on v323)
 
-v1.0.36 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/)
+v1.0.29+ of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/) (Minimum, but tested on v36)
 
 # Installation
 - Download the latest release from https://github.com/M-archand/cs2-rockthevote/releases
 - Extract the .zip file into `addons/counterstrikesharp/plugins`
 - Update the maplist.example.txt to inlcude your desired maps and then rename it to maplist.txt
 
+## [ Configuration ]
+- A config file will be created in `addons/counterstrikesharp/configs/plugins/RockTheVote` the first time you load the plugin.
+- Changes in the config file will require you to reload the plugin or restart the server (changing the map won't work).
+- Maps that will be used in RTV/nominate/votemap/end of map vote are located in addons/counterstrikesharp/plugins/RockTheVote/maplist.txt
+
+```json
+{
+  "ConfigVersion": 15,
+  "Rtv": {
+    "Enabled": true,
+    "EnabledInWarmup": false,
+    "EnablePanorama": true, # true = use built in Panorama voting system (F1 = Yes, F2 = No). False = use !rtv in chat
+    "MinPlayers": 0,
+    "MinRounds": 0,
+    "ChangeMapImmediatly": true,
+    "SoundEnabled": false, # true = play a sound when the end of map vote starts.
+    "SoundPath": "sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c",
+    "MapsToShow": 6, # How many maps to show in the resulting map vote if the rtv passes
+    "RtvVoteDuration": 60, # How long the rtv vote lasts
+    "MapVoteDuration": 60, # How long the resulting map vote will last
+    "CooldownDuration": 180, # How many seconds must pass before another !rtv can be initiated
+    "MapStartDelay": 180, # How many seconds must pass after the map starts before an !rtv can be called
+    "VotePercentage": 51, # Percentage of votes required to pass the vote
+    "EnableCountdown": true, # Whether the chat/hud countdown is enabled
+    "CountdownType": "chat", # chat = prints to chat on an interval how much time is left in the vote. hud = persistent alert on the hud counting down as each second passes
+    "ChatCountdownInterval": 15 # If CountdownType = chat, how often we print to chat how much time is remaining to vote
+  },
+  "EndOfMapVote": {
+    "Enabled": true,
+    "MapsToShow": 6, # How many maps to show in the vote. If IncludeExtendCurrentMap = true, the extension option takes up 1 slot
+    "MenuType": "ScreenMenu", # The menu that will be used to show the vote. Options = ScreenMenu/ChatMenu/HudMenu
+    "ChangeMapImmediatly": false, # false = change when the map ends. true = change as soon as the VoteDuration ends
+    "VoteDuration": 150, # How long the map vote will last (this must be smaller than TriggerSecondsBeforeEnd)
+    "SoundEnabled": false, # true = play a sound when the end of map vote starts.
+    "SoundPath": "sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c", # Filepath of the sound you want to be played
+    "TriggerSecondsBeforeEnd": 180, # When the End of Map Vote will be triggered (this must be higher than VoteDuration)
+    "TriggerRoundsBeforeEnd": 0, # What round the vote is trigger on (use 0 for game modes like surf/bhop/etc or it'll never appear)
+    "DelayToChangeInTheEnd": 0, # How long the mvp screen shows at the end if ChangeMapImmediatly = false
+    "IncludeExtendCurrentMap": true, # Include an option to extend the current map
+    "EnableCountdown": false, # Whether the chat/hud countdown is enabled
+    "CountdownType": "chat", # chat = prints to chat on an interval how much time is left in the vote. hud = persistent alert on the hud counting down as each second passes
+    "ChatCountdownInterval": 30 # If CountdownType = chat, how often we print to chat how much time is remaining to vote
+  },
+  "Nominate": {
+    "Enabled": true,
+    "EnabledInWarmup": true,
+    "MenuType": "ScreenMenu", # The menu that will be used to show the vote. Options = ScreenMenu/ChatMenu/HudMenu
+    "NominateLimit": 1, # How many maps a single player can nominate per map vote
+    "Permission": "" # empty = anyone can use. "@css/vip" = only vip's can use (any perm allowed)
+  },
+  "Votemap": {
+    "Enabled": false,
+    "MenuType": "ScreenMenu", # The menu that will be used to show the vote. Options = ScreenMenu/ChatMenu/HudMenu
+    "VotePercentage": 50, # Percentage of votes required to pass the vote
+    "ChangeMapImmediatly": true,
+    "EnabledInWarmup": false,
+    "MinPlayers": 0,
+    "MinRounds": 0,
+    "Permission": "@css/vip" # empty = anyone can use. "@css/vip" = only vip's can use (any perm allowed)
+  },
+  "VoteExtend": {
+    "Enabled": false,
+    "EnablePanorama": true, # true = use built in Panorama voting system (F1 = Yes, F2 = No). False = use !ve in chat
+    "VoteDuration": 60, # How long the vote will last
+    "VotePercentage": 50, # Percentage of votes required to pass the vote
+    "CooldownDuration": 180, # How many seconds must pass before another !ve can be called
+    "EnableCountdown": true,
+    "CountdownType": "chat", # chat = prints to chat on an interval how much time is left in the vote. hud = persistent alert on the hud counting down as each second passes
+    "ChatCountdownInterval": 15, # If CountdownType = chat, how often we print to chat how much time is remaining to vote
+    "Permission": "@css/vip" # empty = anyone can use. "@css/vip" = only vip's can use (any perm allowed)
+  },
+  "ScreenMenu": {
+    "MenuType": "Both", # Both/KeyPress/Scrollable
+    "EnableResolutionOption": false,
+    "EnableExitOption": false,
+    "FreezePlayer": false,
+    "ScrollUpKey": "Attack",
+    "ScrollDownKey": "Attack2",
+    "SelectKey": "E",
+    "EnableChatHelper": true # This prints the map list to the chat for the End of Map Vote if you're using "MenuType": "ScreenMenu", in EndOfMapVote. Useful if ScreenMenu doesn't appear to the player (they're in free roam spec, dead, etc)
+  },
+  "General": {
+    "MaxMapExtensions": 2,
+    "RoundTimeExtension": 15, # How long the extension will be in minutes for !VoteExtend or End of Map Vote extension
+    "MapsInCoolDown": 3, # How many recent maps that won't appear again in the End of Map Vote/can't be nominated.
+    "HideHudAfterVote": true, # Only applicable in MenuType = HudMenu. true = closes the hud after the player has voted
+    "RandomStartMap": false, # true = a random map will be used when the server restarts. false = will use whatever you set in your startup command
+    "DiscordWebhook": "" # blank = no alert. Discord Webhook added will alert you to any workshop maps in your maplist.txt that are no longer on the workshop
+  }
+}
+```
+  
+# Adding workshop maps
+```
+surf_beginner:3070321829
+surf_nyx (T1, Linear):3129698096
+de_dust2
+```
 
 # Roadmap
 - [ ] Automatically remove invalid workshop maps (currently only sends notification)
 - [ ] !extend max extension value
 - [ ] Add vote percentage required for winning map (e.g. must receive 25% of the vote)
 - [ ] Add vote runnoff (e.g. 2nd stage of voting between 2 maps if minimum vote percentage not achieved for a map)
+- [ ] Add !revote to allow players to change their vote
+- [ ] Add live vote count to ScreenMenu and allow menu to optionally stay open.
 
 # Translations
 | Language             |
@@ -71,113 +171,4 @@ v1.0.36 of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/)
 | Russian              |
 | Portuguese (BR)      |
 | Chinese (Simplified) |
-
-# Configs
-- A config file will be created in `addons/counterstrikesharp/configs/plugins/RockTheVote` the first time you load the plugin.
-- Changes in the config file will require you to reload the plugin or restart the server (changing the map won't work).
-- Maps that will be used in RTV/nominate/votemap/end of map vote are located in addons/counterstrikesharp/plugins/RockTheVote/maplist.txt
-
-## Rtv
-Players can type !rtv to request the map to be changed, once a number of votes is reached (VotePercentage in cfg) a vote will start for the next map, the vote duration is defined in the config.
-
-| Config              | Description                                                                                                            | Default Value | Min   | Max                                  |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------- | ----- | ------------------------------------ |
-| Enabled             | Enable/Disable RTV functionality                                                                                       | true          | false | true                                 |
-| EnabledInWarmup     | Enable/Disable RTV during warmup                                                                                       | false         | false | true                                 |
-| NominationEnabled   | Enable/Disable nomination                                                                                              | true          | false | true                                 |
-| MinPlayers          | Minimum amount of players to enable RTV/Nominate                                                                       | 0             | 0     | 9999                                 |
-| MinRounds           | Minimum rounds to enable RTV/Nominate                                                                                  | 0             | 0     | 9999                                 |
-| ChangeMapImmediatly | Whether to change the map immediatly when vote ends or not                                                             | true          | false | true                                 |
-| SoundEnabled        | Whether to play a sound when the vote starts                                                                           | false         | false | true                                 |
-| SoundPath           | The file path of the sound that will be played. sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd | "Pick 1 Map"  |       | any sound file path                  |
-| MapsToShow          | Amount of maps to show in vote                                                                                         | 6             | 1     | 6 with HudMenu, unlimited without it |
-| VoteDuration        | Seconds the resulting map vote will last if the rtv vote passes                                                        | 30            | 1     |                                      |
-| RtvVoteDuration     | Seconds the RTV vote will last                                                                                         | 45            | 1     | 9999                                 |
-| VotePercentage      | Percentage of players that should vote yes to RTV in order to start a map vote                                         | 51            | 1     | 100                                  |
-| CooldownDuration    | Amount of time that must pass before another vote can be called (seconds)                                              | 180           | 0     | 9999                                 |
-| MapStartDelay       | How long after the map has started before and RTV can be called                                                        | 180           | 0     | 9999                                 |
-| VotePercentage      | Percentage of players that need to vote Yes for the extension to pass                                                  | 50            | 1     | 100                                  |
-| HudCountdown        | False = Chat countdown, True = Hud Countdown                                                                           | false         | false | true                                 |
-| Permission          | The permission required to use this command                                                                            | @css/vip      |       |                                      |
-
-## Votemap
-Players can vote to change to a specific map by using the votemap <mapname> command
-
-| Config              | Description                                                              | Default Value | Min   | Max  |
-| ------------------- | ------------------------------------------------------------------------ | ------------- | ----- | ---- |
-| Enabled             | Enable/disable votemap funtionality                                      | true          | false | true |
-| VotePercentage      | Percentage of players that should vote in a map in order to change to it | 60            | 1     | 100  |
-| ChangeMapImmediatly | Whether to change the map immediatly when vote ends or not               | true          | false | true |
-| EnabledInWarmup     | Enable/Disable votemap during warmup                                     | true          | false | true |
-| MinRounds           | Minimum rounds to enable votemap                                         | 0             |       |      |
-| MinPlayers          | Minimum amount of players to enable votemap                              | 0             |       |      |
-| Permission          | The permission required to use this command                              | @css/vip      |       |      |
-
-## VoteExtend
-Players can start a vote to extend the map by an amount set in the config. Uses either Chat or Panorama Vote
-
-| Config              | Description                                                              | Default Value | Min   | Max  |
-| ------------------- | ------------------------------------------------------------------------ | ------------- | ----- | ---- |
-| Enabled             | Enable/disable votemap funtionality                                      | true          | false | true |
-| VoteDuration        | How long the vote will last                                              | 60            | 1     | 100  |
-| VotePercentage      | Percentage of players that need to vote Yes for the extension to pass    | 50            | 1     | 100  |
-| CooldownDuration    | Amount of time that must pass before another vote can be called (seconds)| 180           | 0     | 999  |
-| EnableCountdown     | Whether a countdown timer is shown (hud/chat)                            | true          | false | true |
-| HudCountdown        | False = Chat countdown, True = Hud Countdown                             | false         | false | true |
-| Permission          | The permission required to use this command                              | @css/vip      |       |      |
-
-## End of Map Vote
-When the map is about to end, or when trigger by an !rtv, a random list of maps from your maplist.txt file be shown to choose from to decide the next map to be played
-
-| Config                  | Description                                                                                                            | Default Value | Min   | Max                                  |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------- | ----- | ------------------------------------ |
-| Enabled                 | Enable/Disable end of map vote functionality                                                                           | true          | false | true                                 |
-| ChangeMapImmediatly     | Whether to change the map immediatly when vote ends or not                                                             | true          | false | true                                 |
-| HideHudAfterVote        | Whether to hide vote status hud after vote or not, only matters when HudMenu is true                                   | false         | false | true                                 |
-| MapsToShow              | Amount of maps to show in vote,                                                                                        | 6             | 1     | 6 with HudMenu, unlimited without it |
-| VoteDuration            | Seconds the RTV should can last                                                                                        | 30            | 1     |                                      |
-| HudMenu                 | Whether to use HudMenu or just the chat one, when false the hud only shows which map is winning instead of actual menu | true          | false | true                                 |
-| TriggerSecondsBeforeEnd | Amount of seconds before end of the map that should trigger the vote, only used when mp_timelimit is greater than 0    | 120           | 1     |                                      |
-| TriggerRoundsBeforeEnd   | Amount of rounds before end of map that should trigger the vote, only used when mp_maxrounds is set                    | 2             | 1     |                                      |
-| DelayToChangeInTheEnd   | Delay in seconds that plugin will take to change the map after the win panel is shown to the players                   | 6             | 3     |                                      |
-
-## ScreenMenu
-Used if `EnableScreenMenu` = `true`. Extra settings to override your CS2MenuManager Shared API settings if desired
-| Config                  | Description                                                                                 | Default Value | Min      | Max           |
-| ----------------------- | --------------------------------------------------------------------------------------------| ------------- | -------- | ------------- |
-| EnabledResolutionOption | Whether to show the resolution option or not in your map vote ScreenMenu                    | false         | false    | true          |
-| EnabledExitOption       | Whether to show the exit option or not in your map vote/nominate ScreenMenu                 | false         | false    | true          |
-| FreezePlayer            | Whether to show the exit option or not in your map vote/nominate ScreenMenu                 | Attack        | false    | true          |
-| ScrollDownKey           | Whether to show the exit option or not in your map vote/nominate ScreenMenu                 | Attack2       | false    | true          |
-| SelectKey               | The key used to make a selection while on the map row                                       | E             | false    | true          |
-
-**Available keys**: Alt1, Alt2, Attack, Attack2, Attack3, Bullrush, Cancel, Duck, Grenade1, Grenade2, Space, Left, W, A, S, D, E, R, F, Shift, Right, Run, Walk, Weapon1, Weapon2, Zoom, Tab
-
-## VoteType
-| Config                | Description                                                                                 | Default Value | Min      | Max           |
-| --------------------- | --------------------------------------------------------------------------------------------| ------------- | -------- | ------------- |
-| EnableScreenMenu      | Use Screen Menu for EndMapVote/Nominate/Votemap                                             | false         | false    | true          |
-| EnableChatMenu        | Use Chat Menu for EndMapVote/Nominate/Votemap                                               | true          | false    | true          |
-| EnableHudMenu         | Use HUD Menu for EndMapVote/Nominate/Votemap                                                | false         | false    | true          |
-| EnablePanorama        | Use Panorama vote for !rtv/!voteextend.  false = uses chat (like original)                  | true          | false    | true          |
-
-## General
-| Config                | Description                                                                                 | Default Value | Min      | Max           |
-| --------------------- | --------------------------------------------------------------------------------------------| ------------- | -------- | ------------- |
-| MaxMapExtensions      | How many extensions are allowed per map. Includes end of map votes, and !voteextend         | 2             | 1        | 0 (unlimited) |
-| RoundTimeExtension    | The number of minutes the map will be extended by                                           | 15            | 1        | 999           |
-| MapsInCoolDown        | Number of maps that can't be used in vote because they have been played recently            | 3             | 0        | 999           |
-| ChatCountdownInterval | How often the time left in the vote is printed to chat (in seconds)                         | 20            | 1        | 999           |
-| HideHudAfterVote      | Whether the HUD should be hidden after voting if the "HudMenu" is enabled as a voting type  | true          | false    | true          |
-| RandomStartMap        | Whether a random map will be chosen when the server is restarted                            | true          | false    | true          |
-| DiscordWebhook        | Add a Discord Webshook link if you want to receive a message when an invalid map is found   | ""            | ""       |               |
-
-
-  
-# Adding workshop maps
-```
-surf_beginner:3070321829
-surf_nyx (T1, Linear):3129698096
-de_dust2
-```
 ![GitHub Downloads](https://img.shields.io/github/downloads/M-archand/cs2-rockthevote/total?style=for-the-badge)
