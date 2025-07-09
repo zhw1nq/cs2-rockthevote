@@ -192,6 +192,8 @@ namespace cs2_rockthevote
         {
             if (_pluginState.EofVoteHappening)
                 return;
+            
+            VotedPlayers.Clear();
 
             if (_rtvConfig.EnablePanorama)
             {
