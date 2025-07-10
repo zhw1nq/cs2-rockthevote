@@ -13,7 +13,7 @@ namespace cs2_rockthevote
     public interface IVoteConfig
     {
         public int VotePercentage { get; set; }
-        public bool ChangeMapImmediatly { get; set; }
+        public bool ChangeMapImmediately { get; set; }
     }
 
     public class RtvConfig : ICommandConfig, IVoteConfig
@@ -23,7 +23,7 @@ namespace cs2_rockthevote
         public bool EnablePanorama { get; set; } = true;
         public int MinPlayers { get; set; } = 0;
         public int MinRounds { get; set; } = 0;
-        public bool ChangeMapImmediatly { get; set; } = true;
+        public bool ChangeMapImmediately { get; set; } = true;
         public bool SoundEnabled { get; set; } = false;
         public string SoundPath { get; set; } = "sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c";
         public int MapsToShow { get; set; } = 6;
@@ -42,7 +42,7 @@ namespace cs2_rockthevote
         public bool Enabled { get; set; } = true;
         public int MapsToShow { get; set; } = 6;
         public string MenuType { get; set; } = "ScreenMenu";
-        public bool ChangeMapImmediatly { get; set; } = false;
+        public bool ChangeMapImmediately { get; set; } = false;
         public int VoteDuration { get; set; } = 150;
         public bool SoundEnabled { get; set; } = false;
         public string SoundPath { get; set; } = "sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c";
@@ -60,7 +60,7 @@ namespace cs2_rockthevote
         public bool Enabled { get; set; } = false;
         public string MenuType { get; set; } = "ScreenMenu";
         public int VotePercentage { get; set; } = 50;
-        public bool ChangeMapImmediatly { get; set; } = true;
+        public bool ChangeMapImmediately { get; set; } = true;
         public bool EnabledInWarmup { get; set; } = false;
         public int MinPlayers { get; set; } = 0;
         public int MinRounds { get; set; } = 0;

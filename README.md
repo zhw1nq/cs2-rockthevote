@@ -87,7 +87,7 @@ Players can type !rtv to request the map to be changed, once a number of votes i
 | NominationEnabled   | Enable/Disable nomination                                                                                              | true          | false | true                                 |
 | MinPlayers          | Minimum amount of players to enable RTV/Nominate                                                                       | 0             | 0     | 9999                                 |
 | MinRounds           | Minimum rounds to enable RTV/Nominate                                                                                  | 0             | 0     | 9999                                 |
-| ChangeMapImmediatly | Whether to change the map immediatly when vote ends or not                                                             | true          | false | true                                 |
+| ChangeMapImmediately | Whether to change the map Immediately when vote ends or not                                                             | true          | false | true                                 |
 | SoundEnabled        | Whether to play a sound when the vote starts                                                                           | false         | false | true                                 |
 | SoundPath           | The file path of the sound that will be played. sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd | "Pick 1 Map"  |       | any sound file path                  |
 | MapsToShow          | Amount of maps to show in vote                                                                                         | 6             | 1     | 6 with HudMenu, unlimited without it |
@@ -107,7 +107,7 @@ Players can vote to change to a specific map by using the votemap <mapname> comm
 | ------------------- | ------------------------------------------------------------------------ | ------------- | ----- | ---- |
 | Enabled             | Enable/disable votemap funtionality                                      | true          | false | true |
 | VotePercentage      | Percentage of players that should vote in a map in order to change to it | 60            | 1     | 100  |
-| ChangeMapImmediatly | Whether to change the map immediatly when vote ends or not               | true          | false | true |
+| ChangeMapImmediately | Whether to change the map Immediately when vote ends or not               | true          | false | true |
 | EnabledInWarmup     | Enable/Disable votemap during warmup                                     | true          | false | true |
 | MinRounds           | Minimum rounds to enable votemap                                         | 0             |       |      |
 | MinPlayers          | Minimum amount of players to enable votemap                              | 0             |       |      |
@@ -132,7 +132,7 @@ When the map is about to end, or when trigger by an !rtv, a random list of maps 
 | Config                  | Description                                                                                                            | Default Value | Min   | Max                                  |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------- | ----- | ------------------------------------ |
 | Enabled                 | Enable/Disable end of map vote functionality                                                                           | true          | false | true                                 |
-| ChangeMapImmediatly     | Whether to change the map immediatly when vote ends or not                                                             | true          | false | true                                 |
+| ChangeMapImmediately     | Whether to change the map Immediately when vote ends or not                                                             | true          | false | true                                 |
 | HideHudAfterVote        | Whether to hide vote status hud after vote or not, only matters when HudMenu is true                                   | false         | false | true                                 |
 | MapsToShow              | Amount of maps to show in vote,                                                                                        | 6             | 1     | 6 with HudMenu, unlimited without it |
 | VoteDuration            | Seconds the RTV should can last                                                                                        | 30            | 1     |                                      |
