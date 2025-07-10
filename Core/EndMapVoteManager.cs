@@ -411,7 +411,7 @@ namespace cs2_rockthevote
             {
                 _changeMapManager.ScheduleMapChange(winner.Key, mapEnd: mapEnd);
                 
-                if (!_endMapConfig.ChangeMapImmediately)
+                if (_endMapConfig.ChangeMapImmediately)
                 {
                     _changeMapManager.ChangeNextMap(mapEnd);
                 }
