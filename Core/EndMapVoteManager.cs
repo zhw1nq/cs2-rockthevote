@@ -104,10 +104,24 @@ namespace cs2_rockthevote
             KillTimer();
         }
 
+        public void ScheduleNextVote()
+        {
+            int newRemainingSeconds = (int)(_gameRules.RoundTime - (Server.CurrentTime - _gameRules.GameStartTime));
+            int triggerSeconds = _endMapConfig.TriggerSecondsBeforeEnd;
+            int delay = Math.Max(newRemainingSeconds - triggerSeconds, 0);
+            
+            _plugin?.AddTimer(delay, () =>
+            {
+                _pluginState.EofVoteHappening = false;
+                _changeMapManager.OnMapStart(Server.MapName);
+                StartVote(isRtv: false);
+            }, TimerFlags.STOP_ON_MAPCHANGE);
+        }
+
         public void MapVoted(CCSPlayerController player, string mapName)
         {
             var userId = player.UserId!.Value;
-            
+
             // Block multiple votes if more than 1 VoteType is enabled
             if (VotedPlayers.Contains(userId))
                 return;
@@ -376,7 +390,7 @@ namespace cs2_rockthevote
             decimal percent = totalVotes > 0 ? winner.Value / totalVotes * 100M : 0;
             
             Server.PrintToChatAll(_localizer.LocalizeWithPrefix("emv.vote-ended", winner.Key, percent, totalVotes));
-            
+
             if (winner.Key == extendOption)
             {
                 int maxExt = _generalConfig.MaxMapExtensions;
@@ -396,16 +410,7 @@ namespace cs2_rockthevote
                     }
                 }
                 
-                int newRemainingSeconds = (int)(_gameRules.RoundTime - (Server.CurrentTime - _gameRules.GameStartTime));
-                int triggerSeconds = _endMapConfig.TriggerSecondsBeforeEnd;
-                int delay = Math.Max(newRemainingSeconds - triggerSeconds, 0);
-                
-                _plugin?.AddTimer(delay, () =>
-                {
-                    _pluginState.EofVoteHappening = false;
-                    _changeMapManager.OnMapStart(Server.MapName);
-                    StartVote(isRtv: false);
-                }, TimerFlags.STOP_ON_MAPCHANGE);
+                ScheduleNextVote();
             }
             else
             {
@@ -419,7 +424,7 @@ namespace cs2_rockthevote
                 {
                     if (!mapEnd)
                         Server.PrintToChatAll(_localizer.LocalizeWithPrefix("general.changing-map-next-round", winner.Key));
-                    
+
                     var ignoreRoundWinConditions = ConVar.Find("mp_ignore_round_win_conditions");
                     if (ignoreRoundWinConditions != null && ignoreRoundWinConditions.GetPrimitiveValue<bool>())
                     {
