@@ -328,15 +328,9 @@ namespace cs2_rockthevote
                 }
             }
             
-            if (!isRtv)
-                ChatCountdown(_endMapConfig.VoteDuration);
-            if (isRtv)
-                ChatCountdown(_rtvConfig.MapVoteDuration);
+            ChatCountdown(isRtv ? _rtvConfig.MapVoteDuration : _endMapConfig.VoteDuration);
 
-            if (!isRtv)
-                TimeLeft = _endMapConfig.VoteDuration;
-            if (isRtv)
-                TimeLeft = _rtvConfig.MapVoteDuration;
+            TimeLeft = isRtv ? _rtvConfig.MapVoteDuration : _endMapConfig.VoteDuration;
 
             Timer = _plugin?.AddTimer(1.0F, () =>
             {
