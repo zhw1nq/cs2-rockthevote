@@ -10,20 +10,14 @@ namespace cs2_rockthevote
         public int MinRounds { get; set; }
     }
 
-    public interface IVoteConfig
-    {
-        public int VotePercentage { get; set; }
-        public bool ChangeMapImmediately { get; set; }
-    }
-
-    public class RtvConfig : ICommandConfig, IVoteConfig
+    public class RtvConfig : ICommandConfig
     {
         public bool Enabled { get; set; } = true;
         public bool EnabledInWarmup { get; set; } = false;
         public bool EnablePanorama { get; set; } = true;
         public int MinPlayers { get; set; } = 0;
         public int MinRounds { get; set; } = 0;
-        public bool ChangeMapImmediately { get; set; } = true;
+        public int MapChangeDelay { get; set; } = 5;
         public bool SoundEnabled { get; set; } = false;
         public string SoundPath { get; set; } = "sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c";
         public int MapsToShow { get; set; } = 6;
@@ -55,7 +49,7 @@ namespace cs2_rockthevote
         public int ChatCountdownInterval { get; set; } = 30;
     }
 
-    public class VotemapConfig : ICommandConfig, IVoteConfig
+    public class VotemapConfig : ICommandConfig
     {
         public bool Enabled { get; set; } = false;
         public string MenuType { get; set; } = "ScreenMenu";
@@ -114,7 +108,7 @@ namespace cs2_rockthevote
     public class Config : BasePluginConfig, IBasePluginConfig
     {
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 15;
+        public override int Version { get; set; } = 16;
         public RtvConfig Rtv { get; set; } = new();
         public EndOfMapConfig EndOfMapVote { get; set; } = new();
         public NominateConfig Nominate { get; set; } = new();
