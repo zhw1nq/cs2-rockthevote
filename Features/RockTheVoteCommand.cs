@@ -358,7 +358,7 @@ namespace cs2_rockthevote
         {
             _config = config.Rtv;
             _endMapConfig = config.EndOfMapVote;
-            _voteManager = new AsyncVoteManager(_config);
+            _voteManager = new AsyncVoteManager(_config.VotePercentage);
         }
         public void OnLoad(Plugin plugin)
         {

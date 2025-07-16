@@ -196,7 +196,7 @@ namespace cs2_rockthevote
 
             var userId = player.UserId!.Value;
             if (!VotedMaps.ContainsKey(map))
-                VotedMaps.Add(map, new AsyncVoteManager(_config));
+                VotedMaps.Add(map, new AsyncVoteManager(_config.VotePercentage));
 
             var voteManager = VotedMaps[map];
             VoteResult result = voteManager.AddVote(userId);

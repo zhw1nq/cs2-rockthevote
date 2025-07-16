@@ -2,16 +2,19 @@
 {
     public record VoteResult(VoteResultEnum Result, int VoteCount, int RequiredVotes);
 
-    public class AsyncVoteManager(IVoteConfig config)
+    public class AsyncVoteManager
     {
-        private List<int> votes = new();
-        private readonly IVoteConfig _config = config;
-        private readonly AsyncVoteValidator _voteValidator = new AsyncVoteValidator(config);
+        private readonly List<int> votes = new();
+        private readonly AsyncVoteValidator _voteValidator;
 
         public int VoteCount => votes.Count;
         public int RequiredVotes => _voteValidator.RequiredVotes(ServerManager.ValidPlayerCount());
+        public bool VotesAlreadyReached { get; private set; } = false;
 
-        public bool VotesAlreadyReached { get; set; } = false;
+        public AsyncVoteManager(int votePercentage)
+        {
+            _voteValidator = new AsyncVoteValidator(votePercentage / 100f);
+        }
 
         public void OnMapStart(string _mapName)
         {
@@ -24,8 +27,8 @@
             if (VotesAlreadyReached)
                 return new VoteResult(VoteResultEnum.VotesAlreadyReached, VoteCount, RequiredVotes);
 
-            VoteResultEnum? result = null;
-            if (votes.IndexOf(userId) != -1)
+            VoteResultEnum result;
+            if (votes.Contains(userId))
                 result = VoteResultEnum.AlreadyAddedBefore;
             else
             {
@@ -40,14 +43,12 @@
                 return new VoteResult(VoteResultEnum.VotesReached, VoteCount, RequiredVotes);
             }
 
-            return new VoteResult(result.Value, VoteCount, RequiredVotes);
+            return new VoteResult(result, VoteCount, RequiredVotes);
         }
 
         public void RemoveVote(int userId)
         {
-            var index = votes.IndexOf(userId);
-            if (index > -1)
-                votes.RemoveAt(index);
+            votes.Remove(userId);
         }
     }
 }
