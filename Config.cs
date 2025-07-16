@@ -3,14 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace cs2_rockthevote
 {
-    public interface ICommandConfig
-    {
-        public bool EnabledInWarmup { get; set; }
-        public int MinPlayers { get; set; }
-        public int MinRounds { get; set; }
-    }
-
-    public class RtvConfig : ICommandConfig
+    public class RtvConfig
     {
         public bool Enabled { get; set; } = true;
         public bool EnabledInWarmup { get; set; } = false;
@@ -49,7 +42,7 @@ namespace cs2_rockthevote
         public int ChatCountdownInterval { get; set; } = 30;
     }
 
-    public class VotemapConfig : ICommandConfig
+    public class VotemapConfig
     {
         public bool Enabled { get; set; } = false;
         public string MenuType { get; set; } = "ScreenMenu";
