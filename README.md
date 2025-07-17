@@ -64,7 +64,7 @@ v1.0.29+ of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/) (Mini
     "EnablePanorama": true, # true = use built in Panorama voting system (F1 = Yes, F2 = No). False = use !rtv in chat
     "MinPlayers": 0,
     "MinRounds": 0,
-    "ChangeMapImmediately": true,
+    "MapChangeDelay": 5, # The delay in seconds after the rtv map vote has passed before the map is changed. 0 = immediate
     "SoundEnabled": false, # true = play a sound when the end of map vote starts.
     "SoundPath": "sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c",
     "MapsToShow": 6, # How many maps to show in the resulting map vote if the rtv passes
@@ -171,6 +171,5 @@ de_dust2
 | Russian              |
 | Portuguese (BR)      |
 | Chinese (Simplified) |
-
 
 ![GitHub Downloads](https://img.shields.io/github/downloads/M-archand/cs2-rockthevote/total?style=for-the-badge)
