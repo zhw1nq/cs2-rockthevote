@@ -444,12 +444,8 @@ namespace cs2_rockthevote
                     {
                         _changeMapManager.ChangeNextMap(mapEnd);
                     }
-                    else
+                    else // Timer for MapChangeDelay seconds
                     {
-                        if (!mapEnd)
-                            Server.PrintToChatAll(_localizer.LocalizeWithPrefix("rtv.changing-map-in-x-seconds", winner.Key, delay));
-
-                        // Timer for MapChangeDelay seconds
                         _plugin?.AddTimer(delay, () =>
                         {
                             _changeMapManager.ChangeNextMap(mapEnd);
