@@ -28,7 +28,7 @@
   
   "nominate.nominated": "{green}{0}{default} a nommé la carte {green}{1}{default}, elle a maintenant {2} vote(s).",
   "nominate.already-nominated": "Vous avez déjà nommé la carte {green}{0}{default}, elle a {1} vote(s).",
-  "nominate.limit": "{lightred}Vous ne pouvez nommer qu'une seule fois par carte.",
+  "nominate.limit": "{lightred}Vous ne pouvez nommer que {0} carte(s).",
   "nominate.title": "Nommer une carte:",
   "nominate.multiple-maps": "À quelle carte vouliez-vous faire référence:",
   

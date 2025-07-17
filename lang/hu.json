@@ -28,7 +28,7 @@
 
   "nominate.nominated": "{green}{0}{default} jelölt térkép {green}{1}{default}, most {2} szavazata van",
   "nominate.already-nominated": "Már jelölted a {green}{0}{default} térképet, {1} szavazata van",
-  "nominate.limit": "{lightred}Térképenként csak egyszer jelölhetsz.",
+  "nominate.limit": "{lightred}Csak {0} térképet nevezhetsz meg.",
   "nominate.title": "Jelölj egyet Térkép:",
   "nominate.multiple-maps": "Melyik térképre gondoltál:",
 

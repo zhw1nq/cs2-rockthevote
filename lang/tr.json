@@ -28,7 +28,7 @@
 
   "nominate.nominated": "{green}{0}{default} aday gösterilen harita {green}{1}{default}, şimdi {2} oy",
   "nominate.already-nominated": "{green}{0}{default} haritasını zaten aday gösterdiniz, {1} oy aldı",
-  "nominate.limit": "{lightred}Harita başına yalnızca bir kez aday gösterebilirsiniz.",
+  "nominate.limit": "{lightred}Yalnızca {0} haritayı aday gösterebilirsiniz.",
   "nominate.title": "Bir Haritayı Aday Gösterin:",
   "nominate.multiple-maps": "Hangi haritayı kastettiniz:",
 

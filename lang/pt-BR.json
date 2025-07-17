@@ -28,7 +28,7 @@
 
   "nominate.nominated": "{green}{0}{default} indicou o mapa {green}{1}{default}, agora ele tem {2} voto(s)",
   "nominate.already-nominated": "Você já indicou o mapa {green}{0}{default}, tem {1} voto(s)",
-  "nominate.limit": "{lightred}Você só pode indicar uma vez por mapa.",
+  "nominate.limit": "{lightred}Você só pode indicar {0} mapa(s).",
   "nominate.title": "Indique um Mapa:",
   "nominate.multiple-maps": "Qual mapa você quis dizer:",
 

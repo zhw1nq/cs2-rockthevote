@@ -28,7 +28,7 @@
 
   "nominate.nominated": "{green}{0}{default} nominētā karte {green}{1}{default}, tagad tai ir {2} balsis(-es)",
   "nominate.already-nominated": "Jūs jau nominējāt karti {green}{0}{default}, tai ir {1} balsis(-es)",
-  "nominate.limit": "{lightred}Jūs varat nominēt tikai vienu reizi katrā kartē.",
+  "nominate.limit": "{lightred}Jūs varat nominēt tikai {0} karti(-es).",
   "nominate.title": "Nominēt Karte:",
   "nominate.multiple-maps": "Kuru karti jūs domājāt:",
 

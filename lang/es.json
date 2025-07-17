@@ -28,7 +28,7 @@
 
     "nominate.nomination": "{green}{0}{default} nominó el mapa {green}{1}{default}, ahora tiene {2} votos",
     "nominate.already-nomination": "Ya nominaste el mapa {green}{0}{default}, tiene {1} votos",
-    "nominate.limit": "{lightred}Solo puedes nominar una vez por mapa.",
+    "nominate.limit": "{lightred}Solo puedes nominar {0} mapa(s).",
     "nominate.title": "Nomina un mapa:",
     "nominate.multiple-maps": "¿A qué mapa te referías?",
 

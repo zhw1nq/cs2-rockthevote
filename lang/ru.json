@@ -28,7 +28,7 @@
 
   "nominate.nominated": "{green}{0}{default} номинировал карту {green}{1}{default}, теперь y нее {2} голосов(a)",
   "nominate.already-nominated": "Вы уже номинировали карту {green}{0}{default}, y нее {1} голосов(ов)",
-  "nominate.limit": "{lightred}Вы можете номинировать только один раз на карту.",
+  "nominate.limit": "{lightred}Вы можете номинировать только {0} карты.",
   "nominate.title": "Номинировать карту:",
   "nominate.multiple-maps": "Какую карту вы имели в виду:",
 

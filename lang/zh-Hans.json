@@ -28,7 +28,7 @@
 
   "nominate.nominated": "{green}{0}{default} 已提名地图 {green}{1}{default}，目前已获得 {2} 票",
   "nominate.already-nominated": "您已提名地图 {green}{0}{default}，目前已获得 {1} 票",
-  "nominate.limit": "{lightred}您每张地图只能提名一次。",
+  "nominate.limit": "{lightred}您只能提名 {0} 张地图。",
   "nominate.title": "提名地图：",
   "nominate.multiple-maps": "您指的是哪张地图：",
 
