@@ -7,7 +7,6 @@ using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Extensions;
 using CounterStrikeSharp.API.Modules.Events;
-using cs2_rockthevote.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Localization;
@@ -31,18 +30,16 @@ namespace cs2_rockthevote
         ChangeMapManager changeMapManager,
         VotemapCommand voteMapManager,
         RockTheVoteCommand rtvManager,
-        NextMapCommand nextMap,
         ExtendRoundTimeCommand extendRoundTime,
         VoteExtendRoundTimeCommand voteExtendRoundTime,
         TimeLeftCommand timeLeft,
         MaplistCommand maplistManager,
-        WorkshopMapValidator mapValidator,
         PluginState pluginState,
         IStringLocalizer stringLocalizer,
         ILogger<Plugin> logger) : BasePlugin, IPluginConfig<Config>
     {
         public override string ModuleName => "RockTheVote";
-        public override string ModuleVersion => "2.0.6";
+        public override string ModuleVersion => "2.0.7";
         public override string ModuleAuthor => "abnerfs (Updated by Marchand)";
 
         private readonly DependencyManager<Plugin, Config> _dependencyManager = dependencyManager;
@@ -50,12 +47,10 @@ namespace cs2_rockthevote
         private readonly ChangeMapManager _changeMapManager = changeMapManager;
         private readonly VotemapCommand _votemapManager = voteMapManager;
         private readonly RockTheVoteCommand _rtvManager = rtvManager;
-        private readonly NextMapCommand _nextMap = nextMap;
         private readonly ExtendRoundTimeCommand _extendRoundTime = extendRoundTime;
         private readonly VoteExtendRoundTimeCommand _voteExtendRoundTime = voteExtendRoundTime;
         private readonly TimeLeftCommand _timeLeft = timeLeft;
         private readonly MaplistCommand _maplistManager = maplistManager;
-        private readonly WorkshopMapValidator _mapValidator = mapValidator;
         private StringLocalizer _localizer = new(stringLocalizer, "rtv.prefix");
         private readonly ILogger<Plugin> _logger = logger;
         private readonly PluginState _pluginState = pluginState;
@@ -90,7 +85,7 @@ namespace cs2_rockthevote
             Config = config;
             _dependencyManager.OnConfigParsed(config);
 
-            if (Config.Version < 15)
+            if (Config.Version < 16)
             {
                 _logger.LogError("Your config file is too old, please backup your current config and let the plugin recreate it on load.");
             }
