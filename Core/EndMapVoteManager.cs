@@ -409,7 +409,7 @@ namespace cs2_rockthevote
             else
             {
                 _changeMapManager.ScheduleMapChange(winner.Key, mapEnd: mapEnd);
-                
+
                 if (!isRtv)
                 {
                     if (_endMapConfig.ChangeMapImmediately)
@@ -439,17 +439,25 @@ namespace cs2_rockthevote
                 }
                 else
                 {
-                    var delay = _rtvConfig.MapChangeDelay;
-                    if (delay <= 0) // Immediate
+                    if (!_rtvConfig.ChangeAtRoundEnd)
                     {
-                        _changeMapManager.ChangeNextMap(mapEnd);
-                    }
-                    else // Timer for MapChangeDelay seconds
-                    {
-                        _plugin?.AddTimer(delay, () =>
+                        var delay = _rtvConfig.MapChangeDelay;
+                        if (delay <= 0) // Immediate
                         {
                             _changeMapManager.ChangeNextMap(mapEnd);
-                        }, TimerFlags.STOP_ON_MAPCHANGE);
+                        }
+                        else // Timer for MapChangeDelay seconds
+                        {
+                            _plugin?.AddTimer(delay, () =>
+                            {
+                                _changeMapManager.ChangeNextMap(mapEnd);
+                            }, TimerFlags.STOP_ON_MAPCHANGE);
+                        }
+                    }
+                    else
+                    {
+                        _changeMapManager.ChangeNextMap(mapEnd: true);
+                        Server.PrintToChatAll(_localizer.LocalizeWithPrefix("general.changing-map-next-round", winner.Key));
                     }
                 }
                 _pluginState.EofVoteHappening = false;

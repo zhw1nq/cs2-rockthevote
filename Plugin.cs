@@ -39,7 +39,7 @@ namespace cs2_rockthevote
         ILogger<Plugin> logger) : BasePlugin, IPluginConfig<Config>
     {
         public override string ModuleName => "RockTheVote";
-        public override string ModuleVersion => "2.0.7";
+        public override string ModuleVersion => "2.0.8";
         public override string ModuleAuthor => "abnerfs (Updated by Marchand)";
 
         private readonly DependencyManager<Plugin, Config> _dependencyManager = dependencyManager;
@@ -85,7 +85,7 @@ namespace cs2_rockthevote
             Config = config;
             _dependencyManager.OnConfigParsed(config);
 
-            if (Config.Version < 16)
+            if (Config.Version < 17)
             {
                 _logger.LogError("Your config file is too old, please backup your current config and let the plugin recreate it on load.");
             }

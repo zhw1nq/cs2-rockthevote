@@ -10,6 +10,7 @@ namespace cs2_rockthevote
         public bool EnablePanorama { get; set; } = true;
         public int MinPlayers { get; set; } = 0;
         public int MinRounds { get; set; } = 0;
+        public bool ChangeAtRoundEnd { get; set; } = false;
         public int MapChangeDelay { get; set; } = 5;
         public bool SoundEnabled { get; set; } = false;
         public string SoundPath { get; set; } = "sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c";
@@ -101,7 +102,7 @@ namespace cs2_rockthevote
     public class Config : BasePluginConfig, IBasePluginConfig
     {
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 16;
+        public override int Version { get; set; } = 17;
         public RtvConfig Rtv { get; set; } = new();
         public EndOfMapConfig EndOfMapVote { get; set; } = new();
         public NominateConfig Nominate { get; set; } = new();
