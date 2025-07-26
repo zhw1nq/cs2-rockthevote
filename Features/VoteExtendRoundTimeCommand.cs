@@ -7,6 +7,7 @@ using CounterStrikeSharp.API.Modules.Timers;
 using cs2_rockthevote.Core;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace cs2_rockthevote
 {
@@ -39,7 +40,7 @@ namespace cs2_rockthevote
             var player = @event.Userid;
             if (player != null)
             {
-                _rtvManager.PlayerDisconnected(player);
+                _voteExtendRoundTime.PlayerDisconnected(player);
             }
             return HookResult.Continue;
         }
@@ -51,14 +52,15 @@ namespace cs2_rockthevote
         private TimeLimitManager _timeLimitManager = timeLimitManager;
         private ExtendRoundTimeManager _extendRoundTimeManager = extendRoundTimeManager;
         private readonly GameRules _gameRules = gameRules;
-        private StringLocalizer _localizer = new StringLocalizer(stringLocalizer, "extendtime.prefix");
+        private StringLocalizer _localizer = new(stringLocalizer, "extendtime.prefix");
         private PluginState _pluginState = pluginState;
         private VoteExtendConfig _voteExtendConfig = new();
         private GeneralConfig _generalConfig = new();
         private CCSPlayerController? _initiatingPlayer;
-        private bool _isCooldownActive = false;
         private DateTime _cooldownEndTime;
         private Plugin? _plugin;
+        private Timer? _cooldownTimer;
+        private bool _isCooldownActive = false;
 
         public void CommandHandler(CCSPlayerController player, CommandInfo commandInfo)
         {
@@ -246,29 +248,37 @@ namespace cs2_rockthevote
         {
             _isCooldownActive = true;
 
-            _plugin?.AddTimer(
-                _voteExtendConfig.CooldownDuration, () =>
-                {
-                    try
-                    {
-                        _isCooldownActive = false;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"ActivateCooldown timer callback failed: {ex.Message}");
-                    }
-                }, TimerFlags.STOP_ON_MAPCHANGE
+            _cooldownTimer = _plugin?.AddTimer(_voteExtendConfig.CooldownDuration, () =>
+            {
+                _isCooldownActive = false;
+            }, TimerFlags.STOP_ON_MAPCHANGE
             );
 
             _cooldownEndTime = DateTime.UtcNow.AddSeconds(_voteExtendConfig.CooldownDuration);
         }
 
+        public void KillTimer()
+        {
+            _isCooldownActive = false;
+            _cooldownEndTime = DateTime.MinValue;
+            _cooldownTimer?.Kill();
+            _cooldownTimer = null;
+        }
+
         public void PlayerDisconnected(CCSPlayerController? player)
         {
-            if (player?.UserId != null)
-            {
+            if (player?.UserId == null)
+                return;
+
+            if (!_voteExtendConfig.EnablePanorama)
+                _extendRoundTimeManager?.RemoveVote(player.UserId.Value);
+            else
                 PanoramaVote.RemovePlayerFromVote(player.Slot);
-            }
+        }
+
+        public void OnLoad(Plugin plugin)
+        {
+            _plugin = plugin;
         }
 
         public void OnConfigParsed(Config config)
@@ -277,9 +287,9 @@ namespace cs2_rockthevote
             _generalConfig = config.General;
         }
         
-        public void OnLoad(Plugin plugin)
+        public void OnMapStart(string map)
         {
-            _plugin = plugin;
+            KillTimer();
         }
     }
 }

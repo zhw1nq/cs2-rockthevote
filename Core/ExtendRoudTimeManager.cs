@@ -6,7 +6,6 @@ using cs2_rockthevote.Core;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using System.Data;
-using static CounterStrikeSharp.API.Core.Listeners;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace cs2_rockthevote
@@ -21,7 +20,7 @@ namespace cs2_rockthevote
         private Timer? Timer;
         private GameRules _gameRules = gameRules;
 
-        Dictionary<string, int> Votes = new();
+        private readonly Dictionary<int, string> Votes = new();
         public int TimeLeft { get; private set; } = -1;
 
         private EndOfMapConfig _config = new();
@@ -52,12 +51,16 @@ namespace cs2_rockthevote
 
         public void ExtendTimeVoted(CCSPlayerController player, string voteResponse)
         {
-            Votes[voteResponse] += 1;
+            int userId = player.UserId!.Value;
+
+            if (Votes.ContainsKey(userId))
+                return;
+
+            Votes[userId] = voteResponse;
             player.PrintToCenter(_localizer.LocalizeWithPrefix("extendtime.you-voted", voteResponse));
-            if (Votes.Select(x => x.Value).Sum() >= _canVote)
-            {
+
+            if (Votes.Count >= _canVote)
                 ExtendTimeVote();
-            }
         }
 
         public void KillTimer()
@@ -68,6 +71,11 @@ namespace cs2_rockthevote
                 Timer!.Kill();
                 Timer = null;
             }
+        }
+
+        public void RemoveVote(int userId)
+        {
+            Votes.Remove(userId);
         }
 
         public static void PrintCenterTextAll(string text)
@@ -114,15 +122,24 @@ namespace cs2_rockthevote
             bool mapEnd = _config is EndOfMapConfig;
             KillTimer();
 
-            var minutesToExtend = _generalConfig.RoundTimeExtension;
+            int minutesToExtend = _generalConfig.RoundTimeExtension;
 
-            decimal maxVotes = Votes.Select(x => x.Value).Max();
-            IEnumerable<KeyValuePair<string, int>> potentialWinners = Votes.Where(x => x.Value == maxVotes);
-            Random rnd = new();
-            KeyValuePair<string, int> winner = potentialWinners.ElementAt(rnd.Next(0, potentialWinners.Count()));
+            var grouped = Votes.Values.GroupBy(v => v).ToDictionary(g => g.Key, g => g.Count());
 
-            decimal totalVotes = Votes.Select(x => x.Value).Sum();
-            decimal percent = totalVotes > 0 ? winner.Value / totalVotes * 100M : 0;
+            int totalVotes = Votes.Count;
+
+            if (grouped.Count == 0)
+            {
+                Server.PrintToChatAll(_localizer.LocalizeWithPrefix("extendtime.vote-ended-no-votes"));
+                return;
+            }
+
+            int maxVotes = grouped.Values.Max();
+            var potentialWinners = grouped.Where(x => x.Value == maxVotes).ToList();
+            var rnd = new Random();
+            var winner = potentialWinners[rnd.Next(potentialWinners.Count)];
+
+            decimal percent = totalVotes > 0 ? (decimal)winner.Value / totalVotes * 100M : 0;
 
             if (maxVotes > 0)
             {
@@ -140,14 +157,10 @@ namespace cs2_rockthevote
                 Server.PrintToChatAll(_localizer.LocalizeWithPrefix("extendtime.vote-ended-no-votes"));
             }
 
-            if (winner.Key == "No")
-            {
-                PrintCenterTextAll(_localizer.Localize("extendtime.hud.finished", "not be extended."));
-            }
-            else
+            if (winner.Key == "Yes")
             {
                 ExtendRoundTime(minutesToExtend, _timeLimitManager, _gameRules);
-                PrintCenterTextAll(_localizer.Localize("extendtime.hud.finished", "be extended."));
+                _pluginState.MapExtensionCount++;
             }
 
             _pluginState.ExtendTimeVoteHappening = false;
@@ -172,7 +185,6 @@ namespace cs2_rockthevote
 
             foreach (var answer in answers)
             {
-                Votes[answer] = 0;
                 menu.AddMenuOption(answer, (player, option) => {
                     ExtendTimeVoted(player, answer);
                     MenuManager.CloseActiveMenu(player);

@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Timers;
 using Microsoft.Extensions.Logging;
+using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace cs2_rockthevote
 {
@@ -46,6 +47,8 @@ namespace cs2_rockthevote
         private DateTime _cooldownEndTime;
         private DateTime _rtvEndTime;
         private Plugin? _plugin;
+        private Timer? _cooldownTimer;
+
         public int TimeLeft => (int)Math.Max(0, (_rtvEndTime - DateTime.UtcNow).TotalSeconds);
 
 
@@ -58,9 +61,22 @@ namespace cs2_rockthevote
             _logger = logger;
         }
 
+        public void OnLoad(Plugin plugin)
+        {
+            _plugin = plugin;
+        }
+
+        public void OnConfigParsed(Config config)
+        {
+            _config = config.Rtv;
+            _endMapConfig = config.EndOfMapVote;
+            _voteManager = new AsyncVoteManager(_config.VotePercentage);
+        }
+
         public void OnMapStart(string map)
         {
             _voteManager?.OnMapStart(map);
+            KillTimer();
         }
 
         public void CommandHandler(CCSPlayerController? player)
@@ -329,40 +345,31 @@ namespace cs2_rockthevote
         {
             _isCooldownActive = true;
 
-            _plugin?.AddTimer(
-                _config.CooldownDuration, () =>
-                {
-                    try
-                    {
-                        _isCooldownActive = false;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"Cooldown timer callback failed: {ex.Message}");
-                    }
-                }, TimerFlags.STOP_ON_MAPCHANGE
-            );
+            _cooldownTimer = _plugin?.AddTimer(_config.CooldownDuration, () =>
+            {
+                _isCooldownActive = false;
+            }, TimerFlags.STOP_ON_MAPCHANGE);
 
             _cooldownEndTime = DateTime.UtcNow.AddSeconds(_config.CooldownDuration);
         }
 
-        public void PlayerDisconnected(CCSPlayerController? player)
+        public void KillTimer()
         {
-            if (player?.UserId != null)
-            {
-                PanoramaVote.RemovePlayerFromVote(player.Slot);
-            }
+            _isCooldownActive = false;
+            _cooldownEndTime = DateTime.MinValue;
+            _cooldownTimer?.Kill();
+            _cooldownTimer = null;
         }
 
-        public void OnConfigParsed(Config config)
+        public void PlayerDisconnected(CCSPlayerController? player)
         {
-            _config = config.Rtv;
-            _endMapConfig = config.EndOfMapVote;
-            _voteManager = new AsyncVoteManager(_config.VotePercentage);
-        }
-        public void OnLoad(Plugin plugin)
-        {
-            _plugin = plugin;
+            if (player?.UserId == null)
+                return;
+
+            if (!_config.EnablePanorama)
+                _voteManager?.RemoveVote(player.UserId.Value);
+            else
+                PanoramaVote.RemovePlayerFromVote(player.Slot);
         }
     }
 }
