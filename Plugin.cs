@@ -85,10 +85,8 @@ namespace cs2_rockthevote
             Config = config;
             _dependencyManager.OnConfigParsed(config);
 
-            if (Config.Version < 17)
-            {
-                _logger.LogError("Your config file is too old, please backup your current config and let the plugin recreate it on load.");
-            }
+            if (config.Version < Config.Version)
+                Logger.LogWarning($"Configuration version mismatch (Expected: {0} | Current: {1})", Config.Version, config.Version);
         }
 
         [GameEventHandler]
