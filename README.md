@@ -57,13 +57,14 @@ v1.0.29+ of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/) (Mini
 
 ```json
 {
-  "ConfigVersion": 15,
+  "ConfigVersion": 17,
   "Rtv": {
     "Enabled": true,
     "EnabledInWarmup": false,
     "EnablePanorama": true, # true = use built in Panorama voting system (F1 = Yes, F2 = No). False = use !rtv in chat
     "MinPlayers": 0,
     "MinRounds": 0,
+    "ChangeAtRoundEnd": false, # false = use MapChangeDelay value below. true = wait until round end to change the map
     "MapChangeDelay": 5, # The delay in seconds after the rtv map vote has passed before the map is changed. 0 = immediate
     "SoundEnabled": false, # true = play a sound when the end of map vote starts.
     "SoundPath": "sounds/vo/announcer/cs2_classic/felix_broken_fang_pick_1_map_tk01.vsnd_c",
