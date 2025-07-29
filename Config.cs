@@ -77,6 +77,13 @@ namespace cs2_rockthevote
         public string Permission { get; set; } = "";
     }
 
+    public class MapChooserConfig
+    {
+        public string Command { get; set; } = "mapmenu,changemap";
+        public string MenuType { get; set; } = "WasdMenu";
+        public string Permission { get; set; } = "@css/changemap";
+    }
+
     public class ScreenMenuConfig
     {
         public string MenuType { get; set; } = "Both";
@@ -102,12 +109,13 @@ namespace cs2_rockthevote
     public class Config : BasePluginConfig, IBasePluginConfig
     {
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 17;
+        public override int Version { get; set; } = 18;
         public RtvConfig Rtv { get; set; } = new();
         public EndOfMapConfig EndOfMapVote { get; set; } = new();
         public NominateConfig Nominate { get; set; } = new();
         public VotemapConfig Votemap { get; set; } = new();
         public VoteExtendConfig VoteExtend { get; set; } = new();
+        public MapChooserConfig MapChooser { get; set; } = new();
         public ScreenMenuConfig ScreenMenu { get; set; } = new();
         public GeneralConfig General { get; set; } = new();
     }
