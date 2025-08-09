@@ -29,7 +29,7 @@ namespace cs2_rockthevote
     {
         public bool Enabled { get; set; } = true;
         public int MapsToShow { get; set; } = 6;
-        public string MenuType { get; set; } = "ScreenMenu";
+        public string MenuType { get; set; } = "WasdMenu";
         public bool ChangeMapImmediately { get; set; } = false;
         public int VoteDuration { get; set; } = 150;
         public bool SoundEnabled { get; set; } = false;
@@ -46,7 +46,7 @@ namespace cs2_rockthevote
     public class VotemapConfig
     {
         public bool Enabled { get; set; } = false;
-        public string MenuType { get; set; } = "ScreenMenu";
+        public string MenuType { get; set; } = "WasdMenu";
         public int VotePercentage { get; set; } = 50;
         public bool ChangeMapImmediately { get; set; } = true;
         public bool EnabledInWarmup { get; set; } = false;
@@ -72,28 +72,16 @@ namespace cs2_rockthevote
     {
         public bool Enabled { get; set; } = true;
         public bool EnabledInWarmup { get; set; } = true;
-        public string MenuType { get; set; } = "ScreenMenu";
+        public string MenuType { get; set; } = "WasdMenu";
         public int NominateLimit { get; set; } = 1;
         public string Permission { get; set; } = "";
     }
 
     public class MapChooserConfig
     {
-        public string Command { get; set; } = "mapmenu,changemap";
+        public string Command { get; set; } = "mapmenu,mm";
         public string MenuType { get; set; } = "WasdMenu";
         public string Permission { get; set; } = "@css/changemap";
-    }
-
-    public class ScreenMenuConfig
-    {
-        public string MenuType { get; set; } = "Both";
-        public bool EnableResolutionOption { get; set; } = false;
-        public bool EnableExitOption { get; set; } = false;
-        public bool FreezePlayer { get; set; } = false;
-        public string ScrollUpKey { get; set; } = "Attack";
-        public string ScrollDownKey { get; set; } = "Attack2";
-        public string SelectKey { get; set; } = "E";
-        public bool EnableChatHelper { get; set; } = true;
     }
 
     public class GeneralConfig
@@ -112,14 +100,13 @@ namespace cs2_rockthevote
     public class Config : BasePluginConfig, IBasePluginConfig
     {
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 19;
+        public override int Version { get; set; } = 18;
         public RtvConfig Rtv { get; set; } = new();
         public EndOfMapConfig EndOfMapVote { get; set; } = new();
         public NominateConfig Nominate { get; set; } = new();
         public VotemapConfig Votemap { get; set; } = new();
         public VoteExtendConfig VoteExtend { get; set; } = new();
         public MapChooserConfig MapChooser { get; set; } = new();
-        public ScreenMenuConfig ScreenMenu { get; set; } = new();
         public GeneralConfig General { get; set; } = new();
     }
 }
