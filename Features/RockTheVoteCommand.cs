@@ -195,7 +195,8 @@ namespace cs2_rockthevote
             if (info.yes_votes >= requiredYesVotes)
             {
                 Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.votes-reached")}");
-
+                _endmapVoteManager.StartVote(isRtv: true);
+                /*
                 if (_endMapConfig.MenuType == "ScreenMenu")
                 {
                     _plugin?.AddTimer(3.5f, () =>
@@ -210,11 +211,11 @@ namespace cs2_rockthevote
                             }
                         }, TimerFlags.STOP_ON_MAPCHANGE
                     );
-                }
-                else
-                {
-                    _endmapVoteManager.StartVote(isRtv: true);
-                }
+                }*/
+                //else
+                //{
+                //_endmapVoteManager.StartVote(isRtv: true);
+                //}
 
                 return true;
             }
