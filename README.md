@@ -14,6 +14,7 @@ General purpose map voting plugin.
 - Translated (Google Translate, ymmv)
 - Extend command. !extend 10 extends map by 10 minutes (flag restricted)
 - Vote Extend command. !ve/!votextend starts a vote to extend the current map (flag restricted)
+- Map Chooser command. !mapmenu opens a menu with your map list, selected map is changed to immediately (flag restricted)
 - Optional sound alert when map vote or !rtv starts (configurable sound)
 - Optional chat/hud vote countdown
 
@@ -24,7 +25,7 @@ General purpose map voting plugin.
 
 ![panoramavote](https://github.com/user-attachments/assets/31ebe223-225f-4cef-812e-3bf6c56e590d)
 ![voteextend](https://github.com/user-attachments/assets/5cfd9a5f-36a5-4a11-ae26-3e74d5387251)
-- ScreenMenu/HudMenu/ChatMenu for EndOfMapVote/!nominate/!votemap
+- ChatMenu/CenterHtmlMenu/WasdMenu/ConsoleMenu for EndOfMapVote/!nominate/!votemap (ScreenMenu temporarily removed)
 
 ![screenmenu](https://github.com/user-attachments/assets/374a7899-f887-4425-a01e-decae1a203b0)
 ![chatmenu](https://github.com/user-attachments/assets/8d7e9ee8-b26e-47b1-89d8-ced96b13a392)
@@ -41,9 +42,9 @@ General purpose map voting plugin.
 
 
 ## Requirements
-v315+ of [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp/releases) (Minimum, but tested on v323)
+[CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp) (Tested on v323)
 
-v1.0.29+ of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/) (Minimum, but tested on v36)
+[CS2MenuManager](https://github.com/schwarper/CS2MenuManager) (Tested on v39)
 
 # Installation
 - Download the latest release from https://github.com/M-archand/cs2-rockthevote/releases
@@ -57,7 +58,7 @@ v1.0.29+ of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/) (Mini
 
 ```json
 {
-  "ConfigVersion": 17,
+  "ConfigVersion": 18,
   "Rtv": {
     "Enabled": true,
     "EnabledInWarmup": false,
@@ -81,7 +82,7 @@ v1.0.29+ of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/) (Mini
   "EndOfMapVote": {
     "Enabled": true,
     "MapsToShow": 6, # How many maps to show in the vote. If IncludeExtendCurrentMap = true, the extension option takes up 1 slot
-    "MenuType": "ScreenMenu", # The menu that will be used to show the vote. Options = ScreenMenu/ChatMenu/HudMenu
+    "MenuType": "WasdnMenu", # The menu that will be used to show the vote. Options = ChatMenu, CenterHtmlMenu, WasdMenu, ConsoleMenu
     "ChangeMapImmediately": false, # false = change when the map ends. true = change as soon as the VoteDuration ends
     "VoteDuration": 150, # How long the map vote will last (this must be smaller than TriggerSecondsBeforeEnd)
     "SoundEnabled": false, # true = play a sound when the end of map vote starts.
@@ -97,13 +98,13 @@ v1.0.29+ of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/) (Mini
   "Nominate": {
     "Enabled": true,
     "EnabledInWarmup": true,
-    "MenuType": "ScreenMenu", # The menu that will be used to show the vote. Options = ScreenMenu/ChatMenu/HudMenu
+    "MenuType": "WasdnMenu", # The menu that will be used to show the vote. Options = ChatMenu, CenterHtmlMenu, WasdMenu, ConsoleMenu
     "NominateLimit": 1, # How many maps a single player can nominate per map vote
     "Permission": "" # empty = anyone can use. "@css/vip" = only vip's can use (any perm allowed)
   },
   "Votemap": {
     "Enabled": false,
-    "MenuType": "ScreenMenu", # The menu that will be used to show the vote. Options = ScreenMenu/ChatMenu/HudMenu
+    "MenuType": "WasdnMenu", # The menu that will be used to show the vote. Options = ChatMenu, CenterHtmlMenu, WasdMenu, ConsoleMenu
     "VotePercentage": 50, # Percentage of votes required to pass the vote
     "ChangeMapImmediately": true,
     "EnabledInWarmup": false,
@@ -122,15 +123,10 @@ v1.0.29+ of [CS2MenuManager](https://github.com/schwarper/CS2MenuManager/) (Mini
     "ChatCountdownInterval": 15, # If CountdownType = chat, how often we print to chat how much time is remaining to vote
     "Permission": "@css/vip" # empty = anyone can use. "@css/vip" = only vip's can use (any perm allowed)
   },
-  "ScreenMenu": {
-    "MenuType": "Both", # Both/KeyPress/Scrollable
-    "EnableResolutionOption": false,
-    "EnableExitOption": false,
-    "FreezePlayer": false,
-    "ScrollUpKey": "Attack",
-    "ScrollDownKey": "Attack2",
-    "SelectKey": "E",
-    "EnableChatHelper": true # This prints the map list to the chat for the End of Map Vote if you're using "MenuType": "ScreenMenu", in EndOfMapVote. Useful if ScreenMenu doesn't appear to the player (they're in free roam spec, dead, etc)
+  "MapChooser": {
+    "Command": "mapmenu,mm", The command used to open the menu, multiple can be set
+    "MenuType": "WasdMenu", # The menu that will be used to show the vote. Options = ChatMenu, CenterHtmlMenu, WasdMenu, ConsoleMenu
+    "Permission": "@css/root,@css/changemap" # empty = anyone can use. "@css/vip" = only vip's can use (any perm allowed)
   },
   "General": {
     "MaxMapExtensions": 2,
