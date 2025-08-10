@@ -1,9 +1,9 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Timers;
+using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 using cs2_rockthevote.Core;
 using Microsoft.Extensions.Logging;
-using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace cs2_rockthevote
 {
@@ -44,8 +44,8 @@ namespace cs2_rockthevote
         public void StartVote()
         {
             KillTimer();
-
-            if (_config.Enabled)
+            _voteManager.StartVote(isRtv: false);
+            /*if (_config.Enabled)
             {
                 if (_config.MenuType == "ScreenMenu" && PanoramaVote.IsVoteInProgress())
                 {
@@ -68,7 +68,7 @@ namespace cs2_rockthevote
                 {
                     _voteManager.StartVote(isRtv: false);
                 }
-            }
+            }*/
         }
 
         public void OnMapStart(string map)
