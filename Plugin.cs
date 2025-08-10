@@ -89,6 +89,7 @@ namespace cs2_rockthevote
                 Logger.LogWarning($"Configuration version mismatch (Expected: {0} | Current: {1})", Config.Version, config.Version);
         }
 
+        /*
         [GameEventHandler]
         public HookResult OnClientSay(EventPlayerChat @event, GameEventInfo info)
         {
@@ -113,6 +114,7 @@ namespace cs2_rockthevote
 
             return HookResult.Continue;
         }
+        */
 
         [ConsoleCommand("css_reloadrtv", "Reloads the RTV config.")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
