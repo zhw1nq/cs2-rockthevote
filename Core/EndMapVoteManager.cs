@@ -1,24 +1,23 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
-using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Timers;
+using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
+using CS2MenuManager.API.Class;
 using cs2_rockthevote.Core;
 using System.Data;
-using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 using Microsoft.Extensions.Logging;
-using static CounterStrikeSharp.API.Modules.Commands.CommandInfo;
-using CounterStrikeSharp.API.Modules.Utils;
+using CS2MenuManager.API.Menu;
 
 namespace cs2_rockthevote
 {
     public class EndMapVoteManager : IPluginDependency<Plugin, Config>
     {
         private readonly ILogger<EndMapVoteManager> _logger;
-        private readonly ExtendRoundTimeManager _extendRoundTimeManager;
-        private readonly TimeLimitManager _timeLimitManager;
         private readonly GameRules _gameRules;
         private readonly MapLister _mapLister;
+        private readonly ExtendRoundTimeManager _extendRoundTimeManager;
+        private readonly TimeLimitManager _timeLimitManager;
         private readonly ChangeMapManager _changeMapManager;
         private readonly NominationCommand _nominationManager;
         private readonly StringLocalizer _localizer;
@@ -33,13 +32,11 @@ namespace cs2_rockthevote
         public int MaxOptionsHud { get; private set; } = 6;
         public ISet<int> VotedPlayers { get; private set; } = new HashSet<int>();
         public Dictionary<string,int> Votes { get; private set; } = new();
-        private readonly Dictionary<string, CommandCallback> _chatCallbacks = new();
         public IReadOnlyDictionary<string, int> CurrentVotes => Votes;
 
         private GeneralConfig _generalConfig = new();
         private EndOfMapConfig _endMapConfig = new();
         private RtvConfig _rtvConfig = new();
-        private ScreenMenuConfig _screenConfig = new();
 
         public EndMapVoteManager
         (
@@ -77,7 +74,7 @@ namespace cs2_rockthevote
             _generalConfig = config.General;
             _endMapConfig = config.EndOfMapVote;
             _rtvConfig = config.Rtv;
-            _screenConfig = config.ScreenMenu;
+            //_screenConfig = config.ScreenMenu;
 
             // Check to make sure VoteDuration isn't >= TriggerSecondsBeforeEnd, if it is, use a fallback
             if (_endMapConfig.VoteDuration >= _endMapConfig.TriggerSecondsBeforeEnd)
@@ -134,8 +131,8 @@ namespace cs2_rockthevote
             player.PrintToChat(_localizer.LocalizeWithPrefix("emv.you-voted", mapName));
 
             // Make sure to close ScreenMenu if they voted via ChatMenu
-            if (_endMapConfig.MenuType == "ScreenMenu")
-                MapVoteScreenMenu.Close(player);
+            //if (_endMapConfig.MenuType == "ScreenMenu")
+                //MapVoteScreenMenu.Close(player);
             
             // If we’ve reached the vote threshold, end the vote early
             if (Votes.Values.Sum() >= _canVote)
@@ -230,12 +227,15 @@ namespace cs2_rockthevote
             int mapsToShow = !isRtv
                 ? (_endMapConfig.MapsToShow == 0 ? MaxOptionsHud : _endMapConfig.MapsToShow)
                 : (_rtvConfig.MapsToShow    == 0 ? MaxOptionsHud : _rtvConfig.MapsToShow);
-            if (_endMapConfig.MenuType == "HudMenu" && mapsToShow > MaxOptionsHud)
+            
+            // Cap for CenterHtmlMenu (HUD) pages
+            if (string.Equals(_endMapConfig.MenuType?.Trim(), "CenterHtmlMenu", StringComparison.Ordinal)
+                && mapsToShow > MaxOptionsHud)
+            {
                 mapsToShow = MaxOptionsHud;
+            }
 
-            int mapOptionsCount = canShowExtendOption
-                ? mapsToShow - 1
-                : mapsToShow;
+            int mapOptionsCount = canShowExtendOption ? mapsToShow - 1 : mapsToShow;
 
             // Get map list
             var mapsScrambled = Shuffle(new Random(), _mapLister.Maps!.Select(x => x.Name)
@@ -260,72 +260,33 @@ namespace cs2_rockthevote
 
             _canVote = ServerManager.ValidPlayerCount();
 
-            // Open Chat/Screen/Hud Menu (config dependant)
+            var title = _localizer.Localize("emv.hud.menu-title");
+            var key = _endMapConfig.MenuType?.Trim() ?? "";
+            var menuType = MenuManager.MenuTypesList.TryGetValue(key, out var resolvedType)
+                ? resolvedType
+                : MenuTypeManager.GetDefaultMenu();
+
+            // Open Menu (config dependant)
             foreach (var player in ServerManager.ValidPlayers())
             {
-                if (_endMapConfig.MenuType == "ScreenMenu")
-                {
-                    Server.NextFrame(() =>
-                        MapVoteScreenMenu.Open(_plugin!, player, voteOptions, (p, selectedOption) => MapVoted(p, selectedOption, isRtv), _localizer.Localize("emv.screenmenu-title"))
-                    );
+                var menu = MenuManager.MenuByType(menuType, title, _plugin!);
 
-                    // Chat helper in case people cant see the ScreenMenu for some reason
-                    if (_screenConfig.EnableChatHelper)
-                    {
-                        player.PrintToChat(_localizer.Localize("emv.hud.menu-title"));
-                        player.PrintToChat($" {ChatColors.Orange}-----");
-                        for (int i = 0; i < voteOptions.Count; i++)
-                        {
-                            var option = voteOptions[i];
-                            player.PrintToChat($" {ChatColors.Lime}!{i + 1} {ChatColors.White}{option}");
-                        }
-                    }
-                }
-                else if (_endMapConfig.MenuType == "ChatMenu")
+                //if (menu is WasdMenu wasd)
+                    //wasd.WasdMenu_FreezePlayer = false;
+
+                foreach (var option in voteOptions)
                 {
-                    ChatMenu chatMenu = new(_localizer.Localize("emv.hud.menu-title"));
-                    foreach (var option in voteOptions)
+                    var chosen = option;
+                    menu.AddItem(chosen, (p, _) =>
                     {
-                        chatMenu.AddMenuOption(option, (p, selectedOption) =>
-                        {
-                            MapVoted(p, option, isRtv);
-                            MenuManager.CloseActiveMenu(p);
-                        });
-                    }
-                    MenuManager.OpenChatMenu(player, chatMenu);
+                        MapVoted(p, chosen, isRtv);
+                    });
                 }
-                else if (_endMapConfig.MenuType == "HudMenu")
-                {
-                    // Console menu used to register the votes, without having to show anything in chat
-                    ConsoleMenu consoleMenu = new(_localizer.Localize("emv.hud.menu-title"));
-                    foreach (var option in voteOptions)
-                    {
-                        consoleMenu.AddMenuOption(option, (p, selectedOption) =>
-                        {
-                            MapVoted(p, option, isRtv);
-                            MenuManager.CloseActiveMenu(p);
-                        });
-                    }
-                    MenuManager.OpenConsoleMenu(player, consoleMenu);
-                }
-                else
-                {
-                    ChatMenu chatMenu = new(_localizer.Localize("emv.hud.menu-title"));
-                    foreach (var option in voteOptions)
-                    {
-                        chatMenu.AddMenuOption(option, (p, selectedOption) =>
-                        {
-                            MapVoted(p, option, isRtv);
-                            MenuManager.CloseActiveMenu(p);
-                        });
-                    }
-                    MenuManager.OpenChatMenu(player, chatMenu);
-                    _logger.LogError("Incorrect MenuType set in the EndOfMapVote config. Please choose either ScreenMenu/ChatMenu/HudMenu. Falling back to ChatMenu.");
-                }
+
+                menu.Display(player, 0);
+
                 if (_endMapConfig.SoundEnabled)
-                {
                     player.ExecuteClientCommand($"play {_endMapConfig.SoundPath}");
-                }
             }
             
             ChatCountdown(isRtv ? _rtvConfig.MapVoteDuration : _endMapConfig.VoteDuration);
@@ -347,13 +308,13 @@ namespace cs2_rockthevote
 
         public void EndVote(bool isRtv)
         {
-            foreach (var player in ServerManager.ValidPlayers())
+            /*foreach (var player in ServerManager.ValidPlayers())
             {
                 if (player.IsValid)
                 {
                     MapVoteScreenMenu.Close(player);
                 }
-            }
+            }*/
             
             KillTimer();
             
