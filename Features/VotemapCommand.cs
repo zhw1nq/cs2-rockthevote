@@ -100,7 +100,7 @@ namespace cs2_rockthevote
 
         public void OnMapsLoaded(object? sender, Map[] maps)
         {
-            var title = _localizer.Localize("emv.screenmenu-title");
+            var title = _localizer.Localize("general.choose.map");
 
             var key = _config.MenuType?.Trim() ?? "";
             var menuType = MenuManager.MenuTypesList.TryGetValue(key, out var resolvedType)
@@ -158,7 +158,7 @@ namespace cs2_rockthevote
 
             if (string.IsNullOrEmpty(map))
             {
-                var title = _localizer.Localize("emv.screenmenu-title");
+                var title = _localizer.Localize("general.choose.map");
 
                 // Resolve the menu type from config, fallback to default if necessary
                 var key = _config.MenuType?.Trim() ?? "";

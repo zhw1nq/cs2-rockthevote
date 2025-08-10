@@ -47,6 +47,7 @@
   "general.hud-countdown": "Hátralévő idő a szavazáshoz: {0} másodperc",
   "general.vote-in-progress": "{lightred} Már folyamatban van egy szavazás, kérjük, várja meg, amíg befejeződik.",
   "general.timeleft": "Hátralévő idő: {lime}{0} {default}(óó/pp/mm)",
+  "general.choose.map": "Válasszon egy térképet:",
 
   "rtv.rocked-the-vote": "{green}{0}{default} szavazást akar indítani!",
   "rtv.already-rocked-the-vote": "Már szavaztál",

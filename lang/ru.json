@@ -47,6 +47,7 @@
   "general.hud-countdown": "Осталось времени для голосования: {0} секунд",
   "general.vote-in-progress": "{lightred} Голосование уже идет, пожалуйста, дождитесь eгo окончания.",
   "general.timeleft": "Оставшееся время: {lime}{0} {default}(чч/мм/сс)",
+  "general.choose.map": "Выберите карту:",
 
   "rtv.rocked-the-vote": "{green}{0}{default} хочет зажечь в голосовании!",
   "rtv.already-rocked-the-vote": "Вы уже зажег в голосовании",

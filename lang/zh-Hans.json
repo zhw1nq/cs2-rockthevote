@@ -47,6 +47,7 @@
   "general.hud-countdown": "投票剩余时间：{0} 秒",
   "general.vote-in-progress": "{lightred} 已进行投票，请等待投票完成。",
   "general.timeleft": "剩余时间：{lime}{0} {default}(hh/mm/ss)",
+  "general.choose.map": "选择地图:",
 
   "rtv.rocked-the-vote": "{green}{0}{default} 想要在投票中大放异彩！",
   "rtv.already-rocked-the-vote": "您已经大放异彩！",

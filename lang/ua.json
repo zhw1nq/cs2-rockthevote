@@ -47,6 +47,7 @@
   "general.hud-countdown": "Час до голосування залишився: {0} секунд",
   "general.vote-in-progress": "{lightred} Голосування вже триває, будь ласка, зачекайте його завершення.",
   "general.timeleft": "Час, що залишився: {lime}{0} {default}(гг/хх/сс)",
+  "general.choose.map": "Виберіть карту:",
 
   "rtv.rocked-the-vote": "{green}{0}{default} хоче вразити голосування!",
   "rtv.already-rocked-the-vote": "Ви вже вразили голосування",

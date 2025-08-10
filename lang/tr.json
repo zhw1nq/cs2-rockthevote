@@ -47,6 +47,7 @@
   "general.hud-countdown": "Oy vermek için kalan süre: {0} saniye",
   "general.vote-in-progress": "{lightred} Zaten devam eden bir oylama var, lütfen bitmesini bekleyin.",
   "general.timeleft": "Kalan Süre: {lime}{0} {default}(ss/dd/ss)",
+  "general.choose.map": "Bir Harita Seçin:",
 
   "rtv.rocked-the-vote": "{green}{0}{default} oyu sallamak istiyor!",
   "rtv.already-rocked-the-vote": "Oyu sallamışsınız bile",

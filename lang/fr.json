@@ -47,6 +47,7 @@
   "general.hud-countdown": "Temps restant pour voter: {0} secondes",
   "general.vote-in-progress": "{lightred}Un vote est déjà en cours, veuillez patienter.",
   "general.timeleft": "Temps restant: {lime}{0} {default}(hh/mm/ss)",
+  "general.choose.map": "Choisissez une carte:",
   
   "rtv.rocked-the-vote": "{green}{0}{default} veut faire basculer le vote!",
   "rtv.already-rocked-the-vote" : "Vous avez déjà fait basculer le vote",
