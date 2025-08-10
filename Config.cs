@@ -91,9 +91,9 @@ namespace cs2_rockthevote
         public int MapsInCoolDown { get; set; } = 3;
         public bool HideHudAfterVote { get; set; } = true;
         public bool RandomStartMap { get; set; } = false;
-        public bool AllowSpectatorVote { get; set; } = true;
-        public bool IncludeAFK { get; set; } = false;
-        public int AFKCheckInterval { get; set; } = 30;
+        //public bool AllowSpectatorVote { get; set; } = true;
+        //public bool IncludeAFK { get; set; } = false;
+        //public int AFKCheckInterval { get; set; } = 30;
         public string DiscordWebhook { get; set; } = "";
     }
 

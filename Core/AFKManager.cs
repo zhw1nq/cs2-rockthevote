@@ -1,3 +1,4 @@
+/*
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -111,3 +112,4 @@ namespace cs2_rockthevote
         }
     }
 }
+*/
