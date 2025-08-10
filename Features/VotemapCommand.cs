@@ -2,8 +2,11 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
+using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Menu;
+using CS2MenuManager.API.Interface;
+using CS2MenuManager.API.Enum;
+using CS2MenuManager.API.Class; 
 using cs2_rockthevote.Core;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -56,8 +59,7 @@ namespace cs2_rockthevote
         private PluginState _pluginState;
         private MapCooldown _mapCooldown;
         private MapLister _mapLister;
-        private ChatMenu? votemapMenu = null;
-        private CenterHtmlMenu? votemapMenuHud = null;
+        private IMenu? _votemapMenu;
         private Plugin? _plugin;
         private Dictionary<string, AsyncVoteManager> VotedMaps = new Dictionary<string, AsyncVoteManager>();
 
@@ -98,19 +100,26 @@ namespace cs2_rockthevote
 
         public void OnMapsLoaded(object? sender, Map[] maps)
         {
-            votemapMenu = new(_localizer.Localize("emv.screenmenu-title"));
-            votemapMenuHud = new CenterHtmlMenu(_localizer.Localize("emv.screenmenu-title"), _plugin!);
-            foreach (var map in _mapLister.Maps!.Where(x => x.Name != Server.MapName))
-            {
-                votemapMenu.AddMenuOption(map.Name, (CCSPlayerController player, ChatMenuOption option) =>
-                {
-                    AddVote(player, option.Text);
-                }, _mapCooldown.IsMapInCooldown(map.Name));
+            var title = _localizer.Localize("emv.screenmenu-title");
 
-                votemapMenuHud.AddMenuOption(map.Name, (CCSPlayerController player, ChatMenuOption option) =>
-                {
-                    AddVote(player, option.Text);
-                }, _mapCooldown.IsMapInCooldown(map.Name));
+            var key = _config.MenuType?.Trim() ?? "";
+            var menuType = MenuManager.MenuTypesList.TryGetValue(key, out var resolvedType)
+                ? resolvedType
+                : MenuTypeManager.GetDefaultMenu();
+
+            _votemapMenu = MenuManager.MenuByType(menuType, title, _plugin!);
+
+            foreach (var m in _mapLister.Maps!.Where(x => x.Name != Server.MapName))
+            {
+                bool isCooldown = _mapCooldown.IsMapInCooldown(m.Name);
+                string label = isCooldown ? $"{ChatColors.Grey}{m.Name}" : m.Name;
+                string chosen = m.Name;
+
+                _votemapMenu.AddItem(
+                    label,
+                    (player, _) => { if (!isCooldown) AddVote(player, chosen); },
+                    isCooldown ? DisableOption.DisableShowNumber : DisableOption.None
+                );
             }
         }
 
@@ -119,7 +128,6 @@ namespace cs2_rockthevote
             if (player is null)
                 return;
 
-            map = map.ToLower().Trim();
             if (_pluginState.DisableCommands || !_config.Enabled)
             {
                 player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.disabled"));
@@ -146,35 +154,58 @@ namespace cs2_rockthevote
                 return;
             }
 
+            map = map.ToLower().Trim();
+
             if (string.IsNullOrEmpty(map))
             {
-                OpenVotemapMenu(player!);
+                var title = _localizer.Localize("emv.screenmenu-title");
+
+                // Resolve the menu type from config, fallback to default if necessary
+                var key = _config.MenuType?.Trim() ?? "";
+                var menuType = MenuManager.MenuTypesList.TryGetValue(key, out var resolvedType)
+                    ? resolvedType
+                    : MenuTypeManager.GetDefaultMenu();
+
+                var menu = MenuManager.MenuByType(menuType, title, _plugin!);
+
+                foreach (var m in _mapLister.Maps!.Where(x => x.Name != Server.MapName))
+                {
+                    bool isCooldown = _mapCooldown.IsMapInCooldown(m.Name);
+                    string label = isCooldown ? $"{ChatColors.Grey}{m.Name}" : m.Name;
+                    string chosen = m.Name;
+
+                    menu.AddItem(label, (p, _) =>
+                    {
+                        if (isCooldown)
+                        {
+                            p.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.map-played-recently"));
+                            return;
+                        }
+
+                        AddVote(p, chosen);
+                    }, isCooldown ? DisableOption.DisableShowNumber : DisableOption.None);
+                }
+
+                menu.Display(player, 0);
+                return;
             }
-            else
+
+            var exact = _mapLister.GetExactMapName(map);
+            if (exact is null)
             {
-                AddVote(player, map);
+                player.PrintToChat(_localizer.LocalizeWithPrefix("general.invalid-map"));
+                return;
             }
+            if (_mapCooldown.IsMapInCooldown(exact))
+            {
+                player.PrintToChat(_localizer.LocalizeWithPrefix("general.validation.map-played-recently"));
+                return;
+            }
+
+            AddVote(player, exact);
         }
 
-        public void OpenVotemapMenu(CCSPlayerController player)
-        {
-            if (_config.MenuType == "ScreenMenu")
-                _endOfMapVote.StartVote();
-
-            else if (_config.MenuType == "HudMenu")
-                MenuManager.OpenCenterHtmlMenu(_plugin!, player, votemapMenuHud!);
-
-            else if (_config.MenuType == "ChatMenu")
-                MenuManager.OpenChatMenu(player, votemapMenu!);
-
-            else
-            {
-                MenuManager.OpenChatMenu(player, votemapMenu!);
-                _logger.LogError("Incorrect MenuType set in the EndOfMapVote config (for use with Votemap). Please choose either ScreenMenu/ChatMenu/HudMenu. Falling back to ChatMenu.");
-            }
-        }
-
-        void AddVote(CCSPlayerController player, string map)
+        public void AddVote(CCSPlayerController player, string map)
         {
             if (map == Server.MapName)
             {
