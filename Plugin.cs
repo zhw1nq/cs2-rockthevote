@@ -6,10 +6,10 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Extensions;
-using CounterStrikeSharp.API.Modules.Events;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Localization;
+using CS2MenuManager.API.Class;
 
 namespace cs2_rockthevote
 {
@@ -39,7 +39,7 @@ namespace cs2_rockthevote
         ILogger<Plugin> logger) : BasePlugin, IPluginConfig<Config>
     {
         public override string ModuleName => "RockTheVote";
-        public override string ModuleVersion => "2.0.8";
+        public override string ModuleVersion => "2.0.9";
         public override string ModuleAuthor => "abnerfs (Updated by Marchand)";
 
         private readonly DependencyManager<Plugin, Config> _dependencyManager = dependencyManager;
@@ -54,6 +54,7 @@ namespace cs2_rockthevote
         private StringLocalizer _localizer = new(stringLocalizer, "rtv.prefix");
         private readonly ILogger<Plugin> _logger = logger;
         private readonly PluginState _pluginState = pluginState;
+        private bool _hasMenuManager = false;
 
 
         public Config Config { get; set; } = new Config();
@@ -73,6 +74,22 @@ namespace cs2_rockthevote
                 PanoramaVote.VoteCast(ev);
                 return HookResult.Continue;
             });
+        }
+        
+        public override void OnAllPluginsLoaded(bool hotReload)
+        {
+            // Check for CS2MenuManager installation
+            try
+            {
+                var dummy = MenuManager.MenuTypesList;
+                _hasMenuManager = true;
+            }
+            catch (Exception)
+            {
+                _hasMenuManager = false;
+                Server.PrintToConsole("CS2MenuManager API not found! It is required to use RockTheVote. Download it from here: https://github.com/schwarper/CS2MenuManager");
+                Logger.LogWarning("CS2MenuManager API not found! It is required to use RockTheVote. Download it from here: https://github.com/schwarper/CS2MenuManager");
+            }
         }
         
         public override void Unload(bool hotReload)
