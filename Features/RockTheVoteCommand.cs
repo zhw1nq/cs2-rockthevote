@@ -200,7 +200,7 @@ namespace cs2_rockthevote
                             if (_rtvTimer == null)
                                 StartRtvTimer();
                             Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.rocked-the-vote", player.PlayerName)} {_localizer.Localize("general.votes-needed", result.VoteCount, result.RequiredVotes)}");
-                            Server.PrintToChatAll($"Use {ChatColors.Lime}!rtv {ChatColors.White} to cast your vote!");
+                            //Server.PrintToChatAll($"Use {ChatColors.Lime}!rtv {ChatColors.White} to cast your vote!");
                             break;
 
                         case VoteResultEnum.AlreadyAddedBefore:
