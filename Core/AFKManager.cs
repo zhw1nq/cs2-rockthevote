@@ -1,11 +1,26 @@
-/*
 using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace cs2_rockthevote
 {
+    public partial class Plugin
+    {
+        [GameEventHandler(HookMode.Pre)]
+        public HookResult EventPlayerSpawn(EventPlayerSpawn @event, GameEventInfo @eventInfo)
+        {
+            var player = @event.Userid;
+            if (player.ReallyValid())
+            {
+                _afkManager.InitializeLastOrigins(player!);
+            }
+            return HookResult.Continue;
+        }
+    }
+
     public class AFKManager : IPluginDependency<Plugin, Config>
     {
         private Plugin? _plugin;
@@ -25,12 +40,14 @@ namespace cs2_rockthevote
         {
             _generalConfig = config.General;
 
-            //If config reloads mid map, apply changes immediately
-            if (_timer != null)
+            if (_generalConfig.IncludeAFK)
             {
-                if (!_generalConfig.IncludeAFK) KillAFKTimer();
-                else RestartAfkTimer();
+                KillAFKTimer();
+                return;
             }
+
+            //If config reloads mid map, apply changes immediately
+            if (_timer != null) RestartAfkTimer();
         }
 
         public void OnMapStart(string map)
@@ -44,11 +61,7 @@ namespace cs2_rockthevote
                 return;
             }
 
-            Server.NextFrame(() =>
-            {
-                InitializeLastOrigins();
-                RestartAfkTimer();
-            });
+            Server.NextFrame(RestartAfkTimer);
         }
 
         private void RestartAfkTimer()
@@ -62,14 +75,22 @@ namespace cs2_rockthevote
             );
         }
 
-        private void InitializeLastOrigins()
+        public void InitializeLastOrigins(CCSPlayerController player, float delaySeconds = 1.0f)
         {
-            foreach (var player in Utilities.GetPlayers().Where(p => p.ReallyValid()))
+            if (_plugin == null) return; // defensive
+
+            _plugin.AddTimer(delaySeconds, () =>
             {
+                // player might have disconnected or switched; re-check validity
+                if (player == null || !player.IsValid || !player.ReallyValid())
+                    return;
+
                 var origin = player.PlayerPawn.Value?.CBodyComponent?.SceneNode?.AbsOrigin;
                 if (origin != null)
                     _lastOrigin[player.Index] = new Vector(origin.X, origin.Y, origin.Z);
-            }
+            });
+
+            Server.PrintToConsole($"[AFKManager] Checked position for player: {player.PlayerName}. Position: {player.PlayerPawn.Value?.CBodyComponent?.SceneNode?.AbsOrigin}");
         }
 
         private void CheckAllPlayers()
@@ -80,7 +101,7 @@ namespace cs2_rockthevote
                 if (origin == null) continue;
 
                 var current = new Vector(origin.X, origin.Y, origin.Z);
-                var idx  = player.Index;
+                var idx = player.Index;
 
                 if (_lastOrigin.TryGetValue(idx, out var last))
                 {
@@ -110,6 +131,7 @@ namespace cs2_rockthevote
             _timer = null;
             _afkPlayers.Clear();
         }
+
+        public bool IsAfk(CCSPlayerController player) => _afkPlayers.Contains(player.Index);
     }
 }
-*/
