@@ -2,10 +2,10 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Timers;
-using Microsoft.Extensions.Logging;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
-
+using Microsoft.Extensions.Logging;
 namespace cs2_rockthevote
 {
     public partial class Plugin
@@ -39,8 +39,9 @@ namespace cs2_rockthevote
         private readonly GameRules _gameRules;
         private readonly EndMapVoteManager _endmapVoteManager;
         private readonly PluginState _pluginState;
+        private readonly AFKManager _afk;
         private RtvConfig _config = new();
-        private EndOfMapConfig _endMapConfig = new();
+        private GeneralConfig _generalConfig = new();
         private AsyncVoteManager? _voteManager;
         private bool _isCooldownActive = false;
         private CCSPlayerController? _initiatingPlayer;
@@ -48,16 +49,18 @@ namespace cs2_rockthevote
         private DateTime _rtvEndTime;
         private Plugin? _plugin;
         private Timer? _cooldownTimer;
+        private Timer? _rtvTimer;
 
         public int TimeLeft => (int)Math.Max(0, (_rtvEndTime - DateTime.UtcNow).TotalSeconds);
 
 
-        public RockTheVoteCommand(GameRules gameRules, EndMapVoteManager endmapVoteManager, StringLocalizer localizer, PluginState pluginState, ILogger<RockTheVoteCommand> logger)
+        public RockTheVoteCommand(GameRules gameRules, EndMapVoteManager endmapVoteManager, StringLocalizer localizer, PluginState pluginState, AFKManager afkManager, ILogger<RockTheVoteCommand> logger)
         {
             _localizer = localizer;
             _gameRules = gameRules;
             _endmapVoteManager = endmapVoteManager;
             _pluginState = pluginState;
+            _afk = afkManager;
             _logger = logger;
         }
 
@@ -69,14 +72,59 @@ namespace cs2_rockthevote
         public void OnConfigParsed(Config config)
         {
             _config = config.Rtv;
-            _endMapConfig = config.EndOfMapVote;
+            _generalConfig = config.General;
             _voteManager = new AsyncVoteManager(_config.VotePercentage);
         }
 
         public void OnMapStart(string map)
         {
             _voteManager?.OnMapStart(map);
+            StopRtvTimer();
             KillTimer();
+        }
+
+        private IEnumerable<CCSPlayerController> EligiblePlayers()
+        {
+            var players = ServerManager.ValidPlayers().Where(p => p.ReallyValid());
+            return _generalConfig.IncludeAFK ? players : players.Where(p => !_afk.IsAfk(p));
+        }
+
+        private int EligibleCount()
+        {
+            var count = EligiblePlayers().Count();
+            //_logger.LogInformation($"[RTV] EligibleCount = {count}");
+            return count;
+        }
+
+        private void StartRtvTimer()
+        {
+            _pluginState.RtvVoteHappening = true;
+            _rtvEndTime = DateTime.UtcNow.AddSeconds(_config.RtvVoteDuration);
+
+            if (_config.EnableCountdown && _config.CountdownType == "chat")
+            {
+                _plugin!.AddTimer(0.1f, () => ChatCountdown(_config.RtvVoteDuration),
+                    TimerFlags.STOP_ON_MAPCHANGE);
+            }
+
+            _rtvTimer = _plugin!.AddTimer(_config.RtvVoteDuration, () =>
+            {
+                _pluginState.RtvVoteHappening = false;
+
+                if (!_voteManager!.VotesAlreadyReached)
+                {
+                    Server.PrintToChatAll(_localizer.LocalizeWithPrefix("rtv.time-up"));
+                    ActivateCooldown();
+                }
+
+            }, TimerFlags.STOP_ON_MAPCHANGE);
+        }
+
+        private void StopRtvTimer()
+        {
+            _rtvTimer?.Kill();
+            _rtvTimer = null;
+            _pluginState.RtvVoteHappening = false;
         }
 
         public void CommandHandler(CCSPlayerController? player)
@@ -93,9 +141,7 @@ namespace cs2_rockthevote
                 if (elapsed < _config.MapStartDelay)
                 {
                     int secondsLeft = (int)Math.Ceiling(_config.MapStartDelay - elapsed);
-                    player.PrintToChat(
-                        _localizer.LocalizeWithPrefix("rtv.cooldown", secondsLeft)
-                    );
+                    player.PrintToChat(_localizer.LocalizeWithPrefix("rtv.cooldown", secondsLeft));
                     return;
                 }
                 if (_isCooldownActive)
@@ -143,24 +189,32 @@ namespace cs2_rockthevote
                         VoteHandlerCallback
                     );
                 }
+
                 if (!_config.EnablePanorama)
                 {
-                    _pluginState.RtvVoteHappening = true;
+                    // Add the vote first
                     VoteResult result = _voteManager!.AddVote(player.UserId!.Value);
+
                     switch (result.Result)
                     {
                         case VoteResultEnum.Added:
+                            if (_rtvTimer == null)
+                                StartRtvTimer();
                             Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.rocked-the-vote", player.PlayerName)} {_localizer.Localize("general.votes-needed", result.VoteCount, result.RequiredVotes)}");
+                            //Server.PrintToChatAll($"Use {ChatColors.Lime}!rtv {ChatColors.White} to cast your vote!");
                             break;
+
                         case VoteResultEnum.AlreadyAddedBefore:
                             player.PrintToChat($"{_localizer.LocalizeWithPrefix("rtv.already-rocked-the-vote")} {_localizer.Localize("general.votes-needed", result.VoteCount, result.RequiredVotes)}");
                             break;
+
                         case VoteResultEnum.VotesAlreadyReached:
-                            _pluginState.RtvVoteHappening = false;
+                            StopRtvTimer();
                             player.PrintToChat(_localizer.LocalizeWithPrefix("rtv.disabled"));
                             break;
+
                         case VoteResultEnum.VotesReached:
-                            _pluginState.RtvVoteHappening = false;
+                            StopRtvTimer();
                             _endmapVoteManager.StartVote(isRtv: true);
                             Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.rocked-the-vote", player.PlayerName)} {_localizer.Localize("general.votes-needed", result.VoteCount, result.RequiredVotes)}");
                             Server.PrintToChatAll(_localizer.LocalizeWithPrefix("rtv.votes-reached"));
@@ -172,15 +226,6 @@ namespace cs2_rockthevote
                 {
                     player.ExecuteClientCommand($"play {_config.SoundPath}");
                 }
-                
-                _rtvEndTime = DateTime.UtcNow.AddSeconds(_config.RtvVoteDuration);
-
-                _plugin?.AddTimer(0.1f, () =>
-                    {
-                        if (_config.EnableCountdown && _config.CountdownType == "chat")
-                            ChatCountdown(_config.RtvVoteDuration);
-                    }, TimerFlags.STOP_ON_MAPCHANGE
-                );
             }
             catch (Exception ex)
             {
@@ -196,26 +241,6 @@ namespace cs2_rockthevote
             {
                 Server.PrintToChatAll($"{_localizer.LocalizeWithPrefix("rtv.votes-reached")}");
                 _endmapVoteManager.StartVote(isRtv: true);
-                /*
-                if (_endMapConfig.MenuType == "ScreenMenu")
-                {
-                    _plugin?.AddTimer(3.5f, () =>
-                        {
-                            try
-                            {
-                                _endmapVoteManager.StartVote(isRtv: true);
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogWarning($"Something went wrong during the VoteResultCallback: {ex.Message}");
-                            }
-                        }, TimerFlags.STOP_ON_MAPCHANGE
-                    );
-                }*/
-                //else
-                //{
-                //_endmapVoteManager.StartVote(isRtv: true);
-                //}
 
                 return true;
             }
