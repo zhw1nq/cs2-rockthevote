@@ -34,6 +34,7 @@ namespace cs2_rockthevote
         VoteExtendRoundTimeCommand voteExtendRoundTime,
         TimeLeftCommand timeLeft,
         MaplistCommand maplistManager,
+        AFKManager afkManager,
         PluginState pluginState,
         IStringLocalizer stringLocalizer,
         ILogger<Plugin> logger) : BasePlugin, IPluginConfig<Config>
@@ -47,6 +48,7 @@ namespace cs2_rockthevote
         private readonly ChangeMapManager _changeMapManager = changeMapManager;
         private readonly VotemapCommand _votemapManager = voteMapManager;
         private readonly RockTheVoteCommand _rtvManager = rtvManager;
+        private readonly AFKManager _afkManager = afkManager;
         private readonly ExtendRoundTimeCommand _extendRoundTime = extendRoundTime;
         private readonly VoteExtendRoundTimeCommand _voteExtendRoundTime = voteExtendRoundTime;
         private readonly TimeLeftCommand _timeLeft = timeLeft;
