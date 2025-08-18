@@ -270,6 +270,8 @@ namespace cs2_rockthevote
             foreach (var player in ServerManager.ValidPlayers())
             {
                 var menu = MenuManager.MenuByType(menuType, title, _plugin!);
+                if (menu is CenterHtmlMenu)
+                    menu.ExitButton = false;
 
                 //if (menu is WasdMenu wasd)
                     //wasd.WasdMenu_FreezePlayer = false;
@@ -283,7 +285,7 @@ namespace cs2_rockthevote
                     });
                 }
 
-                menu.Display(player, 0);
+                menu.Display(player, _endMapConfig.VoteDuration);
 
                 if (_endMapConfig.SoundEnabled)
                     player.ExecuteClientCommand($"play {_endMapConfig.SoundPath}");
