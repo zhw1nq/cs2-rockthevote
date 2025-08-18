@@ -60,6 +60,7 @@
   "rtv.ui-question": "其他地图",
 
   "emv.you-voted": "您投票支持 {0}",
+  "emv.vote-started": "下一张地图的投票已经开始，请做出您的选择！",
   "emv.vote-ended": "投票已结束，下一张地图将为 {green}{0}{default} ({2} 票中的 {1:N2}%)",
   "emv.vote-ended-no-votes": "无人投票，下一张地图将为 {green}{0}",
   "emv.screenmenu-title": "地图投票：",

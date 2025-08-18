@@ -60,6 +60,7 @@
   "rtv.ui-question" : "une autre carte",
   
   "emv.you-voted": "Vous avez voté pour {0}",
+  "emv.vote-started": "Le vote pour la prochaine carte a commencé, faites votre choix !",
   "emv.vote-ended": "Vote terminée, la prochaine carte sera {green}{0}{default} ({1:N2}% de {2} vote(s))",
   "emv.vote-ended-no-votes": "Aucun vote, la prochaine carte sera {green}{0}",
   "emv.screenmenu-title": "Vote pour la carte:",

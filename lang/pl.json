@@ -60,6 +60,7 @@
   "rtv.ui-question": "inna mapa",
 
   "emv.you-voted": "Zagłosowałeś na {0}",
+  "emv.vote-started": "Rozpoczęło się głosowanie na kolejną mapę, wybierz swoją!",
   "emv.vote-ended": "Głosowanie zakończone, następna mapa będzie {zielona}{0}{domyślna} ({1:N2}% z {2} głosów))",
   "emv.vote-ended-no-votes": "Brak głosów, następna mapa będzie {zielona}{0}",
   "emv.screenmenu-title": "Głosowanie na mapę:",

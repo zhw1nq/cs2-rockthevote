@@ -287,6 +287,9 @@ namespace cs2_rockthevote
 
                 menu.Display(player, _endMapConfig.VoteDuration);
 
+                if (menu is not ChatMenu)
+                    Server.PrintToChatAll(_localizer.LocalizeWithPrefix("emv.vote-started"));
+
                 if (_endMapConfig.SoundEnabled)
                     player.ExecuteClientCommand($"play {_endMapConfig.SoundPath}");
             }

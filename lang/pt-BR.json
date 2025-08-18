@@ -60,6 +60,7 @@
   "rtv.ui-question": "um mapa diferente",
 
   "emv.you-voted": "Você votou em {0}",
+  "emv.vote-started": "A votação para o próximo mapa começou, faça sua escolha!",
   "emv.vote-ended": "A votação encerrou o próximo mapa será {green}{0}{default} ({1:N2}% de {2} voto(s))",
   "emv.vote-ended-no-votes": "Sem votos, o próximo mapa será {green}{0}",
   "emv.screenmenu-title": "Votação do Mapa:",
