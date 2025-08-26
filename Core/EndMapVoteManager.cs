@@ -270,7 +270,7 @@ namespace cs2_rockthevote
             foreach (var player in ServerManager.ValidPlayers())
             {
                 var menu = MenuManager.MenuByType(menuType, title, _plugin!);
-                if (menu is CenterHtmlMenu)
+                if (menu is ChatMenu)
                     menu.ExitButton = false;
 
                 //if (menu is WasdMenu wasd)
