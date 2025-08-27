@@ -8,6 +8,7 @@ using cs2_rockthevote.Core;
 using System.Data;
 using Microsoft.Extensions.Logging;
 using CS2MenuManager.API.Menu;
+using System.Drawing;
 
 namespace cs2_rockthevote
 {
@@ -198,12 +199,105 @@ namespace cs2_rockthevote
                 );
             }
         }
+        
+        private void DisplayGameHintForAll(IEnumerable<CCSPlayerController> targets, float seconds = 5f)
+        {
+            Server.ExecuteCommand("sv_gameinstructor_enable true");
+
+            string text = _localizer.LocalizeWithPrefix("emv.vote-started");
+
+            foreach (var player in targets)
+            {
+                if (player == null || !player.IsValid) continue;
+
+                player.ReplicateConVar("sv_gameinstructor_enable", "true");
+
+                new Timer(0.25f, () =>
+                {
+                    ShowHudInstructorHint(
+                        controller: player,
+                        text: text,
+                        seconds: seconds,
+                        iconOnScreen: "",
+                        iconOffScreen: "",
+                        bindingCmd: "use_binding",
+                        color: Color.FromArgb(255, 255, 0, 0)
+                    );
+                }, TimerFlags.STOP_ON_MAPCHANGE);
+            }
+
+            new Timer(seconds, () =>
+            {
+                Server.ExecuteCommand("sv_gameinstructor_enable false");
+                foreach (var p in targets)
+                    if (p != null && p.IsValid)
+                        p.ReplicateConVar("sv_gameinstructor_enable", "false");
+            }, TimerFlags.STOP_ON_MAPCHANGE);
+        }
+
+        private void ShowHudInstructorHint(CCSPlayerController controller, string text, float seconds, string iconOnScreen, string iconOffScreen, string bindingCmd, Color color, float iconHeightOffset = 0f)
+        {
+            var pawn = controller.PlayerPawn?.Value;
+            if (pawn is null || !pawn.IsValid)
+                return;
+
+            var hint = Utilities.CreateEntityByName<CEnvInstructorHint>("env_instructor_hint");
+            if (hint is null) return;
+
+            hint.Static = true;
+
+            hint.Caption = text;
+            hint.Timeout = (int)MathF.Max(0, seconds);
+            hint.Icon_Onscreen = iconOnScreen;
+            hint.Icon_Offscreen = iconOffScreen;
+            hint.Binding = bindingCmd;
+            hint.Color = color;
+
+            hint.IconOffset = iconHeightOffset;
+            hint.Range = 0f;
+            hint.NoOffscreen = false;
+            hint.ForceCaption = false;
+
+            hint.DispatchSpawn();
+
+            hint.AcceptInput("ShowHint", pawn, pawn);
+
+            if (seconds > 0)
+                RemoveEntity(hint, seconds + 0.25f);
+
+            new Timer(5f, () =>
+            {
+                Server.ExecuteCommand("sv_gameinstructor_enable false");
+                controller.ReplicateConVar("sv_gameinstructor_enable", "false");
+            });
+        }
+
+        private void RemoveEntity(CEnvInstructorHint entity, float time = 0.0f)
+        {
+            if (time == 0.0f)
+            {
+                if (entity.IsValid)
+                {
+                    entity.AcceptInput("Kill");
+                }
+            }
+            else if (time > 0.0f)
+            {
+                new Timer(time, () =>
+                {
+                    if (entity.IsValid)
+                    {
+                        entity.AcceptInput("Kill");
+                    }
+                }, TimerFlags.STOP_ON_MAPCHANGE);
+            }
+        }
 
         public void StartVote(bool isRtv)
         {
             if (_pluginState.EofVoteHappening)
                 return;
-            
+
             VotedPlayers.Clear();
 
             if (_rtvConfig.EnablePanorama)
@@ -226,8 +320,8 @@ namespace cs2_rockthevote
 
             int mapsToShow = !isRtv
                 ? (_endMapConfig.MapsToShow == 0 ? MaxOptionsHud : _endMapConfig.MapsToShow)
-                : (_rtvConfig.MapsToShow    == 0 ? MaxOptionsHud : _rtvConfig.MapsToShow);
-            
+                : (_rtvConfig.MapsToShow == 0 ? MaxOptionsHud : _rtvConfig.MapsToShow);
+
             // Cap for CenterHtmlMenu (HUD) pages
             if (string.Equals(_endMapConfig.MenuType?.Trim(), "CenterHtmlMenu", StringComparison.Ordinal)
                 && mapsToShow > MaxOptionsHud)
@@ -266,8 +360,12 @@ namespace cs2_rockthevote
                 ? resolvedType
                 : MenuTypeManager.GetDefaultMenu();
 
+            var players = ServerManager.ValidPlayers()
+                .Where(p => p != null && p.IsValid)
+                .ToList();
+
             // Open Menu (config dependant)
-            foreach (var player in ServerManager.ValidPlayers())
+            foreach (var player in players)
             {
                 var menu = MenuManager.MenuByType(menuType, title, _plugin!);
                 if (menu is ChatMenu)
@@ -293,7 +391,12 @@ namespace cs2_rockthevote
                 if (_endMapConfig.SoundEnabled)
                     player.ExecuteClientCommand($"play {_endMapConfig.SoundPath}");
             }
-            
+
+            if (_endMapConfig.EnableHint)
+            {
+                DisplayGameHintForAll(players, seconds: 5f);
+            }
+
             ChatCountdown(isRtv ? _rtvConfig.MapVoteDuration : _endMapConfig.VoteDuration);
 
             TimeLeft = isRtv ? _rtvConfig.MapVoteDuration : _endMapConfig.VoteDuration;

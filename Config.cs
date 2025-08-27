@@ -41,6 +41,7 @@ namespace cs2_rockthevote
         public bool EnableCountdown { get; set; } = false;
         public string CountdownType { get; set; } = "chat";
         public int ChatCountdownInterval { get; set; } = 30;
+        public bool EnableHint { get; set; } = false;
     }
 
     public class VotemapConfig
@@ -100,7 +101,7 @@ namespace cs2_rockthevote
     public class Config : BasePluginConfig, IBasePluginConfig
     {
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 18;
+        public override int Version { get; set; } = 19;
         public RtvConfig Rtv { get; set; } = new();
         public EndOfMapConfig EndOfMapVote { get; set; } = new();
         public NominateConfig Nominate { get; set; } = new();

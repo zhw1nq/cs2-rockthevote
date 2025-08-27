@@ -33,6 +33,7 @@
   "nominate.multiple-maps": "Which map did you mean:",
 
   "general.votes-needed": "({0} voted, {1} needed)",
+  "general.votes-basic": "({lime}{1} {default}votes needed)",
   "general.invalid-map": "{lightred}Invalid map",
   "general.validation.map-played-recently": "Map has been played recently",
   "general.validation.current-map": "{lightred}You can't choose the current map",
@@ -58,13 +59,15 @@
   "rtv.cooldown": "{lightred}Command is on cooldown. ({white}{0}{red} seconds remaining)",
   "rtv.time-up": "{lightred}Not enough players voted during the time limit.",
   "rtv.ui-question": "a different map",
+  "rtv.instructions": "Use {lime}!rtv {default} to cast your vote!",
 
-  "emv.you-voted": "You voted for {0}",
+  "emv.you-voted": "You voted for {green}{0}",
   "emv.vote-started": "Voting for the next map has started, make your pick!",
   "emv.vote-ended": "Vote ended the next map will be {green}{0}{default} ({1:N2}% of {2} vote(s))",
   "emv.vote-ended-no-votes": "No votes, the next map will be {green}{0}",
   "emv.screenmenu-title": "Map Vote:",
   "emv.hud.menu-title": "Vote for the next map:",
+  "emv.game-instructor": "Vote for the next map in chat!   ",
   "emv.hud.timer": "Vote for the next map: {0}s",
   "emv.hud.finished": "Vote finished, next map: {0}",
 
