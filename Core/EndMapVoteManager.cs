@@ -204,7 +204,7 @@ namespace cs2_rockthevote
         {
             Server.ExecuteCommand("sv_gameinstructor_enable true");
 
-            string text = _localizer.LocalizeWithPrefix("emv.vote-started");
+            string text = _localizer.Localize("emv.vote-started");
 
             foreach (var player in targets)
             {
