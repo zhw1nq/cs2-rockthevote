@@ -86,7 +86,16 @@ namespace cs2_rockthevote
         private IEnumerable<CCSPlayerController> EligiblePlayers()
         {
             var players = ServerManager.ValidPlayers().Where(p => p.ReallyValid());
-            return _generalConfig.IncludeAFK ? players : players.Where(p => !_afk.IsAfk(p));
+
+            // Exclude spectators if configured
+            if (!_generalConfig.IncludeSpectator)
+                players = players.Where(p => p.Team != CsTeam.Spectator);
+
+            // Exclude AFK if configured
+            if (!_generalConfig.IncludeAFK)
+                players = players.Where(p => !_afk.IsAfk(p));
+
+            return players;
         }
 
         private int EligibleCount()
@@ -183,8 +192,10 @@ namespace cs2_rockthevote
                     Server.ExecuteCommand("sv_vote_allow_in_warmup 1");
                     Server.ExecuteCommand("sv_vote_allow_spectators 1");
                     Server.ExecuteCommand("sv_vote_count_spectator_votes 1");
+                    
+                    bool needsFilter = !_generalConfig.IncludeAFK || !_generalConfig.IncludeSpectator;
 
-                    if (_generalConfig.IncludeAFK)
+                    if (!needsFilter)
                     {
                         PanoramaVote.SendYesNoVoteToAll(
                             _config.RtvVoteDuration,
@@ -200,9 +211,9 @@ namespace cs2_rockthevote
                         _afk.CheckAllPlayers();
 
                         var eligible = EligiblePlayers().ToList(); // this should already exclude AFK
-                        Server.PrintToConsole($"[RockTheVote] Eligible (non-AFK) players = {eligible.Count}: " +
+                        Server.PrintToConsole($"[RockTheVote] RTV vote started. Eligible (non-AFK) players = {eligible.Count}: " +
                             string.Join(", ", eligible.Select(Tag)));
-                        
+
                         // Build recipient list excluding afk's
                         var filter = new RecipientFilter();
                         foreach (var p in eligible)
@@ -231,7 +242,23 @@ namespace cs2_rockthevote
                 {
                     if (!_generalConfig.IncludeAFK)
                         _afk.CheckAllPlayers();
-                        
+                    
+                    // Block spectators from voting when excluded
+                    if (!_generalConfig.IncludeSpectator && player.Team == CsTeam.Spectator)
+                    {
+                        // "Spectators are excluded from this vote."
+                        player.PrintToChat($"{_localizer.LocalizeWithPrefix("general.spectator")}");
+                        return;
+                    }
+
+                    // Block AFK voters when excluded & tell them why
+                    if (!_generalConfig.IncludeAFK && _afk.IsAfk(player))
+                    {
+                        // "You were AFK when the vote was initiated. You can't participate in this vote."
+                        player.PrintToChat($"{_localizer.LocalizeWithPrefix("general.afk")}");
+                        return;
+                    }
+
                     // Add the vote first
                     VoteResult result = _voteManager!.AddVote(player.UserId!.Value);
 
