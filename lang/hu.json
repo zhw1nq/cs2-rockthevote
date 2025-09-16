@@ -48,6 +48,7 @@
   "general.vote-in-progress": "{lightred} Már folyamatban van egy szavazás, kérjük, várja meg, amíg befejeződik.",
   "general.timeleft": "Hátralévő idő: {lime}{0} {default}(óó/pp/mm)",
   "general.choose.map": "Válasszon egy térképet:",
+  "general.eligible": "Nincsenek jogosult játékosok, a szavazás törölve.",
 
   "rtv.rocked-the-vote": "{green}{0}{default} szavazást akar indítani!",
   "rtv.already-rocked-the-vote": "Már szavaztál",

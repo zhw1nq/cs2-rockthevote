@@ -49,6 +49,7 @@
   "general.vote-in-progress": "{lightred} There is already a vote in progress, please wait for it to finish.",
   "general.timeleft": "Time Remaining: {lime}{0} {default}(hh/mm/ss)",
   "general.choose.map": "Choose a Map:",
+  "general.eligible": "There are no eligible players, vote cancelled.",
 
   "rtv.rocked-the-vote": "{green}{0}{default} wants to rock the vote!",
   "rtv.already-rocked-the-vote": "You already rocked the vote",

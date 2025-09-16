@@ -48,6 +48,7 @@
     "general.vote-in-progress": "{lightred} Ya hay una votación en curso, espera a que termine.",
     "general.timeleft": "Tiempo restante: {lime}{0} {default}(hh/mm/ss)",
     "general.choose.map": "Elija un mapa:",
+    "general.eligible": "No hay jugadores elegibles, votación cancelada.",
 
     "rtv.rocked-the-vote": "¡{green}{0}{default} quiere arrasar en la votación!",
     "rtv.already-rocked-the-vote": "Ya arrasaste en la votación",

@@ -48,6 +48,7 @@
   "general.vote-in-progress": "{lightred} Jau notiek balsošana, lūdzu, uzgaidiet, līdz tā beigsies.",
   "general.timeleft": "Atlikušais laiks: {lime}{0} {default}(hh/mm/ss)",
   "general.choose.map": "Izvēlieties karti:",
+  "general.eligible": "Nav neviena tiesīga spēlētāja, balsojums atcelts.",
 
   "rtv.rocked-the-vote": "{green}{0}{default} vēlas mainīt balsošanas rezultātu!",
   "rtv.already-rocked-the-vote": "Jūs jau esat veicis izmaiņas balsošanas rezultātos",

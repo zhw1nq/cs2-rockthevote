@@ -48,6 +48,7 @@
   "general.vote-in-progress": "{lightred} Trwa już głosowanie, proszę czekać na jego zakończenie.",
   "general.timeleft": "Pozostały czas: {lime}{0} {default}(gg/mm/ss)",
   "general.choose.map": "Wybierz mapę:",
+  "general.eligible": "Brak uprawnionych graczy, głosowanie anulowane.",
 
   "rtv.rocked-the-vote": "{green}{0}{default} chce wygrać głosowanie!",
   "rtv.already-rocked-the-vote": "Już wygrałeś głosowanie",
