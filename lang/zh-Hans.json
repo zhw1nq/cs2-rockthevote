@@ -49,6 +49,8 @@
   "general.timeleft": "剩余时间：{lime}{0} {default}(hh/mm/ss)",
   "general.choose.map": "选择地图:",
   "general.eligible": "没有符合条件的玩家，投票取消。",
+  "general.spectator": "观众无法参与本次投票。",
+  "general.afk": "投票开始时您处于离线状态。您无法参与本次投票。",
 
   "rtv.rocked-the-vote": "{green}{0}{default} 想要在投票中大放异彩！",
   "rtv.already-rocked-the-vote": "您已经大放异彩！",

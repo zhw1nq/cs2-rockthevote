@@ -49,6 +49,8 @@
   "general.timeleft": "Hátralévő idő: {lime}{0} {default}(óó/pp/mm)",
   "general.choose.map": "Válasszon egy térképet:",
   "general.eligible": "Nincsenek jogosult játékosok, a szavazás törölve.",
+  "general.spectator": "A nézők nem vehetnek részt ezen a szavazáson.",
+  "general.afk": "A szavazás kezdeményezésekor AFK voltál. Nem vehetsz részt ebben a szavazásban.",
 
   "rtv.rocked-the-vote": "{green}{0}{default} szavazást akar indítani!",
   "rtv.already-rocked-the-vote": "Már szavaztál",

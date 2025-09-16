@@ -49,6 +49,8 @@
   "general.timeleft": "Atlikušais laiks: {lime}{0} {default}(hh/mm/ss)",
   "general.choose.map": "Izvēlieties karti:",
   "general.eligible": "Nav neviena tiesīga spēlētāja, balsojums atcelts.",
+  "general.spectator": "Skatītāji šajā balsojumā nevar piedalīties.",
+  "general.afk": "Jūs bijāt izslēgts, kad balsošana tika uzsākta. Jūs nevarat piedalīties šajā balsojumā.",
 
   "rtv.rocked-the-vote": "{green}{0}{default} vēlas mainīt balsošanas rezultātu!",
   "rtv.already-rocked-the-vote": "Jūs jau esat veicis izmaiņas balsošanas rezultātos",

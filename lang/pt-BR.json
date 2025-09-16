@@ -49,6 +49,8 @@
   "general.timeleft": "Tempo restante: {lime}{0} {default}(hh/mm/ss)",
   "general.choose.map": "Escolha um mapa:",
   "general.eligible": "Não há jogadores elegíveis, votação cancelada.",
+  "general.spectator": "Espectadores estão excluídos desta votação.",
+  "general.afk": "Você estava AFK quando a votação foi iniciada. Você não pode participar desta votação.",
 
   "rtv.rocked-the-vote": "{green}{0}{default} quer agitar a votação!",
   "rtv.already-rocked-the-vote": "Você já arrasou na votação",

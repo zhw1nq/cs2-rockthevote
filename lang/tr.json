@@ -49,6 +49,8 @@
   "general.timeleft": "Kalan Süre: {lime}{0} {default}(ss/dd/ss)",
   "general.choose.map": "Bir Harita Seçin:",
   "general.eligible": "Uygun oyuncu bulunamadı, oylama iptal edildi.",
+  "general.spectator": "Seyirciler bu oylamaya dahil edilmemiştir.",
+  "general.afk": "Oylama başlatıldığında AFK'tınız. Bu oylamaya katılamazsınız.",
 
   "rtv.rocked-the-vote": "{green}{0}{default} oyu sallamak istiyor!",
   "rtv.already-rocked-the-vote": "Oyu sallamışsınız bile",

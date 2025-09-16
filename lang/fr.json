@@ -49,6 +49,8 @@
   "general.timeleft": "Temps restant: {lime}{0} {default}(hh/mm/ss)",
   "general.choose.map": "Choisissez une carte:",
   "general.eligible": "Il n'y a aucun joueur éligible, vote annulé.",
+  "general.spectator": "Les spectateurs sont exclus de ce vote.",
+  "general.afk": "Vous étiez absent au moment du vote. Vous ne pouvez pas participer à ce vote.",
   
   "rtv.rocked-the-vote": "{green}{0}{default} veut faire basculer le vote!",
   "rtv.already-rocked-the-vote" : "Vous avez déjà fait basculer le vote",

@@ -49,6 +49,8 @@
   "general.timeleft": "Pozostały czas: {lime}{0} {default}(gg/mm/ss)",
   "general.choose.map": "Wybierz mapę:",
   "general.eligible": "Brak uprawnionych graczy, głosowanie anulowane.",
+  "general.spectator": "Widzowie są wykluczeni z tego głosowania.",
+  "general.afk": "Byłeś AFK w momencie rozpoczęcia głosowania. Nie możesz wziąć udziału w tym głosowaniu.",
 
   "rtv.rocked-the-vote": "{green}{0}{default} chce wygrać głosowanie!",
   "rtv.already-rocked-the-vote": "Już wygrałeś głosowanie",
