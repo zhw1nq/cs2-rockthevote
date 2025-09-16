@@ -28,6 +28,7 @@ namespace cs2_rockthevote
         private readonly Dictionary<uint, Vector> _lastOrigin = new();
         private readonly HashSet<uint> _afkPlayers = new();
         private Timer? _timer;
+        private DateTime _lastCheckUtc = DateTime.MinValue;
 
         public AFKManager() { }
 
@@ -55,7 +56,7 @@ namespace cs2_rockthevote
             _afkPlayers.Clear();
             _lastOrigin.Clear();
 
-            if (!_generalConfig.IncludeAFK)
+            if (_generalConfig.IncludeAFK)
             {
                 KillAFKTimer();
                 return;
@@ -71,19 +72,21 @@ namespace cs2_rockthevote
             _timer = _plugin!.AddTimer(
                 _generalConfig.AFKCheckInterval,
                 CheckAllPlayers,
-                TimerFlags.REPEAT
+                TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE
             );
         }
 
         public void InitializeLastOrigins(CCSPlayerController player, float delaySeconds = 1.0f)
         {
-            if (_plugin == null) return; // defensive
+            if (_plugin == null) return;
 
             _plugin.AddTimer(delaySeconds, () =>
             {
                 // player might have disconnected or switched; re-check validity
                 if (player == null || !player.IsValid || !player.ReallyValid())
                     return;
+                
+                _afkPlayers.Remove(player.Index);
 
                 var origin = player.PlayerPawn.Value?.CBodyComponent?.SceneNode?.AbsOrigin;
                 if (origin != null)
@@ -93,7 +96,7 @@ namespace cs2_rockthevote
             Server.PrintToConsole($"[AFKManager] Checked position for player: {player.PlayerName}. Position: {player.PlayerPawn.Value?.CBodyComponent?.SceneNode?.AbsOrigin}");
         }
 
-        private void CheckAllPlayers()
+        public void CheckAllPlayers()
         {
             foreach (var player in Utilities.GetPlayers().Where(p => p.ReallyValid()))
             {
@@ -110,7 +113,7 @@ namespace cs2_rockthevote
                     float dz = current.Z - last.Z;
                     float distSq = dx * dx + dy * dy + dz * dz;
 
-                    if (distSq < 0.01f)
+                    if (distSq <= 1.0f)
                         _afkPlayers.Add(idx);
                     else
                     {
@@ -123,6 +126,8 @@ namespace cs2_rockthevote
                     _lastOrigin[idx] = current;
                 }
             }
+
+            _lastCheckUtc = DateTime.UtcNow;
         }
 
         public void KillAFKTimer()
