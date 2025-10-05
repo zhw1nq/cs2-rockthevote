@@ -2,8 +2,9 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
-using CS2MenuManager.API.Class;
 using Microsoft.Extensions.Logging;
+using Menu;
+using Menu.Enums;
 
 namespace cs2_rockthevote
 {
@@ -13,6 +14,7 @@ namespace cs2_rockthevote
         private readonly StringLocalizer _localizer;
         private readonly MapLister _mapLister;
         private Plugin? _plugin;
+        private KitsuneMenu? _menuManager;
 
         private string[] _permission = ["@css/root"];
         private MapChooserConfig _config = new();
@@ -27,17 +29,18 @@ namespace cs2_rockthevote
         public void OnLoad(Plugin plugin)
         {
             _plugin = plugin;
+            _menuManager = new KitsuneMenu(plugin, multiCast: false);
         }
 
         public void OnConfigParsed(Config config)
         {
             _config = config.MapChooser;
             _permission = string.IsNullOrWhiteSpace(_config.Permission)
-            ? Array.Empty<string>()
-            : [.. _config.Permission
-                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Where(p => !string.IsNullOrWhiteSpace(p))
-                .Distinct(StringComparer.Ordinal)];
+                ? Array.Empty<string>()
+                : [.. _config.Permission
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .Where(p => !string.IsNullOrWhiteSpace(p))
+                    .Distinct(StringComparer.Ordinal)];
 
             if (string.IsNullOrWhiteSpace(_config.Command))
                 return;
@@ -53,7 +56,7 @@ namespace cs2_rockthevote
 
         private void ExecuteCommand(CCSPlayerController? player, CommandInfo info)
         {
-            if (player == null || !player.IsValid)
+            if (player?.IsValid != true)
                 return;
 
             if (_permission.Length > 0)
@@ -65,33 +68,35 @@ namespace cs2_rockthevote
                     return;
                 }
             }
+
             var maps = _mapLister.Maps;
             if (maps is null || maps.Length == 0)
                 return;
 
-            var menuType = MenuManager.MenuTypesList.TryGetValue(_config.MenuType ?? "", out var resolvedType)
-                ? resolvedType
-                : MenuTypeManager.GetDefaultMenu();
-
-            var menu = MenuManager.MenuByType(menuType, _localizer.Localize("general.choose.map"), _plugin!);
+            var title = _localizer.Localize("general.choose.map");
+            var items = new List<MenuItem> { new(MenuItemType.Spacer) };
 
             foreach (var map in maps)
             {
-                menu.AddItem(map.Name, (p, _) =>
-                {
-                    if (p == null || !p.IsValid)
-                        return;
+                var mapName = map.Name;
+                var mapId = map.Id;
 
-                    MenuManager.CloseActiveMenu(p);
+                items.Add(new MenuItem(MenuItemType.Button, new MenuValue(mapName + " "),
+                    [new MenuButtonCallback("→", mapName, (ctrl, _) =>
+                    {
+                        if (ctrl?.IsValid != true) return;
 
-                    if (!string.IsNullOrEmpty(map.Id) && ulong.TryParse(map.Id, out var mapId))
-                        Server.ExecuteCommand($"host_workshop_map {mapId}");
-                    else
-                        Server.ExecuteCommand($"changelevel {map.Name}");
-                });
+                        _menuManager!.ClearMenus(ctrl);
+
+                        if (!string.IsNullOrEmpty(mapId) && ulong.TryParse(mapId, out var id))
+                            Server.ExecuteCommand($"host_workshop_map {id}");
+                        else
+                            Server.ExecuteCommand($"changelevel {mapName}");
+                    })]
+                ));
             }
 
-            menu.Display(player, 0);
+            _menuManager!.ShowScrollableMenu(player, title, items, null, false, false, 10);
         }
     }
 }

@@ -45,30 +45,6 @@ namespace cs2_rockthevote
         {
             KillTimer();
             _voteManager.StartVote(isRtv: false);
-            /*if (_config.Enabled)
-            {
-                if (_config.MenuType == "ScreenMenu" && PanoramaVote.IsVoteInProgress())
-                {
-                    PanoramaVote.EndVote(YesNoVoteEndReason.VoteEnd_Cancelled, overrideFailCode: 0);
-                    _plugin?.AddTimer(
-                        3.5f, () =>
-                        {
-                            try
-                            {
-                                _voteManager.StartVote(isRtv: false);
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex, "Vote start timer callback failed");
-                            }
-                        }, TimerFlags.STOP_ON_MAPCHANGE
-                    );
-                }
-                else
-                {
-                    _voteManager.StartVote(isRtv: false);
-                }
-            }*/
         }
 
         public void OnMapStart(string map)

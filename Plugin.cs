@@ -9,7 +9,6 @@ using CounterStrikeSharp.API.Modules.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Localization;
-using CS2MenuManager.API.Class;
 
 namespace cs2_rockthevote
 {
@@ -26,12 +25,8 @@ namespace cs2_rockthevote
     }
 
     public partial class Plugin(DependencyManager<Plugin, Config> dependencyManager,
-        NominationCommand nominationManager,
         ChangeMapManager changeMapManager,
-        VotemapCommand voteMapManager,
         RockTheVoteCommand rtvManager,
-        ExtendRoundTimeCommand extendRoundTime,
-        VoteExtendRoundTimeCommand voteExtendRoundTime,
         TimeLeftCommand timeLeft,
         MaplistCommand maplistManager,
         AFKManager afkManager,
@@ -41,16 +36,12 @@ namespace cs2_rockthevote
     {
         public override string ModuleName => "RockTheVote";
         public override string ModuleVersion => "2.1.1";
-        public override string ModuleAuthor => "abnerfs (Updated by Marchand)";
+        public override string ModuleAuthor => "abnerfs (Updated by Marchand) (Updated more by zhw1nq)";
 
         private readonly DependencyManager<Plugin, Config> _dependencyManager = dependencyManager;
-        private readonly NominationCommand _nominationManager = nominationManager;
         private readonly ChangeMapManager _changeMapManager = changeMapManager;
-        private readonly VotemapCommand _votemapManager = voteMapManager;
         private readonly RockTheVoteCommand _rtvManager = rtvManager;
         private readonly AFKManager _afkManager = afkManager;
-        private readonly ExtendRoundTimeCommand _extendRoundTime = extendRoundTime;
-        private readonly VoteExtendRoundTimeCommand _voteExtendRoundTime = voteExtendRoundTime;
         private readonly TimeLeftCommand _timeLeft = timeLeft;
         private readonly MaplistCommand _maplistManager = maplistManager;
         private StringLocalizer _localizer = new(stringLocalizer, "rtv.prefix");
@@ -77,23 +68,11 @@ namespace cs2_rockthevote
                 return HookResult.Continue;
             });
         }
-        
+
         public override void OnAllPluginsLoaded(bool hotReload)
         {
-            // Check for CS2MenuManager installation
-            try
-            {
-                var dummy = MenuManager.MenuTypesList;
-                _hasMenuManager = true;
-            }
-            catch (Exception)
-            {
-                _hasMenuManager = false;
-                Server.PrintToConsole("CS2MenuManager API not found! It is required to use RockTheVote. Download it from here: https://github.com/schwarper/CS2MenuManager");
-                Logger.LogWarning("CS2MenuManager API not found! It is required to use RockTheVote. Download it from here: https://github.com/schwarper/CS2MenuManager");
-            }
         }
-        
+
         public override void Unload(bool hotReload)
         {
             RemoveListener<OnMapStart>(_dependencyManager.OnMapStart);
@@ -108,33 +87,6 @@ namespace cs2_rockthevote
                 Logger.LogWarning($"Configuration version mismatch (Expected: {0} | Current: {1})", Config.Version, config.Version);
         }
 
-        /*
-        [GameEventHandler]
-        public HookResult OnClientSay(EventPlayerChat @event, GameEventInfo info)
-        {
-            var player = Utilities.GetPlayerFromUserid(@event.Userid);
-
-            if (player == null || !player.IsValid || player.IsBot || string.IsNullOrEmpty(@event.Text))
-                return HookResult.Continue;
-
-            string message = @event.Text.Trim();
-
-            if (message.StartsWith("!") && message.Length == 2 && char.IsDigit(message[1]))
-            {
-                int key = message[1] - '0';
-
-                var menu = CS2MenuManager.API.Class.MenuManager.GetActiveMenu(player);
-                if (menu != null && _pluginState.EofVoteHappening && Config.ScreenMenu.EnableChatHelper == true)
-                {
-                    CS2MenuManager.API.Class.MenuManager.OnKeyPress(player, key);
-                    return HookResult.Handled;
-                }
-            }
-
-            return HookResult.Continue;
-        }
-        */
-
         [ConsoleCommand("css_reloadrtv", "Reloads the RTV config.")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
         public void ReloadCommand(CCSPlayerController? player, CommandInfo command)
@@ -146,7 +98,7 @@ namespace cs2_rockthevote
                 command?.ReplyToCommand($"[RTV] {ChatColors.Red}You do not have the correct permission to execute this command.");
                 return;
             }
-            
+
             try
             {
                 Config.Reload();
