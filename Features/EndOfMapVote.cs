@@ -21,24 +21,24 @@ namespace cs2_rockthevote
         private readonly PluginState _pluginState = pluginState;
         private readonly GameRules _gameRules = gameRules;
         private readonly EndMapVoteManager _voteManager = voteManager;
-        
+
         private EndOfMapConfig _config = new();
         private Timer? _timer;
         private bool _hasInitializedTimer;
-        
+
         // Cache ConVar lookups
         private ConVar? _gameType;
         private ConVar? _gameMode;
         private int? _cachedGameType;
         private int? _cachedGameMode;
-        
-        private bool DeathMatch => 
-            (_cachedGameMode ?? (_cachedGameMode = _gameMode?.GetPrimitiveValue<int>())) == 2 && 
+
+        private bool DeathMatch =>
+            (_cachedGameMode ?? (_cachedGameMode = _gameMode?.GetPrimitiveValue<int>())) == 2 &&
             (_cachedGameType ?? (_cachedGameType = _gameType?.GetPrimitiveValue<int>())) == 1;
 
-        private bool ShouldSkipVote => 
-            _pluginState.DisableCommands || 
-            (_gameRules?.WarmupRunning ?? false) || 
+        private bool ShouldSkipVote =>
+            _pluginState.DisableCommands ||
+            (_gameRules?.WarmupRunning ?? false) ||
             !_config.Enabled;
 
         private bool CheckMaxRounds()
@@ -49,13 +49,13 @@ namespace cs2_rockthevote
             if (_maxRounds.RemainingRounds <= _config.TriggerRoundsBeforeEnd)
                 return true;
 
-            return _maxRounds.CanClinch && 
+            return _maxRounds.CanClinch &&
                    _maxRounds.RemainingWins <= _config.TriggerRoundsBeforeEnd;
         }
 
         private bool CheckTimeLeft()
         {
-            return !_timeLimit.UnlimitedTime && 
+            return !_timeLimit.UnlimitedTime &&
                    _timeLimit.TimeRemaining <= _config.TriggerSecondsBeforeEnd;
         }
 
@@ -86,7 +86,7 @@ namespace cs2_rockthevote
         private void MaybeStartTimer(Plugin plugin)
         {
             KillTimer();
-            
+
             if (_timeLimit.UnlimitedTime || !_config.Enabled)
                 return;
 

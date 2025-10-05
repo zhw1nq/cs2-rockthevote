@@ -43,8 +43,8 @@ namespace cs2_rockthevote
     }
     public class MapChooserConfig
     {
-        public string Command { get; set; } = "mapmenu,mm";
-        public string Permission { get; set; } = "@css/changemap";
+        public string Command { get; set; } = "mm";
+        public string Permission { get; set; } = "@scolor/staff";
     }
 
     public class GeneralConfig
