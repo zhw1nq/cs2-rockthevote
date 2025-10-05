@@ -74,29 +74,29 @@ namespace cs2_rockthevote
                 return;
 
             var title = _localizer.Localize("general.choose.map");
-            var items = new List<MenuItem> { new(MenuItemType.Spacer) };
+            var items = new List<MenuItem> { };
 
             foreach (var map in maps)
             {
                 var mapName = map.Name;
                 var mapId = map.Id;
 
-                items.Add(new MenuItem(MenuItemType.Button, new MenuValue(mapName + " "),
-                    [new MenuButtonCallback("→", mapName, (ctrl, _) =>
-                    {
-                        if (ctrl?.IsValid != true) return;
+                items.Add(new MenuItem(MenuItemType.Button, new MenuValue(string.Empty),
+                    [new MenuButtonCallback(mapName, mapName, (ctrl, _) =>
+            {
+                if (ctrl?.IsValid != true) return;
 
-                        _menuManager!.ClearMenus(ctrl);
+                _menuManager!.ClearMenus(ctrl);
 
-                        if (!string.IsNullOrEmpty(mapId) && ulong.TryParse(mapId, out var id))
-                            Server.ExecuteCommand($"host_workshop_map {id}");
-                        else
-                            Server.ExecuteCommand($"changelevel {mapName}");
-                    })]
+                if (!string.IsNullOrEmpty(mapId) && ulong.TryParse(mapId, out var id))
+                    Server.ExecuteCommand($"host_workshop_map {id}");
+                else
+                    Server.ExecuteCommand($"changelevel {mapName}");
+            })]
                 ));
             }
 
-            _menuManager!.ShowScrollableMenu(player, title, items, null, false, false, 10);
+            _menuManager!.ShowScrollableMenu(player, title, items, null, false, false, 5);
         }
     }
 }

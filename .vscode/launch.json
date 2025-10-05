@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": ".NET Build Release",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "dotnet",
+            "args": [
+                "build",
+                "-R",
+                "release"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "stopAtEntry": false
+        }
+    ]
+}

@@ -7,38 +7,56 @@ using Microsoft.Extensions.Logging;
 
 namespace cs2_rockthevote
 {
-    public class EndOfMapVote(TimeLimitManager timeLimit, MaxRoundsManager maxRounds, PluginState pluginState, GameRules gameRules, EndMapVoteManager voteManager, ILogger<EndOfMapVote> logger) : IPluginDependency<Plugin, Config>
+    public class EndOfMapVote(
+        TimeLimitManager timeLimit,
+        MaxRoundsManager maxRounds,
+        PluginState pluginState,
+        GameRules gameRules,
+        EndMapVoteManager voteManager,
+        ILogger<EndOfMapVote> logger) : IPluginDependency<Plugin, Config>
     {
         private readonly ILogger<EndOfMapVote> _logger = logger;
-        private TimeLimitManager _timeLimit = timeLimit;
-        private MaxRoundsManager _maxRounds = maxRounds;
-        private PluginState _pluginState = pluginState;
-        private GameRules _gameRules = gameRules;
-        private EndMapVoteManager _voteManager = voteManager;
+        private readonly TimeLimitManager _timeLimit = timeLimit;
+        private readonly MaxRoundsManager _maxRounds = maxRounds;
+        private readonly PluginState _pluginState = pluginState;
+        private readonly GameRules _gameRules = gameRules;
+        private readonly EndMapVoteManager _voteManager = voteManager;
+        
         private EndOfMapConfig _config = new();
         private Timer? _timer;
-        private bool DeathMatch => _gameMode?.GetPrimitiveValue<int>() == 2 && _gameType?.GetPrimitiveValue<int>() == 1;
+        private bool _hasInitializedTimer;
+        
+        // Cache ConVar lookups
         private ConVar? _gameType;
         private ConVar? _gameMode;
-        private Plugin? _plugin;
-        private bool _hasInitializedTimer = false;
+        private int? _cachedGameType;
+        private int? _cachedGameMode;
+        
+        private bool DeathMatch => 
+            (_cachedGameMode ?? (_cachedGameMode = _gameMode?.GetPrimitiveValue<int>())) == 2 && 
+            (_cachedGameType ?? (_cachedGameType = _gameType?.GetPrimitiveValue<int>())) == 1;
 
-        bool CheckMaxRounds()
+        private bool ShouldSkipVote => 
+            _pluginState.DisableCommands || 
+            (_gameRules?.WarmupRunning ?? false) || 
+            !_config.Enabled;
+
+        private bool CheckMaxRounds()
         {
-            //Server.PrintToChatAll($"Remaining rounds {_maxRounds.RemainingRounds}, remaining wins: {_maxRounds.RemainingWins}, triggerBefore {_config.TriggerRoundsBeforeEnd}");
             if (_maxRounds.UnlimitedRounds)
                 return false;
 
             if (_maxRounds.RemainingRounds <= _config.TriggerRoundsBeforeEnd)
                 return true;
 
-            return _maxRounds.CanClinch && _maxRounds.RemainingWins <= _config.TriggerRoundsBeforeEnd;
+            return _maxRounds.CanClinch && 
+                   _maxRounds.RemainingWins <= _config.TriggerRoundsBeforeEnd;
         }
 
-
-        bool CheckTimeLeft()
+        private bool CheckTimeLeft()
         {
-            return !_timeLimit.UnlimitedTime && _timeLimit.TimeRemaining <= _config.TriggerSecondsBeforeEnd;
+            return !_timeLimit.UnlimitedTime && 
+                   _timeLimit.TimeRemaining <= _config.TriggerSecondsBeforeEnd;
         }
 
         public void StartVote()
@@ -50,60 +68,68 @@ namespace cs2_rockthevote
         public void OnMapStart(string map)
         {
             KillTimer();
+            // Reset cached values on map change
+            _cachedGameType = null;
+            _cachedGameMode = null;
+            _hasInitializedTimer = false;
         }
 
-        void KillTimer()
+        private void KillTimer()
         {
-            _timer?.Kill();
-            _timer = null;
+            if (_timer != null)
+            {
+                _timer.Kill();
+                _timer = null;
+            }
+        }
+
+        private void MaybeStartTimer(Plugin plugin)
+        {
+            KillTimer();
+            
+            if (_timeLimit.UnlimitedTime || !_config.Enabled)
+                return;
+
+            _timer = plugin.AddTimer(1.0f, () =>
+            {
+                if (_gameRules == null || ShouldSkipVote || _timeLimit.TimeRemaining <= 0)
+                    return;
+
+                if (CheckTimeLeft())
+                    StartVote();
+            }, TimerFlags.REPEAT);
         }
 
         public void OnLoad(Plugin plugin)
         {
-            _plugin = plugin;
+            // Cache ConVar references
             _gameMode = ConVar.Find("game_mode");
             _gameType = ConVar.Find("game_type");
 
-            void MaybeStartTimer()
-            {
-                KillTimer();
-                if (!_timeLimit.UnlimitedTime && _config.Enabled)
-                {
-                    _timer = plugin.AddTimer(1.0F, () =>
-                    {
-                        if (_gameRules is not null && !_gameRules.WarmupRunning && !_pluginState.DisableCommands && _timeLimit.TimeRemaining > 0)
-                        {
-                            if (CheckTimeLeft())
-                                StartVote();
-                        }
-                    }, TimerFlags.REPEAT);
-                }
-            }
-
             plugin.RegisterEventHandler<EventRoundStart>((ev, info) =>
             {
+                if (ShouldSkipVote)
+                {
+                    if (DeathMatch)
+                        MaybeStartTimer(plugin);
+                    return HookResult.Continue;
+                }
 
-                if (!_pluginState.DisableCommands && !_gameRules.WarmupRunning && CheckMaxRounds() && _config.Enabled)
+                if (CheckMaxRounds())
                     StartVote();
                 else if (DeathMatch)
-                {
-                    MaybeStartTimer();
-                }
+                    MaybeStartTimer(plugin);
 
                 return HookResult.Continue;
             });
 
-
             plugin.RegisterEventHandler<EventRoundAnnounceMatchStart>((ev, info) =>
             {
                 if (_hasInitializedTimer)
-                {
-                    MaybeStartTimer();
-                }
+                    MaybeStartTimer(plugin);
                 else
-                {
                     _hasInitializedTimer = true;
-                }
+
                 return HookResult.Continue;
             });
         }

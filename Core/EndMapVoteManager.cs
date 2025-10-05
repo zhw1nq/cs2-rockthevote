@@ -237,16 +237,16 @@ namespace cs2_rockthevote
 
             foreach (var player in players)
             {
-                var items = new List<MenuItem> { new(MenuItemType.Spacer) };
+                var items = new List<MenuItem> { };
 
                 foreach (var opt in voteOptions)
                 {
                     var map = opt;
-                    items.Add(new MenuItem(MenuItemType.Button, new MenuValue(map + " "),
-                        [new MenuButtonCallback("Vote", map, (ctrl, data) => MapVoted(ctrl, data, isRtv))]));
+                    items.Add(new MenuItem(MenuItemType.Button, new MenuValue(string.Empty),
+                        [new MenuButtonCallback(map, map, (ctrl, data) => MapVoted(ctrl, data, isRtv))]));
                 }
 
-                _menuManager!.ShowScrollableMenu(player, title, items, null, false, false, 10);
+                _menuManager!.ShowScrollableMenu(player, title, items, null, false, false, 5);
 
                 if (_endMapConfig.SoundEnabled)
                     player.ExecuteClientCommand($"play {_endMapConfig.SoundPath}");
