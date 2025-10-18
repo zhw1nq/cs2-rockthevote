@@ -20,9 +20,6 @@ namespace cs2_rockthevote
         public int CooldownDuration { get; set; } = 180;
         public int MapStartDelay { get; set; } = 180;
         public int VotePercentage { get; set; } = 51;
-        public bool EnableCountdown { get; set; } = true;
-        public string CountdownType { get; set; } = "chat";
-        public int ChatCountdownInterval { get; set; } = 15;
     }
 
     public class EndOfMapConfig
@@ -36,10 +33,6 @@ namespace cs2_rockthevote
         public int TriggerSecondsBeforeEnd { get; set; } = 180;
         public int TriggerRoundsBeforeEnd { get; set; } = 0;
         public float DelayToChangeInTheEnd { get; set; } = 0F;
-        public bool EnableCountdown { get; set; } = false;
-        public string CountdownType { get; set; } = "chat";
-        public int ChatCountdownInterval { get; set; } = 30;
-        public bool EnableHint { get; set; } = false;
     }
     public class MapChooserConfig
     {
@@ -52,10 +45,6 @@ namespace cs2_rockthevote
         public int MapsInCoolDown { get; set; } = 3;
         public bool HideHudAfterVote { get; set; } = true;
         public bool RandomStartMap { get; set; } = false;
-        public bool IncludeSpectator { get; set; } = true;
-        public bool IncludeAFK { get; set; } = true;
-        public int AFKCheckInterval { get; set; } = 30;
-        public string DiscordWebhook { get; set; } = "";
     }
 
     public class Config : BasePluginConfig, IBasePluginConfig

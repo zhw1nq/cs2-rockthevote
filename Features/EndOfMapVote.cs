@@ -2,7 +2,6 @@
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Timers;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
-using cs2_rockthevote.Core;
 using Microsoft.Extensions.Logging;
 
 namespace cs2_rockthevote

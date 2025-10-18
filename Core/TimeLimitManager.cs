@@ -1,7 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Modules.Cvars;
 
-namespace cs2_rockthevote.Core
+namespace cs2_rockthevote
 {
     public class TimeLimitManager(GameRules gameRules) : IPluginDependency<Plugin, Config>
     {

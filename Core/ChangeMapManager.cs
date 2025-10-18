@@ -1,6 +1,7 @@
 ﻿using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Timers;
 
 namespace cs2_rockthevote
 {
@@ -24,16 +25,16 @@ namespace cs2_rockthevote
     public class ChangeMapManager : IPluginDependency<Plugin, Config>
     {
         private Plugin? _plugin;
-        private StringLocalizer _localizer;
-        private PluginState _pluginState;
-        private MapLister _mapLister;
+        private readonly StringLocalizer _localizer;
+        private readonly PluginState _pluginState;
+        private readonly MapLister _mapLister;
 
         public string? NextMap { get; private set; } = null;
         private string _prefix = DEFAULT_PREFIX;
         private const string DEFAULT_PREFIX = "rtv.prefix";
         private bool _mapEnd = false;
 
-        private Map[] _maps = new Map[0];
+        private Map[] _maps = [];
         private Config? _config;
 
         public ChangeMapManager(StringLocalizer localizer, PluginState pluginState, MapLister mapLister)
@@ -62,6 +63,8 @@ namespace cs2_rockthevote
         {
             NextMap = null;
             _prefix = DEFAULT_PREFIX;
+            _pluginState.MapChangeScheduled = false;
+            _mapEnd = false;
         }
 
         public bool ChangeNextMap(bool mapEnd = false)
@@ -72,12 +75,9 @@ namespace cs2_rockthevote
             if (!_pluginState.MapChangeScheduled)
                 return false;
 
-            Map? map = _maps.FirstOrDefault(x => string.Equals(x.Name, NextMap, StringComparison.OrdinalIgnoreCase));
+            var map = _maps.FirstOrDefault(x => string.Equals(x.Name, NextMap, StringComparison.OrdinalIgnoreCase));
             if (map == null)
-            {
-                Server.PrintToChatAll($"[RTV Debug] Could not resolve map object for '{NextMap}'");
                 return false;
-            }
 
             _pluginState.MapChangeScheduled = false;
 
@@ -85,19 +85,8 @@ namespace cs2_rockthevote
 
             _plugin?.AddTimer(3.0F, () =>
             {
-                if (Server.IsMapValid(map.Name))
-                {
-                    Server.ExecuteCommand($"changelevel {map.Name}");
-                }
-                else if (map.Id is not null)
-                {
-                    Server.ExecuteCommand($"host_workshop_map {map.Id}");
-                }
-                else
-                {
-                    Server.ExecuteCommand($"ds_workshop_changelevel {map.Name}");
-                }
-            });
+                Server.ExecuteCommand($"changelevel {map.Name}");
+            }, TimerFlags.STOP_ON_MAPCHANGE);
 
             return true;
         }
@@ -121,7 +110,7 @@ namespace cs2_rockthevote
                     _plugin?.AddTimer(delay, () =>
                     {
                         ChangeNextMap(true);
-                    });
+                    }, TimerFlags.STOP_ON_MAPCHANGE);
                 }
                 return HookResult.Continue;
             });

@@ -1,9 +1,12 @@
-//Put your map list here. The plugin will use the file named "maptlist.txt"
+// Đặt danh sách map ở đây. Plugin sẽ đọc file "maplist.txt"
+// Chỉ hỗ trợ map thông thường (không hỗ trợ workshop maps)
 
-//For default game maps:
+// Ví dụ:
 de_mirage
 de_dust2
+de_inferno
+de_nuke
+de_anubis
+de_ancient
 
-//For workshop maps:
-surf_beginner:3070321829
-surf_rookie:3082548297
+// Comment bằng // hoặc để trống sẽ bị bỏ qua

@@ -36,10 +36,8 @@ namespace cs2_rockthevote
         private readonly GameRules _gameRules;
         private readonly EndMapVoteManager _endmapVoteManager;
         private readonly PluginState _pluginState;
-        private readonly AFKManager _afk;
 
         private RtvConfig _config = new();
-        private GeneralConfig _generalConfig = new();
         private AsyncVoteManager? _voteManager;
         private bool _isCooldownActive;
         private CCSPlayerController? _initiatingPlayer;
@@ -51,13 +49,12 @@ namespace cs2_rockthevote
 
         public int TimeLeft => (int)Math.Max(0, (_rtvEndTime - DateTime.UtcNow).TotalSeconds);
 
-        public RockTheVoteCommand(GameRules gameRules, EndMapVoteManager endmapVoteManager, StringLocalizer localizer, PluginState pluginState, AFKManager afkManager, ILogger<RockTheVoteCommand> logger)
+        public RockTheVoteCommand(GameRules gameRules, EndMapVoteManager endmapVoteManager, StringLocalizer localizer, PluginState pluginState, ILogger<RockTheVoteCommand> logger)
         {
             _localizer = localizer;
             _gameRules = gameRules;
             _endmapVoteManager = endmapVoteManager;
             _pluginState = pluginState;
-            _afk = afkManager;
             _logger = logger;
         }
 
@@ -66,7 +63,6 @@ namespace cs2_rockthevote
         public void OnConfigParsed(Config config)
         {
             _config = config.Rtv;
-            _generalConfig = config.General;
             _voteManager = new AsyncVoteManager(_config.VotePercentage);
         }
 
@@ -75,22 +71,10 @@ namespace cs2_rockthevote
             _voteManager?.OnMapStart(map);
             StopRtvTimer();
             KillTimer();
+            _initiatingPlayer = null;
         }
 
-        private IEnumerable<CCSPlayerController> EligiblePlayers()
-        {
-            var players = ServerManager.ValidPlayers().Where(p => p.ReallyValid());
-
-            if (!_generalConfig.IncludeSpectator)
-                players = players.Where(p => p.Team != CsTeam.Spectator);
-
-            if (!_generalConfig.IncludeAFK)
-                players = players.Where(p => !_afk.IsAfk(p));
-
-            return players;
-        }
-
-        private int EligibleCount() => EligiblePlayers().Count();
+        private int EligibleCount() => ServerManager.ValidPlayerCount();
 
         private static string Tag(CCSPlayerController p) => $"{p.PlayerName} [slot {p.Slot}]";
 
@@ -98,9 +82,6 @@ namespace cs2_rockthevote
         {
             _pluginState.RtvVoteHappening = true;
             _rtvEndTime = DateTime.UtcNow.AddSeconds(_config.RtvVoteDuration);
-
-            if (_config.EnableCountdown && _config.CountdownType == "chat")
-                _plugin!.AddTimer(0.1f, () => ChatCountdown(_config.RtvVoteDuration), TimerFlags.STOP_ON_MAPCHANGE);
 
             _rtvTimer = _plugin!.AddTimer(_config.RtvVoteDuration, () =>
             {
@@ -168,7 +149,7 @@ namespace cs2_rockthevote
                     return;
                 }
 
-                Server.PrintToConsole($"[RockTheVote] RTV starting (caller: {Tag(player)}), IncludeAFK={_generalConfig.IncludeAFK}");
+                Server.PrintToConsole($"[RockTheVote] RTV starting (caller: {Tag(player)})");
 
                 if (_config.EnablePanorama)
                 {
@@ -178,50 +159,12 @@ namespace cs2_rockthevote
                     Server.ExecuteCommand("sv_vote_allow_spectators 1");
                     Server.ExecuteCommand("sv_vote_count_spectator_votes 1");
 
-                    bool needsFilter = !_generalConfig.IncludeAFK || !_generalConfig.IncludeSpectator;
-
-                    if (!needsFilter)
-                    {
-                        PanoramaVote.SendYesNoVoteToAll(_config.RtvVoteDuration, player.Slot, "#SFUI_vote_changelevel",
-                            _localizer.Localize("rtv.ui-question"), VoteResultCallback, VoteHandlerCallback);
-                    }
-                    else
-                    {
-                        _afk.CheckAllPlayers();
-                        var eligible = EligiblePlayers().ToList();
-                        Server.PrintToConsole($"[RockTheVote] Eligible players = {eligible.Count}: " + string.Join(", ", eligible.Select(Tag)));
-
-                        var filter = new RecipientFilter();
-                        foreach (var p in eligible)
-                            filter.Add(p);
-
-                        if (filter.Count == 0)
-                        {
-                            player.PrintToChat(_localizer.LocalizeWithPrefix("general.eligible"));
-                            return;
-                        }
-
-                        PanoramaVote.SendYesNoVote(_config.RtvVoteDuration, player.Slot, "#SFUI_vote_changelevel",
-                            _localizer.Localize("rtv.ui-question"), filter, VoteResultCallback, VoteHandlerCallback);
-                    }
+                    PanoramaVote.SendYesNoVoteToAll(_config.RtvVoteDuration, player.Slot, "#SFUI_vote_changelevel",
+                        _localizer.Localize("rtv.ui-question"), VoteResultCallback, VoteHandlerCallback);
                 }
 
                 if (!_config.EnablePanorama)
                 {
-                    if (!_generalConfig.IncludeAFK)
-                        _afk.CheckAllPlayers();
-
-                    if (!_generalConfig.IncludeSpectator && player.Team == CsTeam.Spectator)
-                    {
-                        player.PrintToChat(_localizer.LocalizeWithPrefix("general.spectator"));
-                        return;
-                    }
-
-                    if (!_generalConfig.IncludeAFK && _afk.IsAfk(player))
-                    {
-                        player.PrintToChat(_localizer.LocalizeWithPrefix("general.afk"));
-                        return;
-                    }
 
                     VoteResult result = _voteManager!.AddVote(player.UserId!.Value);
                     int eligible = Math.Max(EligibleCount(), 0);
@@ -354,29 +297,14 @@ namespace cs2_rockthevote
             }
         }
 
-        public void ChatCountdown(int secondsLeft)
-        {
-            if (!_pluginState.RtvVoteHappening) return;
-
-            string text = _localizer.LocalizeWithPrefix("general.chat-countdown", secondsLeft);
-            foreach (var player in ServerManager.ValidPlayers())
-                player.PrintToChat(text);
-
-            int next = secondsLeft - _config.ChatCountdownInterval;
-            if (next > 0)
-            {
-                _plugin?.AddTimer(_config.ChatCountdownInterval, () =>
-                {
-                    try { ChatCountdown(next); }
-                    catch (Exception ex) { _logger.LogError($"ChatCountdown error: {ex.Message}"); }
-                }, TimerFlags.STOP_ON_MAPCHANGE);
-            }
-        }
-
         private void ActivateCooldown()
         {
+            KillTimer();
             _isCooldownActive = true;
-            _cooldownTimer = _plugin?.AddTimer(_config.CooldownDuration, () => _isCooldownActive = false, TimerFlags.STOP_ON_MAPCHANGE);
+            _cooldownTimer = _plugin?.AddTimer(_config.CooldownDuration, () => 
+            {
+                _isCooldownActive = false;
+            }, TimerFlags.STOP_ON_MAPCHANGE);
             _cooldownEndTime = DateTime.UtcNow.AddSeconds(_config.CooldownDuration);
         }
 

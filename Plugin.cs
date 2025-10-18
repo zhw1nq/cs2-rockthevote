@@ -29,25 +29,22 @@ namespace cs2_rockthevote
         RockTheVoteCommand rtvManager,
         TimeLeftCommand timeLeft,
         MaplistCommand maplistManager,
-        AFKManager afkManager,
         PluginState pluginState,
         IStringLocalizer stringLocalizer,
         ILogger<Plugin> logger) : BasePlugin, IPluginConfig<Config>
     {
         public override string ModuleName => "RockTheVote";
-        public override string ModuleVersion => "2.1.1";
+        public override string ModuleVersion => "2.2.0";
         public override string ModuleAuthor => "abnerfs (Updated by Marchand) (Updated more by zhw1nq)";
 
         private readonly DependencyManager<Plugin, Config> _dependencyManager = dependencyManager;
         private readonly ChangeMapManager _changeMapManager = changeMapManager;
         private readonly RockTheVoteCommand _rtvManager = rtvManager;
-        private readonly AFKManager _afkManager = afkManager;
         private readonly TimeLeftCommand _timeLeft = timeLeft;
         private readonly MaplistCommand _maplistManager = maplistManager;
         private StringLocalizer _localizer = new(stringLocalizer, "rtv.prefix");
         private readonly ILogger<Plugin> _logger = logger;
         private readonly PluginState _pluginState = pluginState;
-        private bool _hasMenuManager = false;
 
 
         public Config Config { get; set; } = new Config();

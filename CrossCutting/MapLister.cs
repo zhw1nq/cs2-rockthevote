@@ -25,13 +25,7 @@
                 .Split("\n")
                 .Select(x => x.Trim())
                 .Where(x => !string.IsNullOrWhiteSpace(x) && !x.StartsWith("//"))
-                .Select(mapLine =>
-                {
-                    string[] args = mapLine.Split(":");
-                    string mapName = args[0];
-                    string? mapValue = args.Length == 2 ? args[1] : null;
-                    return new Map(mapName, mapValue);
-                })];
+                .Select(mapName => new Map(mapName))];
 
             MapsLoaded = true;
             EventMapsLoaded?.Invoke(this, Maps!);
